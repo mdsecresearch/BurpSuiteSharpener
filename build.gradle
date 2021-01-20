@@ -1,0 +1,39 @@
+// Burp Suite Sharpener
+// Released as open source by MDSec - https://www.mdsec.co.uk
+// Developed by Soroush Dalili (@irsdl)
+// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
+// Released under AGPL see LICENSE for more information
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group 'com.irsdl'
+version '1.00-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://jitpack.io"
+    }
+}
+
+dependencies {
+    compile 'net.portswigger.burp.extender:burp-extender-api:1.7.22'
+    compile 'com.github.CoreyD97:BurpExtenderUtilities:-SNAPSHOT'
+    compile 'com.google.code.gson:gson:2.8.6'
+}
+
+jar{
+    baseName = project.name
+    from {
+        (configurations.compile).collect { it.isDirectory() ? it : zipTree(it) }
+    }{
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+}
+
+tasks.withType(Jar) {
+    destinationDir = file("$rootDir/release")
+}

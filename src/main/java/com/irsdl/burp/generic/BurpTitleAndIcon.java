@@ -1,0 +1,65 @@
+// Burp Suite Sharpener
+// Released as open source by MDSec - https://www.mdsec.co.uk
+// Developed by Soroush Dalili (@irsdl)
+// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
+// Released under AGPL see LICENSE for more information
+
+package com.irsdl.burp.generic;
+
+import com.irsdl.generic.ImageHelper;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class BurpTitleAndIcon {
+    public static void resetTitleAndIcon(BurpExtensionSharedParameters sharedParams) {
+        setTitle(sharedParams, sharedParams.get_originalBurpTitle());
+        setIcon(sharedParams, sharedParams.get_originalBurpIcon());
+    }
+
+    public static void changeTitleAndIcon(BurpExtensionSharedParameters sharedParams, String title, Image img) {
+        setTitle(sharedParams, title);
+        setIcon(sharedParams, img);
+    }
+
+    public static void setTitle(BurpExtensionSharedParameters sharedParams, String title) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new Thread(() -> {
+                    sharedParams.get_mainFrame().setTitle(title);
+                    if (sharedParams.isDebug) {
+                        sharedParams.printlnOutput("Burp Suite title was changed to: " + title);
+                    }
+                }).start();
+            }
+        });
+    }
+
+    public static void setIcon(BurpExtensionSharedParameters sharedParams, Image img) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new Thread(() -> {
+                    for (Window window : Window.getWindows()) {
+                        window.setIconImage(img);
+                    }
+                    //sharedParams.get_mainFrame().setIconImage(img);
+                    if (sharedParams.isDebug) {
+                        sharedParams.printlnOutput("Burp Suite icon has been updated");
+                    }
+                }).start();
+            }
+        });
+
+    }
+
+    public static void setIcon(BurpExtensionSharedParameters sharedParams, String imgPath) {
+        Image loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(imgPath), 16);
+        if (loadedImg != null) {
+            setIcon(sharedParams, loadedImg);
+        } else {
+            sharedParams.printlnError("Image could not be loaded to be used as the Burp Suite icon: " + imgPath);
+        }
+    }
+}
