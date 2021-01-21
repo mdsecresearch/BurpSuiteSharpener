@@ -25,8 +25,7 @@ public class SubTabSettings extends StandardSettings {
 
     public SubTabSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("SubTabSettings");
+        sharedParameters.printDebugMessages("SubTabSettings");
     }
 
     @Override
@@ -47,8 +46,7 @@ public class SubTabSettings extends StandardSettings {
             @Override
             public void run() {
                 new Thread(() -> {
-                    if(sharedParameters.isDebug)
-                        sharedParameters.printlnOutput("loadSettings");
+                    sharedParameters.printDebugMessages("loadSettings");
                     updateAllSubTabContainerHandlersObj();
                     for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
                         HashMap<String, TabFeaturesObject> tabFeaturesObjectsHashMap = sharedParameters.preferences.getSetting("TabFeaturesObject_Array_" + tool.toString().toLowerCase());
@@ -69,8 +67,7 @@ public class SubTabSettings extends StandardSettings {
     }
 
     public void updateAllSubTabContainerHandlersObj() {
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("updateAllSubTabContainerHandlersObj");
+        sharedParameters.printDebugMessages("updateAllSubTabContainerHandlersObj");
         for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
             if (sharedParameters.allSubTabContainerHandlers.get(tool) == null) {
                 // initializing - should be called only once
@@ -111,8 +108,7 @@ public class SubTabSettings extends StandardSettings {
             @Override
             public void run() {
                 new Thread(() -> {
-                    if(sharedParameters.isDebug)
-                        sharedParameters.printlnOutput("unsetSubTabsStyle");
+                    sharedParameters.printDebugMessages("unsetSubTabsStyle");
                     for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
                         if (sharedParameters.supportedTools_SubTabs.get(tool) != null) {
                             ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(tool);
@@ -133,8 +129,7 @@ public class SubTabSettings extends StandardSettings {
     }
 
     public void prepareAndSaveSettings(SubTabContainerHandler subTabContainerHandler) {
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("prepareAndSaveSettings");
+        sharedParameters.printDebugMessages("prepareAndSaveSettings");
 
         // save the changed tabs ...
         if (!subTabContainerHandler.isCurrentTitleUnique()) {
@@ -164,8 +159,7 @@ public class SubTabSettings extends StandardSettings {
     }
 
     public void saveSettings() {
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("saveSettings");
+        sharedParameters.printDebugMessages("saveSettings");
 
         for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
             sharedParameters.supportedTools_SubTabs.get(tool).clear();

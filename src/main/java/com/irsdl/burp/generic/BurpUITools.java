@@ -91,7 +91,7 @@ public class BurpUITools {
                         JMenuItem item = menuBar.getMenu(i);
                         if (item.getText().trim().equalsIgnoreCase(toolbarName.trim())) {
                             menuBar.remove(i);
-                            break;
+                            // break; // we may have more than one menu so this line needs to be commented
                         }
                     }
                     menuBar.revalidate();
@@ -142,7 +142,6 @@ public class BurpUITools {
                 }
             }
         }
-
         return result;
     }
 

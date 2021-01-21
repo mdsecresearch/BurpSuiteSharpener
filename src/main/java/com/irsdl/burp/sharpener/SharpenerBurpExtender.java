@@ -26,6 +26,7 @@ import java.beans.PropertyChangeListener;
 
 public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
     //public static MainExtensionClass instance;
+    private String version = "1.01";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
@@ -48,7 +49,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
         //MainExtensionClass.instance = this;
         this.instance = this;
-        this.sharedParameters = new SharpenerSharedParameters("1.00", "Sharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener/", "https://github.com/mdsecresearch/BurpSuiteSharpener/issues", instance, callbacks);
+        this.sharedParameters = new SharpenerSharedParameters(version, "Sharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener/", "https://github.com/mdsecresearch/BurpSuiteSharpener/issues", instance, callbacks);
 
         // set our extension name
         callbacks.setExtensionName(sharedParameters.extensionName);
@@ -87,33 +88,28 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
 
     public void load(boolean isDirty) {
         if (!isDirty) {
-            if(sharedParameters.isDebug)
-                sharedParameters.printlnOutput("is not dirty: setUIParametersFromExtensionTab");
+            sharedParameters.printDebugMessages("is not dirty: setUIParametersFromExtensionTab");
             sharedParameters.setUIParametersFromExtensionTab(dummyPanel, 10);
         }
         else {
-            if(sharedParameters.isDebug)
-                sharedParameters.printlnOutput("is dirty: unload");
+            sharedParameters.printDebugMessages("is dirty: unload");
             unload();
         }
 
         if ((sharedParameters.get_isUILoaded() && !isDirty) || isDirty) {
             if (!isDirty) {
-                if(sharedParameters.isDebug)
-                    sharedParameters.printlnOutput("is not dirty: removeSuiteTab");
+                sharedParameters.printDebugMessages("is not dirty: removeSuiteTab");
                 sharedParameters.callbacks.removeSuiteTab(SharpenerBurpExtender.this); // we don't need this
             }
 
             if (!BurpUITools.isMenubarLoaded(sharedParameters.extensionName, sharedParameters.get_mainMenuBar()) || isDirty) {
-                if(sharedParameters.isDebug)
-                    sharedParameters.printlnOutput("Loading all settings!");
+                sharedParameters.printDebugMessages("Loading all settings!");
                 // Loading all settings!
                 sharedParameters.allSettings = new SharpenerGeneralSettings(sharedParameters);
 
                 // Adding MiddleClick / RightClick+Alt to Repeater and Intruder
                 if (sharedParameters.get_rootTabbedPane() != null) {
-                    if(sharedParameters.isDebug)
-                        sharedParameters.printlnOutput("Adding MiddleClick / RightClick+Alt to Repeater and Intruder");
+                    sharedParameters.printDebugMessages("Adding MiddleClick / RightClick+Alt to Repeater and Intruder");
                     subTabWatcher = new SubTabWatcher(sharedParameters, mouseEvent -> {
                         SubTabActions.tabClicked(mouseEvent, sharedParameters);
                     });
@@ -123,12 +119,10 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                 // Adding the top menu
                 try {
                     if (ttm != null) {
-                        if(sharedParameters.isDebug)
-                            sharedParameters.printlnOutput("Removing the top menu before adding it again");
+                        sharedParameters.printDebugMessages("Removing the top menu before adding it again");
                         ttm.removeTopMenuBar();
                     }
-                    if(sharedParameters.isDebug)
-                        sharedParameters.printlnOutput("Adding the top menu");
+                    sharedParameters.printDebugMessages("Adding the top menu");
                     ttm = new TopMenuBar(sharedParameters);
                     ttm.addTopMenuBar();
                 } catch (Exception e) {
@@ -143,8 +137,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                                 new java.util.TimerTask() {
                                     @Override
                                     public void run() {
-                                        if(sharedParameters.isDebug)
-                                            sharedParameters.printlnOutput("lookAndFeelPropChangeListener");
+                                        sharedParameters.printDebugMessages("lookAndFeelPropChangeListener");
                                         sharedParameters.defaultSubTabObject = null;
                                         UIHelper.showWarningMessage("Due to the major UI change, it is recommended to reload the " + sharedParameters.extensionName + " extension.", sharedParameters.get_mainFrame());
                                     }
@@ -154,8 +147,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                     }
                 };
 
-                if(sharedParameters.isDebug)
-                    sharedParameters.printlnOutput("addPropertyChangeListener: lookAndFeelPropChangeListener");
+                sharedParameters.printDebugMessages("addPropertyChangeListener: lookAndFeelPropChangeListener");
                 UIManager.addPropertyChangeListener(lookAndFeelPropChangeListener);
 
             } else {
@@ -172,14 +164,12 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
     }
 
     public void unload() {
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("unload");
+        sharedParameters.printDebugMessages("unload");
 
         // reattaching related tools before working on them!
         if (BurpUITools.reattachTools(sharedParameters.subTabWatcherSupportedTabs, sharedParameters.get_mainMenuBar())) {
             try {
-                if(sharedParameters.isDebug)
-                    sharedParameters.printlnOutput("reattaching");
+                sharedParameters.printDebugMessages("reattaching");
                 // to make sure UI has been updated
                 sharedParameters.printlnOutput("Detached windows were found. We need to wait for a few seconds after reattaching the tabs.");
                 Thread.sleep(3000);
@@ -189,50 +179,33 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
         }
 
         if (sharedParameters.get_isUILoaded() && !anotherExist) {
-            if(sharedParameters.isDebug)
-                sharedParameters.printlnOutput("removing toolbar menu");
+            sharedParameters.printDebugMessages("removing toolbar menu");
             // removing toolbar menu
             if (ttm != null)
                 ttm.removeTopMenuBar();
 
-            if(sharedParameters.isDebug)
-                sharedParameters.printlnOutput("removing tab listener on tabs in Repeater and Intruder");
+            sharedParameters.printDebugMessages("removing tab listener on tabs in Repeater and Intruder");
             // remove tab listener on tabs in Repeater and Intruder
             if (subTabWatcher != null && sharedParameters.get_isUILoaded()) {
                 subTabWatcher.removeTabListener(sharedParameters.get_rootTabbedPane());
             }
 
-            if(sharedParameters.isDebug)
-                sharedParameters.printlnOutput("undo the Burp main tool tabs");
+            sharedParameters.printDebugMessages("undo the Burp main tool tabs");
             // undo the Burp main tool tabs
             ToolsTabStyleHandler.unsetAllToolTabStyles(sharedParameters.get_rootTabbedPane());
 
-            if(sharedParameters.isDebug)
-                sharedParameters.printlnOutput("undo subtabs styles");
+            sharedParameters.printDebugMessages("undo subtabs styles");
             // undo subtabs styles
             sharedParameters.allSettings.subTabSettings.unsetSubTabsStyle();
 
-            if(sharedParameters.isDebug)
-                sharedParameters.printlnOutput("reset Burp title and icon");
+            sharedParameters.printDebugMessages("reset Burp title and icon");
             // reset Burp title and icon
             BurpTitleAndIcon.resetTitleAndIcon(sharedParameters);
 
-            // removing the menu bar can be problematic
-            if (BurpUITools.isMenubarLoaded(sharedParameters.extensionName, sharedParameters.get_mainMenuBar())) {
-                // so the menu is still there!
-                try {
-                    if(sharedParameters.isDebug)
-                        sharedParameters.printlnOutput("removing the menu bar can be problematic");
-                    // second attempt
-                    BurpUITools.removeMenubarByName(sharedParameters.extensionName, sharedParameters.get_mainMenuBar());
-                } catch (Exception e) {
-                    sharedParameters.printlnError("Error in removing the top menu for the second time: " + e.getMessage());
+            // removing the menu bar can be problematic so we need to check again
+            TopMenuBar.removeTopMenuBarLastResort(sharedParameters);
 
-                }
-            }
-
-            if(sharedParameters.isDebug)
-                sharedParameters.printlnOutput("removePropertyChangeListener: lookAndFeelPropChangeListener");
+            sharedParameters.printDebugMessages("removePropertyChangeListener: lookAndFeelPropChangeListener");
             UIManager.removePropertyChangeListener(lookAndFeelPropChangeListener);
 
             /*
@@ -254,9 +227,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
 
         }
 
-        if (sharedParameters.isDebug) {
-            sharedParameters.printlnOutput("UI changes have been removed.");
-        }
+        sharedParameters.printDebugMessages("UI changes have been removed.");
     }
 
 }

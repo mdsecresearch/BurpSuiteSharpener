@@ -22,21 +22,19 @@ public class BurpTitleAndIcon {
         setIcon(sharedParams, img);
     }
 
-    public static void setTitle(BurpExtensionSharedParameters sharedParams, String title) {
+    public static void setTitle(BurpExtensionSharedParameters sharedParameters, String title) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 new Thread(() -> {
-                    sharedParams.get_mainFrame().setTitle(title);
-                    if (sharedParams.isDebug) {
-                        sharedParams.printlnOutput("Burp Suite title was changed to: " + title);
-                    }
+                    sharedParameters.get_mainFrame().setTitle(title);
+                    sharedParameters.printDebugMessages("Burp Suite title was changed to: " + title);
                 }).start();
             }
         });
     }
 
-    public static void setIcon(BurpExtensionSharedParameters sharedParams, Image img) {
+    public static void setIcon(BurpExtensionSharedParameters sharedParameters, Image img) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -44,10 +42,8 @@ public class BurpTitleAndIcon {
                     for (Window window : Window.getWindows()) {
                         window.setIconImage(img);
                     }
-                    //sharedParams.get_mainFrame().setIconImage(img);
-                    if (sharedParams.isDebug) {
-                        sharedParams.printlnOutput("Burp Suite icon has been updated");
-                    }
+                    //sharedParameters.get_mainFrame().setIconImage(img);
+                    sharedParameters.printDebugMessages("Burp Suite icon has been updated");
                 }).start();
             }
         });

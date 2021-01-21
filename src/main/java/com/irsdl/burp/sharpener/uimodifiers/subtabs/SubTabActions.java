@@ -89,8 +89,7 @@ public class SubTabActions {
             if (sharedParameters.copiedTabFeaturesObjectStyle != null) {
                 subTabContainerHandler.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
                 sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
-                if (sharedParameters.isDebug)
-                    sharedParameters.printlnOutput("Style pasted...");
+                sharedParameters.printDebugMessages("Style pasted...");
             }
         });
         popupMenu.add(pasteStyleMenu);
@@ -100,8 +99,7 @@ public class SubTabActions {
             copyStyleMenu.setEnabled(false);
         copyStyleMenu.addActionListener(e -> {
             sharedParameters.copiedTabFeaturesObjectStyle = subTabContainerHandler.getTabFeaturesObjectStyle();
-            if (sharedParameters.isDebug)
-                sharedParameters.printlnOutput("Style copied...");
+            sharedParameters.printDebugMessages("Style copied...");
         });
         popupMenu.add(copyStyleMenu);
 

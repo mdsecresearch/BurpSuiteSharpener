@@ -79,9 +79,8 @@ public class BurpExtensionSharedParameters {
                 else
                     throw new Exception("no ui");
 
-                if (isDebug) {
-                    printlnOutput("UI parameters have been loaded successfully");
-                }
+                printDebugMessages("UI parameters have been loaded successfully");
+
             } catch (Exception e) {
                 attemptsRemaining--;
                 try {
@@ -93,45 +92,54 @@ public class BurpExtensionSharedParameters {
 
         if (!foundUI) {
             printlnError(extensionName + " extension UI elements could not be added. Please try again.");
-            if (isDebug) {
-                printlnError("Perhaps unload the extension at this point");
-            }
+            printDebugMessages("Perhaps unload the extension at this point");
         } else {
             _originalBurpTitle = get_mainFrame().getTitle();
             _originalBurpIcon = get_mainFrame().getIconImage();
-            if (isDebug) {
-                printlnOutput("Original title and icon has been set");
-            }
+            printDebugMessages("Original title and icon has been set");
         }
         _isUILoaded = foundUI;
     }
 
+    public void printDebugMessages(String message, String note, boolean alreadyPrinted){
+        if (isDebug) {
+            String fullMessage = "DEBUG->\r\n\tNote: " + note + "\r\n\tMessage: " + message;
+            System.out.println(fullMessage);
+            if(!alreadyPrinted){
+                this.stdout.println(fullMessage);
+            }
+        }
+    }
+
+    public void printDebugMessages(String message){
+        if (isDebug) {
+            StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+            String methods = "\t\t";
+            for(int i=2; i < stackTraceElements.length; i++){
+                methods += stackTraceElements[i] + " <- ";
+            }
+            printDebugMessages(message, methods, false);
+        }
+    }
+
     public void printlnError(String message) {
         this.stderr.println(message);
-        if (isDebug) {
-            System.out.println("DEBUG: " + message);
-        }
+        printDebugMessages(message, "printlnError", true);
     }
 
     public void printError(String message) {
         this.stderr.print(message);
-        if (isDebug) {
-            System.out.println("DEBUG: " + message);
-        }
+        printDebugMessages(message, "printError", true);
     }
 
     public void printlnOutput(String message) {
         this.stdout.println(message);
-        if (isDebug) {
-            System.out.println("DEBUG: " + message);
-        }
+        printDebugMessages(message, "printlnOutput", true);
     }
 
     public void printOutput(String message) {
         this.stdout.print(message);
-        if (isDebug) {
-            System.out.println("DEBUG: " + message);
-        }
+        printDebugMessages(message, "printOutput", true);
     }
 
     public void resetAllSettings() {

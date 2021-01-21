@@ -35,8 +35,7 @@ public class SubTabWatcher implements ContainerListener {
     }
 
     public void addTabListener(JTabbedPane tabbedPane) {
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("addTabListener");
+        sharedParameters.printDebugMessages("addTabListener");
         tabbedPane.addContainerListener(this);
         accessibleTabs = new ArrayList<>();
         for (Component component : tabbedPane.getComponents()) {
@@ -46,8 +45,7 @@ public class SubTabWatcher implements ContainerListener {
     }
 
     public void removeTabListener(JTabbedPane tabbedPane) {
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("removeTabListener");
+        sharedParameters.printDebugMessages("removeTabListener");
         tabbedPane.removeContainerListener(this);
         accessibleTabs = new ArrayList<>();
         for (Component component : tabbedPane.getComponents()) {
@@ -88,8 +86,7 @@ public class SubTabWatcher implements ContainerListener {
 
         if (!sharedParameters.subTabWatcherSupportedTabs.contains(componentTitle)) return;
 
-        if (sharedParameters.isDebug)
-            sharedParameters.printlnOutput("Adding listener to " + componentTitle);
+        sharedParameters.printDebugMessages("Adding listener to " + componentTitle);
 
         accessibleTabs.add(componentTitle);
 

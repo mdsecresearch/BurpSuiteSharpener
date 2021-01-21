@@ -8,7 +8,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group 'com.irsdl'
-version '1.00-SNAPSHOT'
+version '1.01-SNAPSHOT'
 
 repositories {
     mavenCentral()

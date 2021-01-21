@@ -20,8 +20,7 @@ public class ToolsTabStyleHandler {
             @Override
             public void run() {
                 new Thread(() -> {
-                    if(sharedParameters.isDebug)
-                        sharedParameters.printlnOutput("setToolTabStyle");
+                    sharedParameters.printDebugMessages("setToolTabStyle");
                     String themeName = sharedParameters.preferences.getSetting("ToolsThemeName");
                     String themeCustomPath = sharedParameters.preferences.getSetting("ToolsThemeCustomPath");
                     JTabbedPane tabbedPane = sharedParameters.get_rootTabbedPane();
@@ -89,8 +88,7 @@ public class ToolsTabStyleHandler {
             @Override
             public void run() {
                 new Thread(() -> {
-                    if(sharedParameters.isDebug)
-                        sharedParameters.printlnOutput("setToolTabStylesFromSettings");
+                    sharedParameters.printDebugMessages("setToolTabStylesFromSettings");
                     for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
                         if ((boolean) sharedParameters.preferences.getSetting("isUnique_" + tool.toString())) {
                             ToolsTabStyleHandler.setToolTabStyle(tool, sharedParameters);
@@ -103,8 +101,7 @@ public class ToolsTabStyleHandler {
     }
 
     public static void resetToolTabStylesFromSettings(SharpenerSharedParameters sharedParameters) {
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("resetToolTabStylesFromSettings");
+        sharedParameters.printDebugMessages("resetToolTabStylesFromSettings");
         unsetAllToolTabStyles(sharedParameters.get_rootTabbedPane());
         setToolTabStylesFromSettings(sharedParameters);
     }

@@ -18,8 +18,7 @@ import java.util.Collection;
 public class ToolsTabSettings extends StandardSettings {
     public ToolsTabSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("ToolsTabSettings");
+        sharedParameters.printDebugMessages("ToolsTabSettings");
     }
 
     @Override
@@ -42,8 +41,7 @@ public class ToolsTabSettings extends StandardSettings {
 
     @Override
     public void loadSettings() {
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("loadSettings");
+        sharedParameters.printDebugMessages("loadSettings");
         ToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
     }
 }

@@ -19,8 +19,7 @@ public class BurpFrameSettings extends StandardSettings {
 
     public BurpFrameSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("BurpFrameSettings");
+        sharedParameters.printDebugMessages("BurpFrameSettings");
     }
 
     @Override
@@ -34,8 +33,7 @@ public class BurpFrameSettings extends StandardSettings {
                 preferenceObjectCollection.add(preferenceObject);
             } catch (Exception e) {
                 //already registered setting
-                if (sharedParameters.isDebug)
-                    sharedParameters.printlnError(e.getMessage());
+                sharedParameters.printDebugMessages(e.getMessage());
             }
         }
         return preferenceObjectCollection;
@@ -43,8 +41,7 @@ public class BurpFrameSettings extends StandardSettings {
 
     @Override
     public void loadSettings() {
-        if(sharedParameters.isDebug)
-            sharedParameters.printlnOutput("loadSettings");
+        sharedParameters.printDebugMessages("loadSettings");
 
         String newTitle = sharedParameters.preferences.getSetting("BurpTitle");
         if (!newTitle.isEmpty()) {
