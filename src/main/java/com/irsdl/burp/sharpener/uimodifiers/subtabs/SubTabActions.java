@@ -56,12 +56,8 @@ public class SubTabActions {
                     }
                 } else if (!isCTRL_Key && isSHIFT_Key) {
                     // middle click with shift: should make it red and big and bold
-                    Color textColor = new Color(250, 10, 10); // Red
-                    tabbedPane.setBackgroundAt(tabIndex, textColor);
-                    if (!subTabContainerHandler.isBold())
-                        subTabContainerHandler.toggleBold();
-                    subTabContainerHandler.setFontSize(20);
-                    subTabContainerHandler.hideCloseButton();
+                    TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("High: Red, Big, and Bold", "Arial", 18, true, false, false, Color.decode("#f71414"));
+                    subTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle);
                 }
 
                 if (subTabContainerHandler.hasChanged) {

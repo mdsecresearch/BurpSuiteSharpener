@@ -8,7 +8,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group 'com.irsdl'
-version '1.01-SNAPSHOT'
+version '1.02-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -21,6 +21,7 @@ dependencies {
     compile 'net.portswigger.burp.extender:burp-extender-api:1.7.22'
     compile 'com.github.CoreyD97:BurpExtenderUtilities:-SNAPSHOT'
     compile 'com.google.code.gson:gson:2.8.6'
+    //compile 'org.python:jython-standalone:2.7.2'
 }
 
 jar{
