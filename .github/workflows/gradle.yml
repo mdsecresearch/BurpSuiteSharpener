@@ -27,6 +27,6 @@ jobs:
     - name: Creating the jar file
       run: ./gradlew jar
     - name: Upload a Release Asset
-      uses: actions/upload-release-asset@v1.0.2
+    - uses: actions/upload-artifact@v2
       with:
-        asset_path: ./release/
+        path: ./release/*.jar
