@@ -37,7 +37,7 @@ Perhaps the best features can be imported from different open-source extensions 
 * It has been tested against v2.0.x but should work fine against v1.7.x (hopefully)
 
 # Thanks To
-* Corey Arthur [CoreyD97](https://twitter.com/CoreyD97
+* Corey Arthur [CoreyD97](https://twitter.com/CoreyD97)
 * Bruno Demarche
 
 Please feel free to report bugs, suggest features, or send pull requests.
