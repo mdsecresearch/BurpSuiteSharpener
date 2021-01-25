@@ -24,3 +24,5 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
+    - name: Creating the jar file
+      run: ./gradlew jar
