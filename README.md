@@ -14,7 +14,7 @@ It would be great to also list any known available extensions which might have i
 Perhaps the best features can be imported from different open-source extensions so the overhead of adding different extensions can be reduced.
 
 # Installation
-* Download the jar file from the [release](https://github.com/mdsecresearch/BurpSuiteSharpener/releases) section
+* Download the jar file from the [release](https://github.com/mdsecresearch/BurpSuiteSharpener/tree/main/release) directory or in [artifacts](https://github.com/mdsecresearch/BurpSuiteSharpener/actions)
 * Add it to Burp Suite using the Extender tab
   
 # Usage Tips
