@@ -25,7 +25,7 @@ dependencies {
 }
 
 jar{
-    baseName = project.name
+    archivesBaseName = project.name
     from {
         (configurations.compile).collect { it.isDirectory() ? it : zipTree(it) }
     }{
@@ -36,5 +36,5 @@ jar{
 }
 
 tasks.withType(Jar) {
-    destinationDir = file("$rootDir/release")
+    destinationDirectory = file("$rootDir/release")
 }
