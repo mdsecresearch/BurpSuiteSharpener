@@ -4,8 +4,8 @@
 // Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
 // Released under AGPL see LICENSE for more information
 
-apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 
 group 'com.irsdl'
 version '1.02-SNAPSHOT'
@@ -18,16 +18,16 @@ repositories {
 }
 
 dependencies {
-    compile 'net.portswigger.burp.extender:burp-extender-api:1.7.22'
-    compile 'com.github.CoreyD97:BurpExtenderUtilities:-SNAPSHOT'
-    compile 'com.google.code.gson:gson:2.8.6'
-    //compile 'org.python:jython-standalone:2.7.2'
+    implementation 'net.portswigger.burp.extender:burp-extender-api:1.7.22'
+    implementation 'com.github.CoreyD97:BurpExtenderUtilities:-SNAPSHOT'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    //compileOnly 'org.python:jython-standalone:2.7.2'
 }
 
 jar{
     archivesBaseName = project.name
     from {
-        (configurations.compile).collect { it.isDirectory() ? it : zipTree(it) }
+        (configurations.runtimeClasspath).collect { it.isDirectory() ? it : zipTree(it) }
     }{
         exclude "META-INF/*.SF"
         exclude "META-INF/*.DSA"
