@@ -47,25 +47,33 @@ public abstract class StandardSettings {
     public void saveSettings(String settingName, Object value) {
         boolean isSaved = false;
         int tryTimes = 0;
-        while(!isSaved && tryTimes < 10){
+        while (!isSaved && tryTimes < 10) {
             tryTimes++;
 
-            if(sharedParameters.isDebug){
+            if (sharedParameters.isDebug) {
                 sharedParameters.printlnOutput("Try number: " + tryTimes);
                 sharedParameters.printlnOutput("Trying to save " + settingName);
             }
 
-            if(value!=null){
+            if (value != null) {
+                try {
+                    sharedParameters.preferences.resetSetting(settingName); // to resolve a bug in saving in sitemap when values are similar
+                } catch (Exception e) {
+                    if (sharedParameters.isDebug) {
+                        sharedParameters.printlnError("Was not possible to reset the value: " + e.getMessage());
+                    }
+                }
+
                 try {
                     sharedParameters.preferences.setSetting(settingName, null);// to resolve a bug in saving in sitemap when values are similar
-                }catch(Exception e1){
-                    if(sharedParameters.isDebug){
+                } catch (Exception e1) {
+                    if (sharedParameters.isDebug) {
                         sharedParameters.printlnError("Was not possible to set the null value: " + e1.getMessage());
                     }
                     try {
                         sharedParameters.preferences.setSetting(settingName, "");// to resolve a bug in saving in sitemap when values are similar
-                    }catch(Exception e2){
-                        if(sharedParameters.isDebug){
+                    } catch (Exception e2) {
+                        if (sharedParameters.isDebug) {
                             sharedParameters.printlnError("Was not possible to set the empty value: " + e2.getMessage());
                         }
                     }
@@ -75,14 +83,14 @@ public abstract class StandardSettings {
             try {
                 sharedParameters.preferences.setSetting(settingName, value);
 
-                if(sharedParameters.preferences.getSetting(settingName).equals(value)){
+                if (sharedParameters.preferences.getSetting(settingName).equals(value)) {
                     isSaved = true;
-                    if(sharedParameters.isDebug){
+                    if (sharedParameters.isDebug) {
                         sharedParameters.printlnOutput("This was saved successfully: " + settingName);
                     }
                 }
-            }catch(Exception e){
-                if(sharedParameters.isDebug){
+            } catch (Exception e) {
+                if (sharedParameters.isDebug) {
                     sharedParameters.printlnError("Save error: " + e.getMessage());
                     e.printStackTrace();
                 }

@@ -26,15 +26,19 @@ public class ToolsTabSettings extends StandardSettings {
         Collection<PreferenceObject> preferenceObjectCollection = new ArrayList<>();
 
         for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-            PreferenceObject preferenceObject = new PreferenceObject("isUnique_" + tool.toString(), Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
-            preferenceObjectCollection.add(preferenceObject);
+            PreferenceObject preferenceObject_isUnique_Tab = new PreferenceObject("isUnique_" + tool.toString(), Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+            preferenceObjectCollection.add(preferenceObject_isUnique_Tab);
         }
+
+        PreferenceObject preferenceObject_isToolTabPaneScrollable = new PreferenceObject("isToolTabPaneScrollable", Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+        preferenceObjectCollection.add(preferenceObject_isToolTabPaneScrollable);
 
         PreferenceObject preferenceObject_ToolsThemeName = new PreferenceObject("ToolsThemeName", String.class, "office", Preferences.Visibility.GLOBAL);
         preferenceObjectCollection.add(preferenceObject_ToolsThemeName);
 
         PreferenceObject preferenceObject_ToolsThemeCustomPath = new PreferenceObject("ToolsThemeCustomPath", String.class, "", Preferences.Visibility.GLOBAL);
         preferenceObjectCollection.add(preferenceObject_ToolsThemeCustomPath);
+
 
         return preferenceObjectCollection;
     }

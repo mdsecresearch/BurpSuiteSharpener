@@ -6,10 +6,14 @@
 
 package com.irsdl.burp.sharpener.uimodifiers;
 
+import com.coreyd97.BurpExtenderUtilities.Preferences;
+import com.google.gson.reflect.TypeToken;
 import com.irsdl.burp.generic.BurpTitleAndIcon;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerBurpExtender;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
+import com.irsdl.burp.sharpener.objects.PreferenceObject;
+import com.irsdl.burp.sharpener.objects.TabFeaturesObject;
 import com.irsdl.burp.sharpener.uimodifiers.toolstabs.ToolsTabStyleHandler;
 import com.irsdl.generic.UIHelper;
 
@@ -20,6 +24,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.net.URI;
+import java.util.HashMap;
 
 
 public class TopMenuBar extends javax.swing.JMenu {
@@ -35,7 +40,7 @@ public class TopMenuBar extends javax.swing.JMenu {
         updateTopMenuBar();
     }
 
-    public void updateTopMenuBar(){
+    public void updateTopMenuBar() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -144,7 +149,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                         public void actionPerformed(ActionEvent actionEvent) {
                             String newTitle = UIHelper.showPlainInputMessage("Change Burp Suite Title String To:", "Change Burp Suite Title", TopMenuBar.this.sharedParameters.get_mainFrame().getTitle(), sharedParameters.get_mainFrame());
                             if (newTitle != null && !newTitle.trim().isEmpty()) {
-                                if(!sharedParameters.get_mainFrame().getTitle().equals(newTitle)){
+                                if (!sharedParameters.get_mainFrame().getTitle().equals(newTitle)) {
                                     BurpTitleAndIcon.setTitle(TopMenuBar.this.sharedParameters, newTitle);
                                     TopMenuBar.this.sharedParameters.allSettings.saveSettings("BurpTitle", newTitle);
                                 }
@@ -182,6 +187,39 @@ public class TopMenuBar extends javax.swing.JMenu {
                         }
                     });
                     projectMenu.add(resetTitle);
+
+
+                    JCheckBoxMenuItem topMenuScrollableLayout = new JCheckBoxMenuItem("Scrollable Tool Pane");
+
+                    if ((boolean) sharedParameters.preferences.getSetting("isToolTabPaneScrollable")) {
+                        topMenuScrollableLayout.setSelected(true);
+                    }
+
+                    topMenuScrollableLayout.addActionListener((e) -> {
+                        boolean isToolTabPaneScrollable = sharedParameters.preferences.getSetting("isToolTabPaneScrollable");
+                        if (isToolTabPaneScrollable) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    new Thread(() -> {
+                                        sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                                    }).start();
+                                }
+                            });
+                            sharedParameters.allSettings.saveSettings("isToolTabPaneScrollable", false);
+                        } else {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    new Thread(() -> {
+                                        sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                                    }).start();
+                                }
+                            });
+                            sharedParameters.allSettings.saveSettings("isToolTabPaneScrollable", true);
+                        }
+                    });
+                    globalMenu.add(topMenuScrollableLayout);
 
                     // Debug button
                     JCheckBoxMenuItem debugOption = new JCheckBoxMenuItem("Debug");
@@ -334,7 +372,7 @@ public class TopMenuBar extends javax.swing.JMenu {
 
     }
 
-    public static void removeTopMenuBarLastResort(SharpenerSharedParameters sharedParameters){
+    public static void removeTopMenuBarLastResort(SharpenerSharedParameters sharedParameters) {
         if (BurpUITools.isMenubarLoaded(sharedParameters.extensionName, sharedParameters.get_mainMenuBar())) {
             // so the menu is there!
             try {

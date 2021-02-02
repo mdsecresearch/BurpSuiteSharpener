@@ -89,6 +89,10 @@ public class ToolsTabStyleHandler {
             public void run() {
                 new Thread(() -> {
                     sharedParameters.printDebugMessages("setToolTabStylesFromSettings");
+                    if ((boolean) sharedParameters.preferences.getSetting("isToolTabPaneScrollable")) {
+                        sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                    }
+
                     for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
                         if ((boolean) sharedParameters.preferences.getSetting("isUnique_" + tool.toString())) {
                             ToolsTabStyleHandler.setToolTabStyle(tool, sharedParameters);
@@ -102,15 +106,26 @@ public class ToolsTabStyleHandler {
 
     public static void resetToolTabStylesFromSettings(SharpenerSharedParameters sharedParameters) {
         sharedParameters.printDebugMessages("resetToolTabStylesFromSettings");
-        unsetAllToolTabStyles(sharedParameters.get_rootTabbedPane());
+        unsetAllToolTabStyles(sharedParameters);
         setToolTabStylesFromSettings(sharedParameters);
     }
 
-    public static void unsetAllToolTabStyles(JTabbedPane tabbedPane) {
-        for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-            //new Thread(() -> ToolsTabStyleHandler.unsetToolTabStyle(tool, tabbedPane)).start();
-            ToolsTabStyleHandler.unsetToolTabStyle(tool, tabbedPane);
-        }
+    public static void unsetAllToolTabStyles(SharpenerSharedParameters sharedParameters) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new Thread(() -> {
+                    sharedParameters.printDebugMessages("unsetAllToolTabStyles");
+                    if ((boolean) sharedParameters.preferences.getSetting("isToolTabPaneScrollable")) {
+                        sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                    }
+                    for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
+                        //new Thread(() -> ToolsTabStyleHandler.unsetToolTabStyle(tool, tabbedPane)).start();
+                        ToolsTabStyleHandler.unsetToolTabStyle(tool, sharedParameters.get_rootTabbedPane());
+                    }
+                }).start();
+            }
+        });
     }
 
     public static void unsetToolTabStyle(BurpUITools.MainTabs toolName, JTabbedPane tabbedPane) {

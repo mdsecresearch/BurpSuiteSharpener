@@ -155,7 +155,7 @@ public class SubTabContainerHandler {
         return result;
     }
 
-    private  void loadDefaultSetting(){
+    private void loadDefaultSetting() {
         // To set the defaultSubTabObject parameter which keeps default settings of a normal tab
         if (sharedParameters.defaultSubTabObject == null) {
             for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
@@ -176,6 +176,7 @@ public class SubTabContainerHandler {
             }
         }
     }
+
     public boolean isDefault() {
         boolean result = false;
         loadDefaultSetting();

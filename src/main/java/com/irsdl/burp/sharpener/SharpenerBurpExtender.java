@@ -26,7 +26,7 @@ import java.beans.PropertyChangeListener;
 
 public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
     //public static MainExtensionClass instance;
-    private String version = "1.02";
+    private String version = "1.03";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
@@ -90,8 +90,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
         if (!isDirty) {
             sharedParameters.printDebugMessages("is not dirty: setUIParametersFromExtensionTab");
             sharedParameters.setUIParametersFromExtensionTab(dummyPanel, 10);
-        }
-        else {
+        } else {
             sharedParameters.printDebugMessages("is dirty: unload");
             unload();
         }
@@ -192,7 +191,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
 
             sharedParameters.printDebugMessages("undo the Burp main tool tabs");
             // undo the Burp main tool tabs
-            ToolsTabStyleHandler.unsetAllToolTabStyles(sharedParameters.get_rootTabbedPane());
+            ToolsTabStyleHandler.unsetAllToolTabStyles(sharedParameters);
 
             sharedParameters.printDebugMessages("undo subtabs styles");
             // undo subtabs styles

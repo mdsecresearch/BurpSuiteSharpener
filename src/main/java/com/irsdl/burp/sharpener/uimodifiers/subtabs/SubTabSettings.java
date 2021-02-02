@@ -35,6 +35,9 @@ public class SubTabSettings extends StandardSettings {
             PreferenceObject preferenceObject = new PreferenceObject("TabFeaturesObject_Array_" + tool.toString().toLowerCase(), new TypeToken<HashMap<String, TabFeaturesObject>>() {
             }.getType(), null, Preferences.Visibility.PROJECT);
             preferenceObjectCollection.add(preferenceObject);
+
+            PreferenceObject preferenceObject_isScrollable_Tab = new PreferenceObject("isScrollable_" + tool.toString(), Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+            preferenceObjectCollection.add(preferenceObject_isScrollable_Tab);
         }
 
         return preferenceObjectCollection;
@@ -49,6 +52,12 @@ public class SubTabSettings extends StandardSettings {
                     sharedParameters.printDebugMessages("loadSettings");
                     updateAllSubTabContainerHandlersObj();
                     for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
+
+                        boolean isToolSubTabPaneScrollable = sharedParameters.preferences.getSetting("isScrollable_" + tool.toString());
+                        if (isToolSubTabPaneScrollable) {
+                            sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                        }
+
                         HashMap<String, TabFeaturesObject> tabFeaturesObjectsHashMap = sharedParameters.preferences.getSetting("TabFeaturesObject_Array_" + tool.toString().toLowerCase());
                         if (tabFeaturesObjectsHashMap != null && sharedParameters.supportedTools_SubTabs.get(tool) != null) {
                             sharedParameters.supportedTools_SubTabs.get(tool).putAll(tabFeaturesObjectsHashMap);
@@ -110,6 +119,12 @@ public class SubTabSettings extends StandardSettings {
                 new Thread(() -> {
                     sharedParameters.printDebugMessages("unsetSubTabsStyle");
                     for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
+
+                        boolean isToolSubTabPaneScrollable = sharedParameters.preferences.getSetting("isScrollable_" + tool.toString());
+                        if (isToolSubTabPaneScrollable) {
+                            sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                        }
+
                         if (sharedParameters.supportedTools_SubTabs.get(tool) != null) {
                             ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(tool);
                             for (SubTabContainerHandler subTabContainerHandler : subTabContainerHandlers) {

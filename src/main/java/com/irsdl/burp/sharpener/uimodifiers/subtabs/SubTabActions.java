@@ -6,15 +6,22 @@
 
 package com.irsdl.burp.sharpener.uimodifiers.subtabs;
 
+import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
+import com.irsdl.burp.sharpener.objects.TabFeaturesObject;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
 import com.irsdl.generic.JScrollMenu;
+import com.irsdl.generic.UIHelper;
+import com.irsdl.generic.Utilities;
 
 import javax.swing.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.regex.Pattern;
 
 public class SubTabActions {
     public static void tabClicked(final MouseEvent e, SharpenerSharedParameters sharedParameters) {
@@ -69,10 +76,10 @@ public class SubTabActions {
     }
 
 
-    private static JPopupMenu createPopupMenu(SharpenerSharedParameters sharedParameters, SubTabContainerHandler subTabContainerHandler) {
+    private static JPopupMenu createPopupMenu(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
         JPopupMenu popupMenu = new JPopupMenu();
 
-        JMenuItem menuItem = new JMenuItem("Tab Title: " + subTabContainerHandler.getTabTitle());
+        JMenuItem menuItem = new JMenuItem("Tab Title: " + currentSubTabContainerHandler.getTabTitle());
         menuItem.setEnabled(false);
         popupMenu.add(menuItem);
         popupMenu.addSeparator();
@@ -83,18 +90,18 @@ public class SubTabActions {
         }
         pasteStyleMenu.addActionListener(e -> {
             if (sharedParameters.copiedTabFeaturesObjectStyle != null) {
-                subTabContainerHandler.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+                currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
+                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
                 sharedParameters.printDebugMessages("Style pasted...");
             }
         });
         popupMenu.add(pasteStyleMenu);
 
         JMenuItem copyStyleMenu = new JMenuItem("Copy Style");
-        if (subTabContainerHandler.isDefault())
-            copyStyleMenu.setEnabled(false);
+        //if (currentSubTabContainerHandler.isDefault())
+        //    copyStyleMenu.setEnabled(false);
         copyStyleMenu.addActionListener(e -> {
-            sharedParameters.copiedTabFeaturesObjectStyle = subTabContainerHandler.getTabFeaturesObjectStyle();
+            sharedParameters.copiedTabFeaturesObjectStyle = currentSubTabContainerHandler.getTabFeaturesObjectStyle();
             sharedParameters.printDebugMessages("Style copied...");
         });
         popupMenu.add(copyStyleMenu);
@@ -102,10 +109,10 @@ public class SubTabActions {
 
         JCheckBoxMenuItem defaultProfile = new JCheckBoxMenuItem("Reset to Default");
         defaultProfile.addActionListener(e -> {
-            subTabContainerHandler.setToDefault();
-            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+            currentSubTabContainerHandler.setToDefault();
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
         });
-        if (subTabContainerHandler.isDefault())
+        if (currentSubTabContainerHandler.isDefault())
             defaultProfile.setEnabled(false);
         popupMenu.add(defaultProfile);
 
@@ -114,92 +121,91 @@ public class SubTabActions {
         JCheckBoxMenuItem highProfile = new JCheckBoxMenuItem("High: Red, Big, and Bold");
         highProfile.addActionListener(e -> {
             TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("High: Red, Big, and Bold", "Arial", 18, true, false, false, Color.decode("#f71414"));
-            subTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle);
-            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+            currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle);
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
         });
         profileMenu.add(highProfile);
 
         JCheckBoxMenuItem mediumProfile = new JCheckBoxMenuItem("Medium: Orange, Big, and Bold");
         mediumProfile.addActionListener(e -> {
             TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("Medium: Orange, Big, and Bold", "Arial", 18, true, false, false, Color.decode("#ff7e0d"));
-            subTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle);
-            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+            currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle);
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
         });
         profileMenu.add(mediumProfile);
 
         JCheckBoxMenuItem lowProfile = new JCheckBoxMenuItem("Low: Yellow, Bold");
         lowProfile.addActionListener(e -> {
             TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("Low: Yellow, Bold", "Arial", 14, true, false, false, Color.decode("#ffef0d"));
-            subTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle);
-            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+            currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle);
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
         });
         profileMenu.add(lowProfile);
 
         JCheckBoxMenuItem infoProfile = new JCheckBoxMenuItem("Info: Green, Bold, Italic");
         infoProfile.addActionListener(e -> {
             TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("Info: Green, Bold, Italic", "Arial", 14, true, true, false, Color.decode("#0d9e1e"));
-            subTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle);
-            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+            currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle);
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
         });
         profileMenu.add(infoProfile);
 
         popupMenu.add(profileMenu);
-        popupMenu.addSeparator();
 
+        JMenu customStyleMenu = new JMenu("Custom Style");
         JCheckBoxMenuItem closeButtonMenuItem = new JCheckBoxMenuItem("Remove Close Button");
         closeButtonMenuItem.addActionListener(e -> {
-            subTabContainerHandler.setVisibleCloseButton(!closeButtonMenuItem.isSelected());
-            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+            currentSubTabContainerHandler.setVisibleCloseButton(!closeButtonMenuItem.isSelected());
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
         });
-        closeButtonMenuItem.setSelected(!subTabContainerHandler.getVisibleCloseButton());
-        popupMenu.add(closeButtonMenuItem);
+        closeButtonMenuItem.setSelected(!currentSubTabContainerHandler.getVisibleCloseButton());
+        customStyleMenu.add(closeButtonMenuItem);
 
         JMenu fontNameMenu = new JScrollMenu("Font Name");
         String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
 
         for (int i = 0; i < fonts.length; i++) {
             JCheckBoxMenuItem fontnameItem = new JCheckBoxMenuItem(fonts[i]);
-            fontnameItem.setSelected(fonts[i].equalsIgnoreCase(subTabContainerHandler.getFontName()));
+            fontnameItem.setSelected(fonts[i].equalsIgnoreCase(currentSubTabContainerHandler.getFontName()));
             String finalFontName = fonts[i];
             fontnameItem.addActionListener(e -> {
-                subTabContainerHandler.setFontName(finalFontName);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+                currentSubTabContainerHandler.setFontName(finalFontName);
+                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
 
             });
             fontNameMenu.add(fontnameItem);
         }
-
-        popupMenu.add(fontNameMenu);
+        customStyleMenu.add(fontNameMenu);
 
         JMenu fontSizeMenu = new JMenu("Font Size");
         float minFontSize = 10, maxFontSize = 40;
         for (float fontSize = minFontSize; fontSize < maxFontSize; fontSize += 2) {
             JCheckBoxMenuItem sizeItem = new JCheckBoxMenuItem(fontSize + "");
-            sizeItem.setSelected(subTabContainerHandler.getFontSize() == fontSize);
+            sizeItem.setSelected(currentSubTabContainerHandler.getFontSize() == fontSize);
             float finalFontSize = fontSize;
             sizeItem.addActionListener(e -> {
-                subTabContainerHandler.setFontSize(finalFontSize);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+                currentSubTabContainerHandler.setFontSize(finalFontSize);
+                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
             });
             fontSizeMenu.add(sizeItem);
         }
-        popupMenu.add(fontSizeMenu);
+        customStyleMenu.add(fontSizeMenu);
 
         JCheckBoxMenuItem boldMenu = new JCheckBoxMenuItem("Bold");
-        boldMenu.setSelected(subTabContainerHandler.isBold());
+        boldMenu.setSelected(currentSubTabContainerHandler.isBold());
         boldMenu.addActionListener(e -> {
-            subTabContainerHandler.toggleBold();
-            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+            currentSubTabContainerHandler.toggleBold();
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
         });
-        popupMenu.add(boldMenu);
+        customStyleMenu.add(boldMenu);
 
         JCheckBoxMenuItem italicMenu = new JCheckBoxMenuItem("Italic");
-        italicMenu.setSelected(subTabContainerHandler.isItalic());
+        italicMenu.setSelected(currentSubTabContainerHandler.isItalic());
         italicMenu.addActionListener(e -> {
-            subTabContainerHandler.toggleItalic();
-            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+            currentSubTabContainerHandler.toggleItalic();
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
         });
-        popupMenu.add(italicMenu);
+        customStyleMenu.add(italicMenu);
 
         JMenuItem colorMenu = new JMenuItem("Set Foreground Color");
         colorMenu.addActionListener(e -> {
@@ -217,8 +223,8 @@ public class SubTabActions {
                         break;
                 }
             }
-            //Color color = colorChooser.showDialog(colorMenu, "Change Color", subTabContainerHandler.getColor());
-            colorChooser.setColor(subTabContainerHandler.getColor());
+            //Color color = colorChooser.showDialog(colorMenu, "Change Color", currentSubTabContainerHandler.getColor());
+            colorChooser.setColor(currentSubTabContainerHandler.getColor());
             JDialog dialog = JColorChooser.createDialog(
                     sharedParameters.get_mainFrame(),
                     "Choose a Color",
@@ -228,11 +234,227 @@ public class SubTabActions {
                     null);
             dialog.setVisible(true);
             if (colorChooser.getColor() != null) {
-                subTabContainerHandler.setColor(colorChooser.getColor());
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
+                currentSubTabContainerHandler.setColor(colorChooser.getColor());
+                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
             }
         });
-        popupMenu.add(colorMenu);
+        customStyleMenu.add(colorMenu);
+        popupMenu.add(customStyleMenu);
+
+        JMenuItem pasteStyleSearchTitleMenu = new JMenuItem("Paste Style by Title RegEx Search");
+        if (sharedParameters.copiedTabFeaturesObjectStyle == null) {
+            pasteStyleSearchTitleMenu.setEnabled(false);
+        }
+        pasteStyleSearchTitleMenu.addActionListener(e -> {
+            if (sharedParameters.copiedTabFeaturesObjectStyle != null) {
+                //currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
+                String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression:", "Search in titles and replace their style", sharedParameters.searchedTabTitleForPasteStyle, sharedParameters.get_mainFrame());
+                if (!titleKeyword.isEmpty()) {
+                    if (Utilities.isValidRegExPattern(titleKeyword)) {
+                        sharedParameters.searchedTabTitleForPasteStyle = titleKeyword;
+                        ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
+                        for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
+                            String subTabTitle = subTabContainerHandlerItem.getTabTitle();
+                            if (Pattern.compile(titleKeyword).matcher(subTabTitle).find()) {
+                                subTabContainerHandlerItem.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
+                            }
+                        }
+                        sharedParameters.allSettings.subTabSettings.saveSettings();
+                        sharedParameters.printDebugMessages("Style pasted in titles which matched: " + titleKeyword);
+                    } else {
+                        UIHelper.showWarningMessage("Regular expression was invalid.", sharedParameters.get_mainFrame());
+                        sharedParameters.printlnError("invalid regex: " + titleKeyword);
+                    }
+                }
+
+            }
+        });
+        popupMenu.add(pasteStyleSearchTitleMenu);
+
+        popupMenu.addSeparator();
+
+        JMenuItem copyTitleMenu = new JMenuItem("Copy Title");
+        copyTitleMenu.addActionListener(e -> {
+            String tabTitle = currentSubTabContainerHandler.getTabTitle();
+            tabTitle = tabTitle.replaceAll("(?<=[^\\s])\\s+#\\d+\\s*$", "");
+            sharedParameters.copiedTabTitle = tabTitle;
+            sharedParameters.printDebugMessages("Title copied...");
+        });
+        popupMenu.add(copyTitleMenu);
+
+        JMenuItem pasteTitleMenu = new JMenuItem("Paste Title");
+        if (sharedParameters.copiedTabTitle.isEmpty()) {
+            pasteTitleMenu.setEnabled(false);
+        } else {
+            pasteTitleMenu.setText("Paste Title (" + sharedParameters.copiedTabTitle + ")");
+        }
+
+        pasteTitleMenu.addActionListener(e -> {
+            if (!sharedParameters.copiedTabTitle.isEmpty()) {
+                currentSubTabContainerHandler.setTabTitle(sharedParameters.copiedTabTitle);
+                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
+                sharedParameters.printDebugMessages("Title pasted...");
+            }
+        });
+        popupMenu.add(pasteTitleMenu);
+
+
+        popupMenu.addSeparator();
+
+        JMenuItem jumpToFirstTabMenu = new JMenuItem("Jump to First Tab");
+        if (currentSubTabContainerHandler.getTabIndex() == 0) {
+            jumpToFirstTabMenu.setEnabled(false);
+        }
+
+        jumpToFirstTabMenu.addActionListener(e -> {
+            currentSubTabContainerHandler.tabbedPane.setSelectedIndex(0);
+        });
+        popupMenu.add(jumpToFirstTabMenu);
+
+        JMenuItem jumpToLastTabMenu = new JMenuItem("Jump to Last Tab");
+        if (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.tabbedPane.getTabCount() - 2) {
+            jumpToLastTabMenu.setEnabled(false);
+        }
+
+        jumpToLastTabMenu.addActionListener(e -> {
+            currentSubTabContainerHandler.tabbedPane.setSelectedIndex(currentSubTabContainerHandler.tabbedPane.getTabCount() - 2);
+        });
+        popupMenu.add(jumpToLastTabMenu);
+
+
+        JMenu searchAndJumpMenu = new JMenu("Title RegEx Search & Jump to Tab");
+        JMenuItem jumpToFirstTabByTitleMenu = new JMenuItem("Find (case-sensitive)");
+
+        jumpToFirstTabByTitleMenu.addActionListener(e -> {
+            String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression (case-sensitive):", "Search in titles and jump to tab", sharedParameters.searchedTabTitleForJumpToTab, sharedParameters.get_mainFrame());
+            if (!titleKeyword.isEmpty()) {
+                boolean result = false;
+                if (Utilities.isValidRegExPattern(titleKeyword)) {
+                    sharedParameters.searchedTabTitleForJumpToTab = titleKeyword;
+                    ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
+                    for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
+                        String subTabTitle = subTabContainerHandlerItem.getTabTitle();
+                        if (Pattern.compile(titleKeyword).matcher(subTabTitle).find()) {
+                            subTabContainerHandlerItem.tabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
+                            result = true;
+                            break;
+                        }
+                    }
+                    if (result) {
+                        sharedParameters.printDebugMessages("Jumped to first title which matched: " + titleKeyword);
+                    } else {
+                        sharedParameters.printDebugMessages("No title matched: " + titleKeyword);
+                    }
+
+                } else {
+                    UIHelper.showWarningMessage("Regular expression was invalid.", sharedParameters.get_mainFrame());
+                    sharedParameters.printlnError("invalid regex: " + titleKeyword);
+                }
+            }
+        });
+        searchAndJumpMenu.add(jumpToFirstTabByTitleMenu);
+
+        JMenuItem jumpToNextTabByTitleMenu = new JMenuItem("Next");
+        if (sharedParameters.searchedTabTitleForJumpToTab.isEmpty() || (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.tabbedPane.getTabCount() - 2)) {
+            jumpToNextTabByTitleMenu.setEnabled(false);
+        } else {
+            jumpToNextTabByTitleMenu.setText("Next - Search for: " + sharedParameters.searchedTabTitleForJumpToTab);
+        }
+
+        jumpToNextTabByTitleMenu.addActionListener(e -> {
+            if (!sharedParameters.searchedTabTitleForJumpToTab.isEmpty()) {
+                boolean result = false;
+                ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
+                for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
+                    if (subTabContainerHandlerItem.getTabIndex() > currentSubTabContainerHandler.getTabIndex()) {
+                        String subTabTitle = subTabContainerHandlerItem.getTabTitle();
+                        if (Pattern.compile(sharedParameters.searchedTabTitleForJumpToTab).matcher(subTabTitle).find()) {
+                            subTabContainerHandlerItem.tabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
+                            result = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (result) {
+                    sharedParameters.printDebugMessages("Next matched title was found");
+                } else {
+                    sharedParameters.printDebugMessages("No new next match was found");
+                }
+                sharedParameters.printDebugMessages("Jumped to a next title which matched: " + sharedParameters.searchedTabTitleForJumpToTab);
+            }
+        });
+        searchAndJumpMenu.add(jumpToNextTabByTitleMenu);
+
+        JMenuItem jumpToPreviousTabByTitleMenu = new JMenuItem("Previous");
+        if (sharedParameters.searchedTabTitleForJumpToTab.isEmpty() || (currentSubTabContainerHandler.getTabIndex() == 0)) {
+            jumpToPreviousTabByTitleMenu.setEnabled(false);
+        } else {
+            jumpToPreviousTabByTitleMenu.setText("Previous - Search for: " + sharedParameters.searchedTabTitleForJumpToTab);
+        }
+
+        jumpToPreviousTabByTitleMenu.addActionListener(e -> {
+            if (!sharedParameters.searchedTabTitleForJumpToTab.isEmpty()) {
+                boolean result = false;
+                ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
+                for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
+                    if (subTabContainerHandlerItem.getTabIndex() < currentSubTabContainerHandler.getTabIndex()) {
+                        String subTabTitle = subTabContainerHandlerItem.getTabTitle();
+                        if (Pattern.compile(sharedParameters.searchedTabTitleForJumpToTab).matcher(subTabTitle).find()) {
+                            subTabContainerHandlerItem.tabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
+                            result = true;
+                            break;
+                        }
+                    }
+                }
+                if (result) {
+                    sharedParameters.printDebugMessages("Previous matched title was found");
+                } else {
+                    sharedParameters.printDebugMessages("No new previous match was found");
+                }
+
+                sharedParameters.printDebugMessages("Jumped to a previous title which matched: " + sharedParameters.searchedTabTitleForJumpToTab);
+            }
+        });
+        searchAndJumpMenu.add(jumpToPreviousTabByTitleMenu);
+
+        popupMenu.add(searchAndJumpMenu);
+
+        BurpUITools.MainTabs tool = currentSubTabContainerHandler.currentToolTab;
+
+        JCheckBoxMenuItem toolSubTabPaneScrollableLayout = new JCheckBoxMenuItem("Scrollable " + tool.toString() + " Tabs");
+        if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
+            toolSubTabPaneScrollableLayout.setSelected(true);
+        }
+
+        toolSubTabPaneScrollableLayout.addActionListener((e) -> {
+            boolean isToolSubTabPaneScrollable = sharedParameters.preferences.getSetting("isScrollable_" + tool.toString());
+            if (isToolSubTabPaneScrollable) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        new Thread(() -> {
+                            sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                        }).start();
+                    }
+                });
+                sharedParameters.allSettings.saveSettings("isScrollable_" + tool.toString(), false);
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        new Thread(() -> {
+                            sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                        }).start();
+                    }
+                });
+                sharedParameters.allSettings.saveSettings("isScrollable_" + tool.toString(), true);
+            }
+        });
+
+        popupMenu.add(toolSubTabPaneScrollableLayout);
+
+
         return popupMenu;
     }
 }
