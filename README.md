@@ -5,6 +5,13 @@ This extension should add a number of UI and functional features to Burp Suite t
 * Making main tools' tabs more distinguishable by choosing a theme
 * Ability to control style of sub-tabs in Repeater and Intruder
 * Ability to change Burp Suite title and its icon
+* Copy & pasting style ability for Repeater and Intruder tabs
+* Pasting style for Repeater and Intruder tabs when their title matches a Regular Expression
+* Copy & pasting titles by creating unique titles by adding a number in the end
+* Jump to first and last tabs in Repeater and Intruder
+* Finding Repeater and Intruder tabs when their title matches a Regular Expression
+* Scrollable main tool tabs
+* Scrollable Repeater and Intruder tabs
 
 # Suggesting New Features
 The plan is to add simple but missing features to this single extension to make it a must-have companion when using Burp.
