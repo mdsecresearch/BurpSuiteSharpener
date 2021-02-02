@@ -101,21 +101,21 @@ public class BurpExtensionSharedParameters {
         _isUILoaded = foundUI;
     }
 
-    public void printDebugMessages(String message, String note, boolean alreadyPrinted){
+    public void printDebugMessages(String message, String note, boolean alreadyPrinted) {
         if (isDebug) {
             String fullMessage = "DEBUG->\r\n\tNote: " + note + "\r\n\tMessage: " + message;
             System.out.println(fullMessage);
-            if(!alreadyPrinted){
+            if (!alreadyPrinted) {
                 this.stdout.println(fullMessage);
             }
         }
     }
 
-    public void printDebugMessages(String message){
+    public void printDebugMessages(String message) {
         if (isDebug) {
             StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
             String methods = "\t\t";
-            for(int i=2; i < stackTraceElements.length; i++){
+            for (int i = 2; i < stackTraceElements.length; i++) {
                 methods += stackTraceElements[i] + " <- ";
             }
             printDebugMessages(message, methods, false);

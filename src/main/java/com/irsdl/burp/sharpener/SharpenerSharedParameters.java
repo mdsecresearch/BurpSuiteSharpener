@@ -25,6 +25,9 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
     public SubTabContainerHandler defaultSubTabObject = null;
     public SharpenerGeneralSettings allSettings;
     public TabFeaturesObjectStyle copiedTabFeaturesObjectStyle;
+    public String copiedTabTitle = "";
+    public String searchedTabTitleForPasteStyle = "";
+    public String searchedTabTitleForJumpToTab = "";
 
     public SharpenerSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, IBurpExtender burpExtenderObj, IBurpExtenderCallbacks callbacks) {
         super(version, extensionName, extensionURL, extensionIssueTracker, burpExtenderObj, callbacks);
