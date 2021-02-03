@@ -445,6 +445,16 @@ public class SubTabActions {
                     public void run() {
                         new Thread(() -> {
                             sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                            new java.util.Timer().schedule(
+                                    new java.util.TimerTask() {
+                                        @Override
+                                        public void run() {
+                                            currentSubTabContainerHandler.tabbedPane.setSelectedIndex(0);
+                                            currentSubTabContainerHandler.tabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex());
+                                        }
+                                    },
+                                    1000
+                            );
                         }).start();
                     }
                 });

@@ -143,9 +143,8 @@ public class BurpExtensionSharedParameters {
     }
 
     public void resetAllSettings() {
-        // There is a bug that does not delete the Project settings so we cannot rely on this:
-        //HashMap<String, Preferences.Visibility> registeredSettings = preferences.getRegisteredSettings();
-        //preferences.resetSettings(registeredSettings.keySet());
+        // A bug in resetting settings in BurpExtenderUtilities should be fixed so we will give it another chance instead of using this method
+        // preferences.resetAllSettings();
 
         HashMap<String, Preferences.Visibility> registeredSettings = preferences.getRegisteredSettings();
         for (String item : registeredSettings.keySet()) {
@@ -154,6 +153,7 @@ public class BurpExtensionSharedParameters {
             else
                 preferences.setSetting(item, null);
         }
+
     }
 
     public JFrame get_mainFrame() {

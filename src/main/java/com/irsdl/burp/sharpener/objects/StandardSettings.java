@@ -64,6 +64,8 @@ public abstract class StandardSettings {
                     }
                 }
 
+                /*
+                // As Corey's preferences.resetSetting has a new patch, we are going to give it the responsibility to clear everything above
                 try {
                     sharedParameters.preferences.setSetting(settingName, null);// to resolve a bug in saving in sitemap when values are similar
                 } catch (Exception e1) {
@@ -78,6 +80,7 @@ public abstract class StandardSettings {
                         }
                     }
                 }
+                */
             }
 
             try {
