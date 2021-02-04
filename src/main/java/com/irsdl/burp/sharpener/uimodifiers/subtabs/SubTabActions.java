@@ -428,8 +428,7 @@ public class SubTabActions {
         }
 
         toolSubTabPaneScrollableLayout.addActionListener((e) -> {
-            boolean isToolSubTabPaneScrollable = sharedParameters.preferences.getSetting("isScrollable_" + tool.toString());
-            if (isToolSubTabPaneScrollable) {
+            if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

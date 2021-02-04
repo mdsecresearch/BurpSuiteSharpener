@@ -30,7 +30,7 @@ public class SharpenerGeneralSettings extends StandardSettings {
     }
 
     @Override
-    public void loadSettings() {
+    public synchronized void loadSettings() {
         // reattaching related tools before working on them!
         if (BurpUITools.reattachTools(sharedParameters.subTabWatcherSupportedTabs, sharedParameters.get_mainMenuBar())) {
             try {

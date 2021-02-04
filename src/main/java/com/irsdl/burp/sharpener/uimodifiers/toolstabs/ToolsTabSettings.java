@@ -44,7 +44,7 @@ public class ToolsTabSettings extends StandardSettings {
     }
 
     @Override
-    public void loadSettings() {
+    public synchronized void loadSettings() {
         sharedParameters.printDebugMessages("loadSettings");
         ToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
     }

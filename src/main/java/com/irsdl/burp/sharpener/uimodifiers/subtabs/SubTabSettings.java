@@ -44,7 +44,7 @@ public class SubTabSettings extends StandardSettings {
     }
 
     @Override
-    public void loadSettings() {
+    public synchronized void loadSettings() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -52,9 +52,7 @@ public class SubTabSettings extends StandardSettings {
                     sharedParameters.printDebugMessages("loadSettings");
                     updateAllSubTabContainerHandlersObj();
                     for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
-
-                        boolean isToolSubTabPaneScrollable = sharedParameters.preferences.getSetting("isScrollable_" + tool.toString());
-                        if (isToolSubTabPaneScrollable) {
+                        if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
                             sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
                         }
 
@@ -75,7 +73,7 @@ public class SubTabSettings extends StandardSettings {
         });
     }
 
-    public void updateAllSubTabContainerHandlersObj() {
+    public synchronized void updateAllSubTabContainerHandlersObj() {
         sharedParameters.printDebugMessages("updateAllSubTabContainerHandlersObj");
         for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
             if (sharedParameters.allSubTabContainerHandlers.get(tool) == null) {
@@ -119,9 +117,7 @@ public class SubTabSettings extends StandardSettings {
                 new Thread(() -> {
                     sharedParameters.printDebugMessages("unsetSubTabsStyle");
                     for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
-
-                        boolean isToolSubTabPaneScrollable = sharedParameters.preferences.getSetting("isScrollable_" + tool.toString());
-                        if (isToolSubTabPaneScrollable) {
+                        if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
                             sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
                         }
 
@@ -143,7 +139,7 @@ public class SubTabSettings extends StandardSettings {
         });
     }
 
-    public void prepareAndSaveSettings(SubTabContainerHandler subTabContainerHandler) {
+    public synchronized void prepareAndSaveSettings(SubTabContainerHandler subTabContainerHandler) {
         sharedParameters.printDebugMessages("prepareAndSaveSettings");
 
         // save the changed tabs ...
@@ -173,7 +169,7 @@ public class SubTabSettings extends StandardSettings {
         saveSettings();
     }
 
-    public void saveSettings() {
+    public synchronized void saveSettings() {
         sharedParameters.printDebugMessages("saveSettings");
 
         for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
