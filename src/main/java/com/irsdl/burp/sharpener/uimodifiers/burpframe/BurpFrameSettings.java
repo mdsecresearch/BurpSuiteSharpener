@@ -40,7 +40,7 @@ public class BurpFrameSettings extends StandardSettings {
     }
 
     @Override
-    public void loadSettings() {
+    public synchronized void loadSettings() {
         sharedParameters.printDebugMessages("loadSettings");
 
         String newTitle = sharedParameters.preferences.getSetting("BurpTitle");

@@ -14,6 +14,8 @@ import com.coreyd97.BurpExtenderUtilities.Preferences;
 import javax.swing.*;
 import java.awt.*;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 
 public class BurpExtensionSharedParameters {
@@ -101,9 +103,11 @@ public class BurpExtensionSharedParameters {
         _isUILoaded = foundUI;
     }
 
+
     public void printDebugMessages(String message, String note, boolean alreadyPrinted) {
         if (isDebug) {
-            String fullMessage = "DEBUG->\r\n\tNote: " + note + "\r\n\tMessage: " + message;
+            String strDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+            String fullMessage = "DEBUG->\r\n\tNote: " + note + " - Timestamp: " + strDate +"\r\n\tMessage: " + message;
             System.out.println(fullMessage);
             if (!alreadyPrinted) {
                 this.stdout.println(fullMessage);
@@ -143,9 +147,8 @@ public class BurpExtensionSharedParameters {
     }
 
     public void resetAllSettings() {
-        // There is a bug that does not delete the Project settings so we cannot rely on this:
-        //HashMap<String, Preferences.Visibility> registeredSettings = preferences.getRegisteredSettings();
-        //preferences.resetSettings(registeredSettings.keySet());
+        // A bug in resetting settings in BurpExtenderUtilities should be fixed so we will give it another chance instead of using this method
+        // preferences.resetAllSettings();
 
         HashMap<String, Preferences.Visibility> registeredSettings = preferences.getRegisteredSettings();
         for (String item : registeredSettings.keySet()) {
@@ -154,6 +157,7 @@ public class BurpExtensionSharedParameters {
             else
                 preferences.setSetting(item, null);
         }
+
     }
 
     public JFrame get_mainFrame() {

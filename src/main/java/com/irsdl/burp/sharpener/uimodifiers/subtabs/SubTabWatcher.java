@@ -24,9 +24,8 @@ import java.util.function.Consumer;
 public class SubTabWatcher implements ContainerListener {
     private final Consumer<MouseEvent> mouseEventConsumer;
     private final SharpenerSharedParameters sharedParameters;
-    private boolean isUpdateInProgress = false;
+    private boolean _isUpdateInProgress = false;
     private PropertyChangeListener tabPropertyChangeListener;
-    private PropertyChangeListener subTabPropertyChangeListener;
     private ArrayList<BurpUITools.MainTabs> accessibleTabs;
 
     public SubTabWatcher(SharpenerSharedParameters sharedParameters, Consumer<MouseEvent> mouseEventConsumer) {
@@ -111,16 +110,15 @@ public class SubTabWatcher implements ContainerListener {
         tabPropertyChangeListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (!isUpdateInProgress && evt.getPropertyName().equalsIgnoreCase("indexForTabComponent")) {
+                if (!is_isUpdateInProgress() && evt.getPropertyName().equalsIgnoreCase("indexForTabComponent")) {
                     // this is a dirty hack to keep the colours as they go black after drag and drop!
-                    isUpdateInProgress = true;
                     new java.util.Timer().schedule(
                             new java.util.TimerTask() {
                                 @Override
                                 public void run() {
                                     sharedParameters.allSettings.subTabSettings.loadSettings();
                                     sharedParameters.allSettings.subTabSettings.saveSettings();
-                                    isUpdateInProgress = false;
+                                    set_isUpdateInProgress(false);
                                 }
                             },
                             500
@@ -129,7 +127,7 @@ public class SubTabWatcher implements ContainerListener {
             }
         };
 
-        tabComponent.addPropertyChangeListener(tabPropertyChangeListener);
+        tabComponent.addPropertyChangeListener("indexForTabComponent", tabPropertyChangeListener);
     }
 
     @Override
@@ -149,12 +147,30 @@ public class SubTabWatcher implements ContainerListener {
 
         accessibleTabs.add(componentTitle);
 
+        // as there is no other PropertyChangeListener with propertyName of "indexForTabComponent" by default, we can remove them all
+        PropertyChangeListener[] pclArray = tabComponent.getPropertyChangeListeners("indexForTabComponent");
+        for(PropertyChangeListener pcl:pclArray){
+            tabComponent.removePropertyChangeListener("indexForTabComponent", pcl);
+        }
+
         for (MouseListener mouseListener : tabComponent.getMouseListeners()) {
             if (mouseListener instanceof SubTabClickHandler) {
                 tabComponent.removeMouseListener(mouseListener);
             }
         }
 
-        tabComponent.removePropertyChangeListener(tabPropertyChangeListener);
+
+    }
+
+    private synchronized void set_isUpdateInProgress(boolean _isUpdateInProgress) {
+        this._isUpdateInProgress = _isUpdateInProgress;
+    }
+
+    private synchronized boolean is_isUpdateInProgress() {
+        boolean result = _isUpdateInProgress;
+        if(!result){
+            _isUpdateInProgress = true;
+        }
+        return result;
     }
 }

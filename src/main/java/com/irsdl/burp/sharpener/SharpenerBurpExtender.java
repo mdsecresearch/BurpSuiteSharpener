@@ -26,7 +26,7 @@ import java.beans.PropertyChangeListener;
 
 public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
     //public static MainExtensionClass instance;
-    private String version = "1.03";
+    private String version = "1.04";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;

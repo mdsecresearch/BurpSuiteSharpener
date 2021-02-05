@@ -263,7 +263,10 @@ public class TopMenuBar extends javax.swing.JMenu {
                         public void actionPerformed(ActionEvent actionEvent) {
                             int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset All Settings & Unload", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
                             if (response == 0) {
-                                TopMenuBar.this.sharedParameters.resetAllSettings();
+
+                                // A bug in resetting settings in BurpExtenderUtilities should be fixed so we will give it another chance instead of using a workaround
+                                // TopMenuBar.this.sharedParameters.resetAllSettings();
+                                TopMenuBar.this.sharedParameters.preferences.resetAllSettings();
                                 TopMenuBar.this.sharedParameters.callbacks.unloadExtension();
                             }
                         }

@@ -428,8 +428,7 @@ public class SubTabActions {
         }
 
         toolSubTabPaneScrollableLayout.addActionListener((e) -> {
-            boolean isToolSubTabPaneScrollable = sharedParameters.preferences.getSetting("isScrollable_" + tool.toString());
-            if (isToolSubTabPaneScrollable) {
+            if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -445,6 +444,16 @@ public class SubTabActions {
                     public void run() {
                         new Thread(() -> {
                             sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                            new java.util.Timer().schedule(
+                                    new java.util.TimerTask() {
+                                        @Override
+                                        public void run() {
+                                            currentSubTabContainerHandler.tabbedPane.setSelectedIndex(0);
+                                            currentSubTabContainerHandler.tabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex());
+                                        }
+                                    },
+                                    1000
+                            );
                         }).start();
                     }
                 });
