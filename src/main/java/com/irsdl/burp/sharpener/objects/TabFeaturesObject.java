@@ -7,7 +7,6 @@
 package com.irsdl.burp.sharpener.objects;
 
 import java.awt.*;
-import java.io.Serializable;
 
 public class TabFeaturesObject extends TabFeaturesObjectStyle {
     public int index;

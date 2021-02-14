@@ -20,6 +20,28 @@ public class SubTabClickHandler extends MouseAdapter {
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        //this.mouseEventConsumer.accept(e);
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        //
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        // we can use mousePressed or mouseReleased instead of mouseClicked to detect a click when tabs were wrapped
+        // mouseReleased has been used to show the menu in the right place when tabs were wrapped
         this.mouseEventConsumer.accept(e);
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        //
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        //
     }
 }

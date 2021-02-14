@@ -8,6 +8,8 @@ package com.irsdl.burp.generic;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.Set;
 
 public class BurpUITools {
@@ -82,7 +84,7 @@ public class BurpUITools {
     }
 
     // This is case insensitive to prevent confusion
-    public static void removeMenubarByName(String toolbarName, JMenuBar menuBar) {
+    public static void removeMenubarByName(String toolbarName, JMenuBar menuBar, boolean repaintUI) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -94,8 +96,11 @@ public class BurpUITools {
                             // break; // we may have more than one menu so this line needs to be commented
                         }
                     }
-                    menuBar.revalidate();
-                    menuBar.repaint();
+
+                    if (repaintUI) {
+                        menuBar.revalidate();
+                        menuBar.repaint();
+                    }
                 }).start();
             }
         });
@@ -173,5 +178,39 @@ public class BurpUITools {
             }
         }
         return result;
+    }
+
+    public static void addMouseWheelToJTabbedPane(JTabbedPane jTabbedPane, boolean isLastOneSelectable) {
+        // from https://stackoverflow.com/questions/38463047/use-mouse-to-scroll-through-tabs-in-jtabbedpane
+        MouseWheelListener mwl = new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                int offset = 0;
+                if (!isLastOneSelectable)
+                    offset = 1;
+
+                JTabbedPane pane = (JTabbedPane) e.getSource();
+                int units = e.getWheelRotation();
+                int oldIndex = pane.getSelectedIndex();
+                int newIndex = oldIndex + units;
+                if (newIndex < 0)
+                    pane.setSelectedIndex(0);
+                else if (newIndex >= pane.getTabCount() - offset)
+                    pane.setSelectedIndex(pane.getTabCount() - 1 - offset);
+                else
+                    pane.setSelectedIndex(newIndex);
+            }
+        };
+        jTabbedPane.addMouseWheelListener(mwl);
+    }
+
+    public static void removeMouseWheelFromJTabbedPane(JTabbedPane jTabbedPane, boolean onlyRemoveLast) {
+        MouseWheelListener[] mwlArr = jTabbedPane.getMouseWheelListeners();
+        for (int i = mwlArr.length - 1; i >= 0; i--) {
+            jTabbedPane.removeMouseWheelListener(mwlArr[i]);
+            if (onlyRemoveLast) {
+                break;
+            }
+        }
     }
 }

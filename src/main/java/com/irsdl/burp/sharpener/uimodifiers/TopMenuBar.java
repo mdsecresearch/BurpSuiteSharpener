@@ -6,14 +6,10 @@
 
 package com.irsdl.burp.sharpener.uimodifiers;
 
-import com.coreyd97.BurpExtenderUtilities.Preferences;
-import com.google.gson.reflect.TypeToken;
 import com.irsdl.burp.generic.BurpTitleAndIcon;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerBurpExtender;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
-import com.irsdl.burp.sharpener.objects.PreferenceObject;
-import com.irsdl.burp.sharpener.objects.TabFeaturesObject;
 import com.irsdl.burp.sharpener.uimodifiers.toolstabs.ToolsTabStyleHandler;
 import com.irsdl.generic.UIHelper;
 
@@ -24,7 +20,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.net.URI;
-import java.util.HashMap;
 
 
 public class TopMenuBar extends javax.swing.JMenu {
@@ -275,6 +270,22 @@ public class TopMenuBar extends javax.swing.JMenu {
                     add(resetAllSettings);
                     addSeparator();
 
+                    JCheckBoxMenuItem checkForUpdateOption = new JCheckBoxMenuItem("Check for Update on Start");
+                    if ((boolean) sharedParameters.preferences.getSetting("checkForUpdate")) {
+                        checkForUpdateOption.setSelected(true);
+                    }
+
+                    checkForUpdateOption.addActionListener((e) -> {
+                        if ((boolean) sharedParameters.preferences.getSetting("checkForUpdate")) {
+                            sharedParameters.allSettings.saveSettings("checkForUpdate", false);
+                        } else {
+                            sharedParameters.allSettings.saveSettings("checkForUpdate", true);
+                            SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
+                            sharpenerBurpExtender.checkForUpdate();
+                        }
+                    });
+                    add(checkForUpdateOption);
+
                     JMenuItem showProjectPage = new JMenuItem(new AbstractAction("Project Page") {
                         @Override
                         public void actionPerformed(ActionEvent actionEvent) {
@@ -330,7 +341,7 @@ public class TopMenuBar extends javax.swing.JMenu {
             public void run() {
                 new Thread(() -> {
                     //removeTopMenuBar(); // this has been disabled as invoke later may mean that the menu may be removed after it is being updated!
-                    removeTopMenuBarLastResort(sharedParameters);
+                    removeTopMenuBarLastResort(sharedParameters, true);
                     sharedParameters.allSettings.toolsTabSettings.loadSettings(); // this is to reflect the changes in the UI
                     topMenuForExtension = new TopMenuBar(sharedParameters);
                     addTopMenuBar();
@@ -375,12 +386,12 @@ public class TopMenuBar extends javax.swing.JMenu {
 
     }
 
-    public static void removeTopMenuBarLastResort(SharpenerSharedParameters sharedParameters) {
+    public static void removeTopMenuBarLastResort(SharpenerSharedParameters sharedParameters, boolean repaintUI) {
         if (BurpUITools.isMenubarLoaded(sharedParameters.extensionName, sharedParameters.get_mainMenuBar())) {
             // so the menu is there!
             try {
                 sharedParameters.printDebugMessages("removing the menu bar the dirty way!");
-                BurpUITools.removeMenubarByName(sharedParameters.extensionName, sharedParameters.get_mainMenuBar());
+                BurpUITools.removeMenubarByName(sharedParameters.extensionName, sharedParameters.get_mainMenuBar(), repaintUI);
             } catch (Exception e) {
                 sharedParameters.printlnError("Error in removing the top menu the dirty way: " + e.getMessage());
             }
@@ -399,7 +410,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                         sharedParameters.stderr.println("Error in removing the top menu: " + e.getMessage());
                     }
                     // just in case the above did not work
-                    removeTopMenuBarLastResort(sharedParameters);
+                    removeTopMenuBarLastResort(sharedParameters, false);
 
                     sharedParameters.get_mainMenuBar().revalidate();
                     sharedParameters.get_mainMenuBar().repaint();
