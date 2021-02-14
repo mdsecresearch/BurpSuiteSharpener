@@ -45,7 +45,7 @@ public class BurpExtensionSharedParameters {
     }
 
 
-    public String version = "0.0";
+    public String version = "0.0"; // we need to keep this a double number to make sure check for update can work
     public String extensionName = "MyExtension";
     public String extensionURL = "https://github.com/user/proj";
     public String extensionIssueTracker = "https://github.com/user/proj/issues";
@@ -107,7 +107,7 @@ public class BurpExtensionSharedParameters {
     public void printDebugMessages(String message, String note, boolean alreadyPrinted) {
         if (isDebug) {
             String strDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
-            String fullMessage = "DEBUG->\r\n\tNote: " + note + " - Timestamp: " + strDate +"\r\n\tMessage: " + message;
+            String fullMessage = "DEBUG->\r\n\tNote: " + note + " - Timestamp: " + strDate + "\r\n\tMessage: " + message;
             System.out.println(fullMessage);
             if (!alreadyPrinted) {
                 this.stdout.println(fullMessage);

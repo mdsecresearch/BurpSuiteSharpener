@@ -6,6 +6,7 @@
 
 package com.irsdl.burp.sharpener;
 
+import com.coreyd97.BurpExtenderUtilities.Preferences;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.objects.PreferenceObject;
 import com.irsdl.burp.sharpener.objects.StandardSettings;
@@ -13,6 +14,7 @@ import com.irsdl.burp.sharpener.uimodifiers.burpframe.BurpFrameSettings;
 import com.irsdl.burp.sharpener.uimodifiers.subtabs.SubTabSettings;
 import com.irsdl.burp.sharpener.uimodifiers.toolstabs.ToolsTabSettings;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class SharpenerGeneralSettings extends StandardSettings {
@@ -26,7 +28,19 @@ public class SharpenerGeneralSettings extends StandardSettings {
 
     @Override
     public Collection<PreferenceObject> definePreferenceObjectCollection() {
-        return null;
+        Collection<PreferenceObject> preferenceObjectCollection = new ArrayList<>();
+
+        try {
+            PreferenceObject preferenceObject = new PreferenceObject("checkForUpdate", boolean.class, false, Preferences.Visibility.GLOBAL);
+            preferenceObjectCollection.add(preferenceObject);
+        } catch (Exception e) {
+            //already registered setting
+            sharedParameters.printDebugMessages(e.getMessage());
+        }
+
+        return preferenceObjectCollection;
+
+
     }
 
     @Override
@@ -45,5 +59,10 @@ public class SharpenerGeneralSettings extends StandardSettings {
         burpFrameSettings = new BurpFrameSettings(sharedParameters);
         toolsTabSettings = new ToolsTabSettings(sharedParameters);
         subTabSettings = new SubTabSettings(sharedParameters);
+
+        if ((boolean) sharedParameters.preferences.getSetting("checkForUpdate")) {
+            SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
+            sharpenerBurpExtender.checkForUpdate();
+        }
     }
 }

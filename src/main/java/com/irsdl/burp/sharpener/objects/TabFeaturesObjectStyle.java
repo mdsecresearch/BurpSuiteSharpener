@@ -6,8 +6,6 @@
 
 package com.irsdl.burp.sharpener.objects;
 
-import com.irsdl.burp.sharpener.uimodifiers.subtabs.SubTabContainerHandler;
-
 import java.awt.*;
 import java.io.Serializable;
 
