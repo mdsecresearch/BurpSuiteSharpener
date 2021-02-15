@@ -23,6 +23,8 @@ import java.util.HashMap;
 
 public class SubTabSettings extends StandardSettings {
 
+    boolean isFirstLoad = true;
+
     public SubTabSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
         sharedParameters.printDebugMessages("SubTabSettings");
@@ -38,6 +40,9 @@ public class SubTabSettings extends StandardSettings {
 
             PreferenceObject preferenceObject_isScrollable_Tab = new PreferenceObject("isScrollable_" + tool.toString(), Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
             preferenceObjectCollection.add(preferenceObject_isScrollable_Tab);
+
+            PreferenceObject preferenceObject_mouseWheelToScroll_Tab = new PreferenceObject("mouseWheelToScroll_" + tool.toString(), Boolean.TYPE, true, Preferences.Visibility.GLOBAL);
+            preferenceObjectCollection.add(preferenceObject_mouseWheelToScroll_Tab);
         }
 
         return preferenceObjectCollection;
@@ -52,9 +57,16 @@ public class SubTabSettings extends StandardSettings {
                     sharedParameters.printDebugMessages("loadSettings");
                     updateAllSubTabContainerHandlersObj();
                     for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
-                        if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
-                            sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                        if (isFirstLoad) {
+                            if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
+                                sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                            }
+
+                            if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
+                                BurpUITools.addMouseWheelToJTabbedPane(sharedParameters.get_toolTabbedPane(tool), false);
+                            }
                         }
+
 
                         HashMap<String, TabFeaturesObject> tabFeaturesObjectsHashMap = sharedParameters.preferences.getSetting("TabFeaturesObject_Array_" + tool.toString().toLowerCase());
                         if (tabFeaturesObjectsHashMap != null && sharedParameters.supportedTools_SubTabs.get(tool) != null) {
@@ -68,6 +80,7 @@ public class SubTabSettings extends StandardSettings {
                             }
                         }
                     }
+                    isFirstLoad = false;
                 }).start();
             }
         });
@@ -119,6 +132,10 @@ public class SubTabSettings extends StandardSettings {
                     for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
                         if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
                             sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                        }
+
+                        if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
+                            BurpUITools.removeMouseWheelFromJTabbedPane(sharedParameters.get_toolTabbedPane(tool), true);
                         }
 
                         if (sharedParameters.supportedTools_SubTabs.get(tool) != null) {

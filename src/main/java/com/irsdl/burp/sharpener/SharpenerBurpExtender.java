@@ -22,11 +22,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URI;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
     //public static MainExtensionClass instance;
-    private String version = "1.04";
+    private String version = "1.05";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
@@ -49,7 +52,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
     public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
         //MainExtensionClass.instance = this;
         this.instance = this;
-        this.sharedParameters = new SharpenerSharedParameters(version, "Sharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener/", "https://github.com/mdsecresearch/BurpSuiteSharpener/issues", instance, callbacks);
+        this.sharedParameters = new SharpenerSharedParameters(version, "Sharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener/issues", instance, callbacks);
 
         // set our extension name
         callbacks.setExtensionName(sharedParameters.extensionName);
@@ -178,10 +181,8 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
         }
 
         if (sharedParameters.get_isUILoaded() && !anotherExist) {
-            sharedParameters.printDebugMessages("removing toolbar menu");
-            // removing toolbar menu
-            if (ttm != null)
-                ttm.removeTopMenuBar();
+            sharedParameters.printDebugMessages("removePropertyChangeListener: lookAndFeelPropChangeListener");
+            UIManager.removePropertyChangeListener(lookAndFeelPropChangeListener);
 
             sharedParameters.printDebugMessages("removing tab listener on tabs in Repeater and Intruder");
             // remove tab listener on tabs in Repeater and Intruder
@@ -201,11 +202,14 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
             // reset Burp title and icon
             BurpTitleAndIcon.resetTitleAndIcon(sharedParameters);
 
-            // removing the menu bar can be problematic so we need to check again
-            TopMenuBar.removeTopMenuBarLastResort(sharedParameters);
+            sharedParameters.printDebugMessages("removing toolbar menu");
+            // removing toolbar menu
+            if (ttm != null)
+                ttm.removeTopMenuBar();
 
-            sharedParameters.printDebugMessages("removePropertyChangeListener: lookAndFeelPropChangeListener");
-            UIManager.removePropertyChangeListener(lookAndFeelPropChangeListener);
+
+            // removing the menu bar can be problematic so we need to check again
+            //TopMenuBar.removeTopMenuBarLastResort(sharedParameters, true);
 
             /*
             // Burp goes to a deadlock when calling revalidate at this point
@@ -229,4 +233,58 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
         sharedParameters.printDebugMessages("UI changes have been removed.");
     }
 
+    public void checkForUpdate() {
+        // we need to see whether the extension is up to date by reading https://raw.githubusercontent.com/mdsecresearch/BurpSuiteSharpener/main/build.gradle
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean isError = true;
+                String rawRequest = "GET /mdsecresearch/BurpSuiteSharpener/main/build.gradle HTTP/1.1\r\nHOST: raw.githubusercontent.com\r\n\r\n";
+                byte[] buildgradleFile = sharedParameters.callbacks.makeHttpRequest("raw.githubusercontent.com", 443, true, rawRequest.getBytes());
+
+                if (buildgradleFile != null) {
+                    String buildgradleFileStr = new String(buildgradleFile);
+                    Pattern MY_PATTERN = Pattern.compile("version '([\\d\\.]+)");
+                    Matcher m = MY_PATTERN.matcher(buildgradleFileStr);
+                    if (m.find()) {
+                        String githubVersionStr = m.group(1);
+                        try {
+                            double currentVersion = Double.parseDouble(sharedParameters.version);
+                            double githubVersion = Double.parseDouble(githubVersionStr);
+
+                            if (githubVersion > currentVersion) {
+                                sharedParameters.printlnOutput(sharedParameters.extensionName + " is outdated. The latest version is: " + githubVersionStr);
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        int answer = UIHelper.askConfirmMessage("A new version of " + sharedParameters.extensionName + " is available", "Do you want to open the " + sharedParameters.extensionName + " project page to download the latest version?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                                        if (answer == 0) {
+                                            try {
+                                                Desktop.getDesktop().browse(new URI(sharedParameters.extensionURL + "/tree/main/release"));
+                                            } catch (Exception e) {
+                                                sharedParameters.printlnError(e.getMessage());
+                                            }
+                                        }
+                                    }
+                                }).start();
+
+                            } else if (currentVersion > githubVersion) {
+                                sharedParameters.printlnOutput(sharedParameters.extensionName + " is more than up to date; do you have a time machine?");
+                            } else {
+                                sharedParameters.printlnOutput(sharedParameters.extensionName + " is up to date");
+                            }
+                            isError = false;
+                        } catch (Exception e) {
+
+                        }
+                    }
+                }
+
+                if (isError) {
+                    sharedParameters.printDebugMessages("Could not check for update from https://raw.githubusercontent.com/mdsecresearch/BurpSuiteSharpener/main/build.gradle");
+                }
+            }
+
+        }).start();
+    }
 }

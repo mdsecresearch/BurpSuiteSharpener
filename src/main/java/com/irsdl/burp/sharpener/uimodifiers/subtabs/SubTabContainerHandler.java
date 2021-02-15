@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class SubTabContainerHandler {
-    public JTabbedPane tabbedPane;
+    public JTabbedPane parentTabbedPane;
     public Container currentTab;
     public Component currentTabLabel;
     public Component currentTabCloseButton;
@@ -39,7 +39,7 @@ public class SubTabContainerHandler {
     public SubTabContainerHandler(SharpenerSharedParameters sharedParameters, JTabbedPane tabbedPane, int tabIndex) {
         this.instance = this;
         this.sharedParameters = sharedParameters;
-        this.tabbedPane = tabbedPane;
+        this.parentTabbedPane = tabbedPane;
         Component currentTabTemp = tabbedPane.getTabComponentAt(tabIndex);
         if (!(currentTabTemp instanceof Container)) return; // this is not a container so it is not useful for us
 
@@ -148,7 +148,7 @@ public class SubTabContainerHandler {
 
     public boolean isValid() {
         boolean result = true;
-        if (tabbedPane == null || getTabIndex() == -1 || currentTab == null || currentTabLabel == null ||
+        if (parentTabbedPane == null || getTabIndex() == -1 || currentTab == null || currentTabLabel == null ||
                 currentTabCloseButton == null) {
             result = false;
         }
@@ -160,13 +160,13 @@ public class SubTabContainerHandler {
         if (sharedParameters.defaultSubTabObject == null) {
             for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
                 if (sharedParameters.supportedTools_SubTabs.get(tool) != null) {
-                    JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(tool);
-                    if (subTabbedPane != null) {
-                        for (Component tabComponent : subTabbedPane.getComponents()) {
-                            int subTabIndex = subTabbedPane.indexOfComponent(tabComponent);
+                    JTabbedPane toolTabbedPane = sharedParameters.get_toolTabbedPane(tool);
+                    if (toolTabbedPane != null) {
+                        for (Component tabComponent : toolTabbedPane.getComponents()) {
+                            int subTabIndex = toolTabbedPane.indexOfComponent(tabComponent);
                             if (subTabIndex == -1)
                                 continue;
-                            sharedParameters.defaultSubTabObject = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabbedPane.getTabCount() - 1);
+                            sharedParameters.defaultSubTabObject = new SubTabContainerHandler(sharedParameters, toolTabbedPane, toolTabbedPane.getTabCount() - 1);
                             break;
                         }
                     }
@@ -180,7 +180,7 @@ public class SubTabContainerHandler {
     public boolean isDefault() {
         boolean result = false;
         loadDefaultSetting();
-        if (getTabIndex() == tabbedPane.getTabCount() - 1 || sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle().equals(getTabFeaturesObjectStyle())) {
+        if (getTabIndex() == parentTabbedPane.getTabCount() - 1 || sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle().equals(getTabFeaturesObjectStyle())) {
             result = true;
         }
         return result;
@@ -196,8 +196,8 @@ public class SubTabContainerHandler {
 
         if (cachedTabTitles == null || !titleHistory.get(titleHistory.size() - 1).equals(getTabTitle())) {
             cachedTabTitles = new ArrayList<>();
-            for (int index = 0; index < tabbedPane.getTabCount() - 1; index++) {
-                cachedTabTitles.add(tabbedPane.getTitleAt(index));
+            for (int index = 0; index < parentTabbedPane.getTabCount() - 1; index++) {
+                cachedTabTitles.add(parentTabbedPane.getTitleAt(index));
             }
             if (!titleHistory.get(titleHistory.size() - 1).equals(getTabTitle()))
                 titleHistory.add(getTabTitle());
@@ -214,8 +214,8 @@ public class SubTabContainerHandler {
 
         if (cachedTabTitles == null || !titleHistory.get(titleHistory.size() - 1).equals(getTabTitle())) {
             cachedTabTitles = new ArrayList<>();
-            for (int index = 0; index < tabbedPane.getTabCount() - 1; index++) {
-                cachedTabTitles.add(tabbedPane.getTitleAt(index));
+            for (int index = 0; index < parentTabbedPane.getTabCount() - 1; index++) {
+                cachedTabTitles.add(parentTabbedPane.getTitleAt(index));
             }
             /*
             if (!titleHistory.get(titleHistory.size() - 1).equals(getTabTitle()))
@@ -231,7 +231,7 @@ public class SubTabContainerHandler {
     }
 
     public int getTabIndex() {
-        int subTabIndex = tabbedPane.indexOfTabComponent(currentTab);
+        int subTabIndex = parentTabbedPane.indexOfTabComponent(currentTab);
 
         if (tabIndexHistory.size() == 0 || subTabIndex != tabIndexHistory.get(tabIndexHistory.size() - 1)) {
             tabIndexHistory.add(subTabIndex);
@@ -241,7 +241,7 @@ public class SubTabContainerHandler {
     }
 
     public String getTabTitle() {
-        return tabbedPane.getTitleAt(getTabIndex());
+        return parentTabbedPane.getTitleAt(getTabIndex());
     }
 
     public void setTabTitle(String title) {
@@ -251,7 +251,7 @@ public class SubTabContainerHandler {
             if (titleHistory.size() == 0 || !titleHistory.get(titleHistory.size() - 1).equals(title))
                 titleHistory.add(title);
 
-            tabbedPane.setTitleAt(getTabIndex(), title);
+            parentTabbedPane.setTitleAt(getTabIndex(), title);
         }
     }
 
@@ -321,7 +321,7 @@ public class SubTabContainerHandler {
     public void setColor(Color color) {
         if (isValid()) {
             hasChanged = true;
-            tabbedPane.setBackgroundAt(getTabIndex(), color);
+            parentTabbedPane.setBackgroundAt(getTabIndex(), color);
         }
     }
 

@@ -8,7 +8,6 @@ package com.irsdl.burp.sharpener.uimodifiers.subtabs;
 
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
-import com.irsdl.burp.sharpener.objects.TabFeaturesObject;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
 import com.irsdl.generic.JScrollMenu;
 import com.irsdl.generic.UIHelper;
@@ -19,8 +18,8 @@ import javax.swing.colorchooser.AbstractColorChooserPanel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.regex.Pattern;
 
 public class SubTabActions {
@@ -28,8 +27,14 @@ public class SubTabActions {
         if (SwingUtilities.isMiddleMouseButton(e) || e.isAltDown() || ((e.getModifiers() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK)) {
             if (e.getComponent() instanceof JTabbedPane) {
                 JTabbedPane tabbedPane = (JTabbedPane) e.getComponent();
+                int tabIndex;
+                /*
+                // this was useful when we did not know which tab has been selected but in Burp Suite a tab will be selected upon a click so we can find the index that way
                 int tabIndex = tabbedPane.getUI().tabForCoordinate(tabbedPane, e.getX(), e.getY());
                 if (tabIndex < 0 || tabIndex > tabbedPane.getTabCount() - 1) return;
+                */
+
+                tabIndex = tabbedPane.getSelectedIndex();
 
                 SubTabContainerHandler subTabContainerHandler = new SubTabContainerHandler(sharedParameters, tabbedPane, tabIndex);
 
@@ -44,7 +49,17 @@ public class SubTabActions {
                 int minSize = 10;
                 if (!isCTRL_Key && !isSHIFT_Key) {
                     JPopupMenu popupMenu = createPopupMenu(sharedParameters, subTabContainerHandler);
-                    popupMenu.show(tabbedPane, e.getX(), e.getY());
+                    //popupMenu.show(tabbedPane, e.getX(), e.getY());
+                    int x;
+                    int y;
+                    if (tabbedPane.getTabLayoutPolicy() == JTabbedPane.SCROLL_TAB_LAYOUT) {
+                        x = e.getX();
+                        y = e.getY() + tabbedPane.getTabComponentAt(tabIndex).getHeight() / 2;
+                    } else {
+                        x = tabbedPane.getTabComponentAt(tabIndex).getX();
+                        y = tabbedPane.getTabComponentAt(tabIndex).getY() + tabbedPane.getTabComponentAt(tabIndex).getHeight();
+                    }
+                    popupMenu.show(tabbedPane, x, y);
                 } else if (isCTRL_Key && !isSHIFT_Key) {
                     // Make it bigger and bold when middle click + ctrl
                     if (subTabContainerHandler.getFontSize() < maxSize) {
@@ -301,28 +316,49 @@ public class SubTabActions {
 
         popupMenu.addSeparator();
 
-        JMenuItem jumpToFirstTabMenu = new JMenuItem("Jump to First Tab");
+        JMenu jumpMenu = new JMenu("Jump to");
+        JMenuItem jumpToFirstTabMenu = new JMenuItem("First Tab");
         if (currentSubTabContainerHandler.getTabIndex() == 0) {
             jumpToFirstTabMenu.setEnabled(false);
         }
 
         jumpToFirstTabMenu.addActionListener(e -> {
-            currentSubTabContainerHandler.tabbedPane.setSelectedIndex(0);
+            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(0);
         });
-        popupMenu.add(jumpToFirstTabMenu);
+        jumpMenu.add(jumpToFirstTabMenu);
 
-        JMenuItem jumpToLastTabMenu = new JMenuItem("Jump to Last Tab");
-        if (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.tabbedPane.getTabCount() - 2) {
+        JMenuItem jumpToLastTabMenu = new JMenuItem("Last Tab");
+        if (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2) {
             jumpToLastTabMenu.setEnabled(false);
         }
 
         jumpToLastTabMenu.addActionListener(e -> {
-            currentSubTabContainerHandler.tabbedPane.setSelectedIndex(currentSubTabContainerHandler.tabbedPane.getTabCount() - 2);
+            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2);
         });
-        popupMenu.add(jumpToLastTabMenu);
+        jumpMenu.add(jumpToLastTabMenu);
+
+        JMenuItem jumpToNextTabMenu = new JMenuItem("Next Tab");
+        if (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2) {
+            jumpToNextTabMenu.setEnabled(false);
+        }
+
+        jumpToNextTabMenu.addActionListener(e -> {
+            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex() + 1);
+        });
+        jumpMenu.add(jumpToNextTabMenu);
+
+        JMenuItem jumpToPreviousTabMenu = new JMenuItem("Previous Tab");
+        if (currentSubTabContainerHandler.getTabIndex() == 0) {
+            jumpToPreviousTabMenu.setEnabled(false);
+        }
+
+        jumpToPreviousTabMenu.addActionListener(e -> {
+            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex() - 1);
+        });
+        jumpMenu.add(jumpToPreviousTabMenu);
 
 
-        JMenu searchAndJumpMenu = new JMenu("Title RegEx Search & Jump to Tab");
+        JMenu searchAndJumpMenu = new JMenu("Title RegEx Search");
         JMenuItem jumpToFirstTabByTitleMenu = new JMenuItem("Find (case-sensitive)");
 
         jumpToFirstTabByTitleMenu.addActionListener(e -> {
@@ -335,7 +371,7 @@ public class SubTabActions {
                     for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
                         String subTabTitle = subTabContainerHandlerItem.getTabTitle();
                         if (Pattern.compile(titleKeyword).matcher(subTabTitle).find()) {
-                            subTabContainerHandlerItem.tabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
+                            subTabContainerHandlerItem.parentTabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
                             result = true;
                             break;
                         }
@@ -355,7 +391,7 @@ public class SubTabActions {
         searchAndJumpMenu.add(jumpToFirstTabByTitleMenu);
 
         JMenuItem jumpToNextTabByTitleMenu = new JMenuItem("Next");
-        if (sharedParameters.searchedTabTitleForJumpToTab.isEmpty() || (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.tabbedPane.getTabCount() - 2)) {
+        if (sharedParameters.searchedTabTitleForJumpToTab.isEmpty() || (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2)) {
             jumpToNextTabByTitleMenu.setEnabled(false);
         } else {
             jumpToNextTabByTitleMenu.setText("Next - Search for: " + sharedParameters.searchedTabTitleForJumpToTab);
@@ -369,7 +405,7 @@ public class SubTabActions {
                     if (subTabContainerHandlerItem.getTabIndex() > currentSubTabContainerHandler.getTabIndex()) {
                         String subTabTitle = subTabContainerHandlerItem.getTabTitle();
                         if (Pattern.compile(sharedParameters.searchedTabTitleForJumpToTab).matcher(subTabTitle).find()) {
-                            subTabContainerHandlerItem.tabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
+                            subTabContainerHandlerItem.parentTabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
                             result = true;
                             break;
                         }
@@ -401,7 +437,7 @@ public class SubTabActions {
                     if (subTabContainerHandlerItem.getTabIndex() < currentSubTabContainerHandler.getTabIndex()) {
                         String subTabTitle = subTabContainerHandlerItem.getTabTitle();
                         if (Pattern.compile(sharedParameters.searchedTabTitleForJumpToTab).matcher(subTabTitle).find()) {
-                            subTabContainerHandlerItem.tabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
+                            subTabContainerHandlerItem.parentTabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
                             result = true;
                             break;
                         }
@@ -417,8 +453,42 @@ public class SubTabActions {
             }
         });
         searchAndJumpMenu.add(jumpToPreviousTabByTitleMenu);
+        jumpMenu.add(searchAndJumpMenu);
+        popupMenu.add(jumpMenu);
 
-        popupMenu.add(searchAndJumpMenu);
+/*
+        JMenu closingTabsMenu = new JMenu("Closing tab options");
+        JMenuItem showOriginalTabCloseMenuMenu = new JMenuItem("Show original Burp Suite tab closing options");
+
+        showOriginalTabCloseMenuMenu.addActionListener(e -> {
+
+            Container currentTabContainer = currentSubTabContainerHandler.currentTab;
+            Component firstTabComponent = currentTabContainer.getComponents()[0];
+            MouseEvent me = new MouseEvent(currentTabContainer.getParent().getParent(), 0, 0, MouseEvent.BUTTON3, currentSubTabContainerHandler.currentTab.getLocationOnScreen().x, currentSubTabContainerHandler.currentTab.getLocationOnScreen().y, 1, true);
+
+            for(MouseListener ml: firstTabComponent.getMouseListeners()){
+                ml.mouseClicked(me);
+            }
+
+        });
+        closingTabsMenu.add(showOriginalTabCloseMenuMenu);
+
+        popupMenu.add(closingTabsMenu);
+*/
+
+        JMenuItem jumpToAddTabMenu = new JMenuItem("Add an Empty New Tab");
+        jumpToAddTabMenu.addActionListener(e -> {
+            Container dotdotdotTabContainer = (Container) currentSubTabContainerHandler.parentTabbedPane.getTabComponentAt(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 1);
+            Component dotdotdotTab = dotdotdotTabContainer.getComponents()[0];
+            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 1);
+            MouseEvent me = new MouseEvent(dotdotdotTab, 0, 0, 0, dotdotdotTab.getLocationOnScreen().x, dotdotdotTab.getLocationOnScreen().y, 1, true);
+            for (MouseListener ml : dotdotdotTab.getMouseListeners()) {
+                ml.mouseClicked(me);
+            }
+        });
+        popupMenu.add(jumpToAddTabMenu);
+
+        popupMenu.addSeparator();
 
         BurpUITools.MainTabs tool = currentSubTabContainerHandler.currentToolTab;
 
@@ -448,8 +518,8 @@ public class SubTabActions {
                                     new java.util.TimerTask() {
                                         @Override
                                         public void run() {
-                                            currentSubTabContainerHandler.tabbedPane.setSelectedIndex(0);
-                                            currentSubTabContainerHandler.tabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex());
+                                            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(0);
+                                            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex());
                                         }
                                     },
                                     1000
@@ -463,6 +533,22 @@ public class SubTabActions {
 
         popupMenu.add(toolSubTabPaneScrollableLayout);
 
+        JCheckBoxMenuItem toolSubTabPaneMouseWheelScroll = new JCheckBoxMenuItem(tool.toString() + " Tab Scroll by Mouse Wheel");
+        if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
+            toolSubTabPaneMouseWheelScroll.setSelected(true);
+        }
+
+        toolSubTabPaneMouseWheelScroll.addActionListener((e) -> {
+            if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
+                BurpUITools.removeMouseWheelFromJTabbedPane(currentSubTabContainerHandler.parentTabbedPane, true);
+                sharedParameters.allSettings.saveSettings("mouseWheelToScroll_" + tool.toString(), false);
+            } else {
+                BurpUITools.addMouseWheelToJTabbedPane(currentSubTabContainerHandler.parentTabbedPane, false);
+                sharedParameters.allSettings.saveSettings("mouseWheelToScroll_" + tool.toString(), true);
+            }
+        });
+
+        popupMenu.add(toolSubTabPaneMouseWheelScroll);
 
         return popupMenu;
     }

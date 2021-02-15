@@ -90,6 +90,7 @@ public class SubTabWatcher implements ContainerListener {
         accessibleTabs.add(componentTitle);
 
         tabComponent.addMouseListener(new SubTabClickHandler(this.mouseEventConsumer));
+        //tabComponent.removeMouseListener(tabComponent.getMouseListeners()[1]); --> this will remove the current right click menu!
 
         // Loading all the tabs
         for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
@@ -149,7 +150,7 @@ public class SubTabWatcher implements ContainerListener {
 
         // as there is no other PropertyChangeListener with propertyName of "indexForTabComponent" by default, we can remove them all
         PropertyChangeListener[] pclArray = tabComponent.getPropertyChangeListeners("indexForTabComponent");
-        for(PropertyChangeListener pcl:pclArray){
+        for (PropertyChangeListener pcl : pclArray) {
             tabComponent.removePropertyChangeListener("indexForTabComponent", pcl);
         }
 
@@ -168,7 +169,7 @@ public class SubTabWatcher implements ContainerListener {
 
     private synchronized boolean is_isUpdateInProgress() {
         boolean result = _isUpdateInProgress;
-        if(!result){
+        if (!result) {
             _isUpdateInProgress = true;
         }
         return result;
