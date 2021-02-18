@@ -35,6 +35,7 @@ public class SubTabContainerHandler {
     private String beforeManualEditTabTitle = "";
     private Color beforeManualEditTabColor;
     private PropertyChangeListener subTabPropertyChangeListener;
+    private boolean isFromSetColor = false;
 
     public SubTabContainerHandler(SharpenerSharedParameters sharedParameters, JTabbedPane tabbedPane, int tabIndex) {
         this.instance = this;
@@ -109,6 +110,17 @@ public class SubTabContainerHandler {
                             }
                         }
 
+                    }else if (evt.getPropertyName().equalsIgnoreCase("disabledTextColor")) {
+                        if(!isFromSetColor){
+                            Color newColor = (Color) evt.getNewValue();
+                            loadDefaultSetting();
+                            if(newColor.equals(sharedParameters.defaultSubTabObject.getColor())){
+                                // we have a case for auto tab colour change which we want to avoid
+                                setColor((Color) evt.getOldValue());
+                            }
+                        }
+
+                        isFromSetColor = false;
                     }
                 }
             };
@@ -320,6 +332,7 @@ public class SubTabContainerHandler {
 
     public void setColor(Color color) {
         if (isValid()) {
+            isFromSetColor = true;
             hasChanged = true;
             parentTabbedPane.setBackgroundAt(getTabIndex(), color);
         }

@@ -51,7 +51,7 @@ public class BurpTitleAndIcon {
     }
 
     public static void setIcon(BurpExtensionSharedParameters sharedParams, String imgPath) {
-        Image loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(imgPath), 16);
+        Image loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(imgPath), 48);
         if (loadedImg != null) {
             setIcon(sharedParams, loadedImg);
         } else {

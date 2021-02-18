@@ -74,16 +74,21 @@ public class UIHelper {
 
     // Show directory dialog and return the path
     public static String showDirectoryDialog(final String initialPath, Component parentcmp) {
-        return showFileDialog(initialPath, true, null, parentcmp);
+        return showFileDialog(initialPath, true, null, parentcmp, false);
+    }
+
+    // Show directory dialog and return the path
+    public static String showDirectorySaveDialog(final String initialPath, Component parentcmp) {
+        return showFileDialog(initialPath, true, null, parentcmp, true);
     }
 
     // Show file dialog and return the file path
     public static String showFileDialog(final String initialPath, FileFilter fileFilter, Component parentcmp) {
-        return showFileDialog(initialPath, false, fileFilter, parentcmp);
+        return showFileDialog(initialPath, false, fileFilter, parentcmp, false);
     }
 
     // Show file chooser
-    public static String showFileDialog(final String initialPath, final boolean dirOnly, FileFilter fileFilter, Component parentcmp) {
+    public static String showFileDialog(final String initialPath, final boolean dirOnly, FileFilter fileFilter, Component parentcmp, boolean isSave) {
         String filePath = "";
         JFileChooser _fileChooser = new JFileChooser();
         if (dirOnly)
@@ -97,7 +102,13 @@ public class UIHelper {
             _fileChooser.setCurrentDirectory(file);
         }
 
-        int returnVal = _fileChooser.showOpenDialog(parentcmp);
+        int returnVal;
+        if(isSave){
+            returnVal = _fileChooser.showSaveDialog(parentcmp);
+        }else{
+            returnVal = _fileChooser.showOpenDialog(parentcmp);
+        }
+
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             filePath = _fileChooser.getSelectedFile().getAbsolutePath();
         }
