@@ -81,7 +81,7 @@ public class SubTabWatcher implements ContainerListener {
             return;
         }
 
-        BurpUITools.MainTabs componentTitle = BurpUITools.getMainTabsObjFromString(tabbedPane.getTitleAt(componentIndex));
+        final BurpUITools.MainTabs componentTitle = BurpUITools.getMainTabsObjFromString(tabbedPane.getTitleAt(componentIndex));
 
         if (!sharedParameters.subTabWatcherSupportedTabs.contains(componentTitle)) return;
 
@@ -113,16 +113,17 @@ public class SubTabWatcher implements ContainerListener {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!is_isUpdateInProgress() && evt.getPropertyName().equalsIgnoreCase("indexForTabComponent")) {
                     // this is a dirty hack to keep the colours as they go black after drag and drop!
+                    // this also makes sure we always have the latest version of the tabs saved in the variables after add/remove
                     new java.util.Timer().schedule(
                             new java.util.TimerTask() {
                                 @Override
                                 public void run() {
-                                    sharedParameters.allSettings.subTabSettings.loadSettings();
-                                    sharedParameters.allSettings.subTabSettings.saveSettings();
+                                    sharedParameters.allSettings.subTabSettings.loadSettings(componentTitle);
+                                    sharedParameters.allSettings.subTabSettings.saveSettings(componentTitle);
                                     set_isUpdateInProgress(false);
                                 }
                             },
-                            500
+                            1000
                     );
                 }
             }

@@ -8,8 +8,12 @@ package com.irsdl.generic;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 
 public class ImageHelper {
@@ -55,5 +59,44 @@ public class ImageHelper {
             }
         }
         return bufferedImage;
+    }
+
+    // https://alvinalexander.com/java/java-copy-image-to-clipboard-example/
+    // code below from exampledepot.com
+    //This method writes a image to the system clipboard.
+    //otherwise it returns null.
+    public static void setClipboard(Image image)
+    {
+        ImageSelection imgSel = new ImageSelection(image);
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(imgSel, null);
+    }
+
+
+    // This class is used to hold an image while on the clipboard.
+    static class ImageSelection implements Transferable {
+        private Image image;
+
+        public ImageSelection(Image image) {
+            this.image = image;
+        }
+
+        // Returns supported flavors
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{DataFlavor.imageFlavor};
+        }
+
+        // Returns true if flavor is supported
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return DataFlavor.imageFlavor.equals(flavor);
+        }
+
+        // Returns image
+        public Object getTransferData(DataFlavor flavor)
+                throws UnsupportedFlavorException, IOException {
+            if (!DataFlavor.imageFlavor.equals(flavor)) {
+                throw new UnsupportedFlavorException(flavor);
+            }
+            return image;
+        }
     }
 }
