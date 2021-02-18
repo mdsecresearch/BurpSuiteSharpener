@@ -12,6 +12,7 @@ This extension should add a number of UI and functional features to Burp Suite t
 * Finding Repeater and Intruder tabs when their title matches a Regular Expression
 * Scrollable main tool tabs
 * Scrollable Repeater and Intruder tabs
+* Taking screenshot of repeater or intruder tabs
 
 # Suggesting New Features
 The plan is to add simple but missing features to this single extension to make it a must-have companion when using Burp.
