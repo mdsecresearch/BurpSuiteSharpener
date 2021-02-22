@@ -23,6 +23,7 @@ import java.util.HashMap;
 
 public class SubTabSettings extends StandardSettings {
 
+    public String lastSavedImageLocation = "";
     boolean isFirstLoad = true;
 
     public SubTabSettings(SharpenerSharedParameters sharedParameters) {
@@ -50,14 +51,23 @@ public class SubTabSettings extends StandardSettings {
 
     @Override
     public synchronized void loadSettings() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Thread(() -> {
-                    sharedParameters.printDebugMessages("loadSettings");
-                    updateAllSubTabContainerHandlersObj();
-                    for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
-                        if (isFirstLoad) {
+        loadSettings(null);
+    }
+
+    public synchronized void loadSettings(BurpUITools.MainTabs currentMainTab) {
+
+        sharedParameters.printDebugMessages("loadSettings");
+        updateAllSubTabContainerHandlersObj(currentMainTab);
+        for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
+            if (currentMainTab != null && tool != currentMainTab) {
+                continue;
+            }
+
+            if (isFirstLoad) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        new Thread(() -> {
                             if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
                                 sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
                             }
@@ -65,60 +75,70 @@ public class SubTabSettings extends StandardSettings {
                             if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
                                 BurpUITools.addMouseWheelToJTabbedPane(sharedParameters.get_toolTabbedPane(tool), false);
                             }
-                        }
-
-
-                        HashMap<String, TabFeaturesObject> tabFeaturesObjectsHashMap = sharedParameters.preferences.getSetting("TabFeaturesObject_Array_" + tool.toString().toLowerCase());
-                        if (tabFeaturesObjectsHashMap != null && sharedParameters.supportedTools_SubTabs.get(tool) != null) {
-                            sharedParameters.supportedTools_SubTabs.get(tool).putAll(tabFeaturesObjectsHashMap);
-                            ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(tool);
-                            for (SubTabContainerHandler subTabContainerHandler : subTabContainerHandlers) {
-                                TabFeaturesObject currentTabFeaturesObject = sharedParameters.supportedTools_SubTabs.get(tool).get(subTabContainerHandler.getTabTitle());
-                                if (currentTabFeaturesObject != null) {
-                                    subTabContainerHandler.updateByTabFeaturesObject(currentTabFeaturesObject);
-                                }
-                            }
-                        }
+                        }).start();
                     }
-                    isFirstLoad = false;
-                }).start();
+                });
             }
-        });
+
+            HashMap<String, TabFeaturesObject> tabFeaturesObjectsHashMap = sharedParameters.preferences.getSetting("TabFeaturesObject_Array_" + tool.toString().toLowerCase());
+            if (tabFeaturesObjectsHashMap != null && sharedParameters.supportedTools_SubTabs.get(tool) != null) {
+                sharedParameters.supportedTools_SubTabs.get(tool).putAll(tabFeaturesObjectsHashMap);
+                ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(tool);
+                for (SubTabContainerHandler subTabContainerHandler : subTabContainerHandlers) {
+                    TabFeaturesObject currentTabFeaturesObject = sharedParameters.supportedTools_SubTabs.get(tool).get(subTabContainerHandler.getTabTitle());
+                    if (currentTabFeaturesObject != null) {
+                        subTabContainerHandler.updateByTabFeaturesObject(currentTabFeaturesObject);
+                    }
+                }
+            }
+        }
+        isFirstLoad = false;
+
+
     }
 
-    public synchronized void updateAllSubTabContainerHandlersObj() {
+    public synchronized void updateAllSubTabContainerHandlersObj(BurpUITools.MainTabs currentMainTab) {
         sharedParameters.printDebugMessages("updateAllSubTabContainerHandlersObj");
+
         for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
+            if (currentMainTab != null && currentMainTab != tool) {
+                continue;
+            }
+
             if (sharedParameters.allSubTabContainerHandlers.get(tool) == null) {
                 // initializing - should be called only once
                 sharedParameters.allSubTabContainerHandlers.put(tool, new ArrayList<>());
             }
 
-            ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(tool);
+            if (currentMainTab == null || sharedParameters.allSubTabContainerHandlers.get(tool).size() != sharedParameters.get_toolTabbedPane(tool).getTabCount() - 1) {
+                // this is not a drag and drop
+                ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(tool);
 
-            ArrayList<SubTabContainerHandler> updatedSubTabContainerHandlers = new ArrayList<>();
-            for (SubTabContainerHandler subTabContainerHandler : subTabContainerHandlers) {
-                if (subTabContainerHandler.isValid()) {
-                    updatedSubTabContainerHandlers.add(subTabContainerHandler);
-                }
-            }
-
-            JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(tool);
-            if (subTabbedPane != null) {
-                for (Component subTabComponent : subTabbedPane.getComponents()) {
-                    int subTabIndex = subTabbedPane.indexOfComponent(subTabComponent);
-                    if (subTabIndex == -1)
-                        continue;
-
-                    SubTabContainerHandler tempSubTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabIndex);
-                    if (!updatedSubTabContainerHandlers.contains(tempSubTabContainerHandler)) {
-                        // we have a new tab
-                        updatedSubTabContainerHandlers.add(tempSubTabContainerHandler);
+                ArrayList<SubTabContainerHandler> updatedSubTabContainerHandlers = new ArrayList<>();
+                for (SubTabContainerHandler subTabContainerHandler : subTabContainerHandlers) {
+                    if (subTabContainerHandler.isValid()) {
+                        updatedSubTabContainerHandlers.add(subTabContainerHandler);
                     }
                 }
+
+                JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(tool);
+                if (subTabbedPane != null) {
+                    for (Component subTabComponent : subTabbedPane.getComponents()) {
+                        int subTabIndex = subTabbedPane.indexOfComponent(subTabComponent);
+                        if (subTabIndex == -1)
+                            continue;
+
+                        SubTabContainerHandler tempSubTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabIndex);
+                        if (!updatedSubTabContainerHandlers.contains(tempSubTabContainerHandler)) {
+                            // we have a new tab
+                            updatedSubTabContainerHandlers.add(tempSubTabContainerHandler);
+                        }
+                    }
+                }
+                sharedParameters.allSubTabContainerHandlers.get(tool).clear();
+                sharedParameters.allSubTabContainerHandlers.get(tool).addAll(updatedSubTabContainerHandlers);
             }
-            sharedParameters.allSubTabContainerHandlers.get(tool).clear();
-            sharedParameters.allSubTabContainerHandlers.get(tool).addAll(updatedSubTabContainerHandlers);
+
         }
 
     }
@@ -142,8 +162,8 @@ public class SubTabSettings extends StandardSettings {
                             ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(tool);
                             for (SubTabContainerHandler subTabContainerHandler : subTabContainerHandlers) {
                                 if (subTabContainerHandler.isValid()) {
-                                    subTabContainerHandler.setToDefault();
                                     subTabContainerHandler.removeSubTabWatcher();
+                                    subTabContainerHandler.setToDefault();
                                     subTabContainerHandler = null;
                                 }
                             }
@@ -183,13 +203,21 @@ public class SubTabSettings extends StandardSettings {
         }
 
         // we use the title as the hashmap key
-        saveSettings();
+        saveSettings(subTabContainerHandler.currentToolTab);
     }
 
     public synchronized void saveSettings() {
+        saveSettings(null);
+    }
+
+    public synchronized void saveSettings(BurpUITools.MainTabs currentMainTab) {
         sharedParameters.printDebugMessages("saveSettings");
 
         for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
+            if (currentMainTab != null && currentMainTab != tool) {
+                continue;
+            }
+
             sharedParameters.supportedTools_SubTabs.get(tool).clear();
             HashMap<String, TabFeaturesObject> tabFeaturesObjectHashMap = new HashMap<>();
 

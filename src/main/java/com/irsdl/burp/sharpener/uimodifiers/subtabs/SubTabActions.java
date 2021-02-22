@@ -9,17 +9,30 @@ package com.irsdl.burp.sharpener.uimodifiers.subtabs;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
+import com.irsdl.generic.ImageHelper;
 import com.irsdl.generic.JScrollMenu;
 import com.irsdl.generic.UIHelper;
 import com.irsdl.generic.Utilities;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 public class SubTabActions {
@@ -274,7 +287,7 @@ public class SubTabActions {
                                 subTabContainerHandlerItem.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
                             }
                         }
-                        sharedParameters.allSettings.subTabSettings.saveSettings();
+                        sharedParameters.allSettings.subTabSettings.saveSettings(currentSubTabContainerHandler.currentToolTab);
                         sharedParameters.printDebugMessages("Style pasted in titles which matched: " + titleKeyword);
                     } else {
                         UIHelper.showWarningMessage("Regular expression was invalid.", sharedParameters.get_mainFrame());
@@ -291,6 +304,14 @@ public class SubTabActions {
         JMenuItem copyTitleMenu = new JMenuItem("Copy Title");
         copyTitleMenu.addActionListener(e -> {
             String tabTitle = currentSubTabContainerHandler.getTabTitle();
+            // copying to clipboard as well
+            Toolkit.getDefaultToolkit()
+                    .getSystemClipboard()
+                    .setContents(
+                            new StringSelection(tabTitle),
+                            null
+                    );
+
             tabTitle = tabTitle.replaceAll("(?<=[^\\s])\\s+#\\d+\\s*$", "");
             sharedParameters.copiedTabTitle = tabTitle;
             sharedParameters.printDebugMessages("Title copied...");
@@ -313,6 +334,53 @@ public class SubTabActions {
         });
         popupMenu.add(pasteTitleMenu);
 
+        JMenu tabScreenshotMenu = new JMenu("Save Tab Screenshot");
+        JMenuItem saveScreenshotToClipboardMenu = new JMenuItem("Clipboard");
+        saveScreenshotToClipboardMenu.addActionListener(e -> {
+
+            Rectangle componentRect = currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().getBounds();
+            BufferedImage bufferedImage = new BufferedImage(componentRect.width, componentRect.height, BufferedImage.TYPE_INT_RGB);
+            currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().paint(bufferedImage.getGraphics());
+            ImageHelper.setClipboard(bufferedImage);
+        });
+        tabScreenshotMenu.add(saveScreenshotToClipboardMenu);
+
+        JMenuItem saveScreenshotToFileMenu = new JMenuItem("File");
+        saveScreenshotToFileMenu.addActionListener(e -> {
+            Rectangle componentRect = currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().getBounds();
+            BufferedImage bufferedImage = new BufferedImage(componentRect.width, componentRect.height, BufferedImage.TYPE_INT_ARGB);
+            currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().paint(bufferedImage.getGraphics());
+
+            String saveLocation = UIHelper.showDirectorySaveDialog(sharedParameters.allSettings.subTabSettings.lastSavedImageLocation, sharedParameters.get_mainFrame());
+
+            if(!saveLocation.isEmpty()){
+                sharedParameters.allSettings.subTabSettings.lastSavedImageLocation = saveLocation;
+                String strDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+                String imageFileLocation = saveLocation + "/" + currentSubTabContainerHandler.getTabTitle().replaceAll("[^a-zA-Z0-9-_\\.]", "_") + "_" + strDate + ".png";
+
+                try{
+                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                    ImageIO.write(bufferedImage, "png", os);
+                    try(OutputStream outputStream = new FileOutputStream(imageFileLocation)) {
+                        os.writeTo(outputStream);
+                    }
+                }catch(Exception err){
+                    sharedParameters.printlnError("Image file could not be saved: " + imageFileLocation);
+                    sharedParameters.printDebugMessages(err.getMessage());
+                }
+
+                File imageFile = new File(imageFileLocation);
+                if(imageFile.exists()){
+                    sharedParameters.printlnOutput("Image file saved successfully: " + imageFileLocation);
+                }else{
+                    sharedParameters.printlnError("Image file could not be saved: " + imageFileLocation);
+                    UIHelper.showWarningMessage("Image file could not be saved: " + imageFileLocation, sharedParameters.get_mainFrame());
+                }
+
+            }
+        });
+        tabScreenshotMenu.add(saveScreenshotToFileMenu);
+        popupMenu.add(tabScreenshotMenu);
 
         popupMenu.addSeparator();
 
