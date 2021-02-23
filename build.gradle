@@ -11,6 +11,9 @@ group 'com.irsdl'
 version '1.06-SNAPSHOT'
 //version '1.04-BETA'
 
+targetCompatibility = '1.8'
+sourceCompatibility = '1.8'
+
 repositories {
     mavenCentral()
     maven {
