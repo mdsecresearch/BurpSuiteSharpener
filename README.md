@@ -1,5 +1,8 @@
 # BurpSuiteSharpener
+
 This extension should add a number of UI and functional features to Burp Suite to make working with it easier. 
+
+![image](https://user-images.githubusercontent.com/16578570/128088557-40d9b46d-537e-4022-9cda-9da4eff00c0f.png)
 
 # Current Features
 * Making main tools' tabs more distinguishable by choosing a theme
