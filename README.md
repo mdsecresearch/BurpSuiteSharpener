@@ -41,6 +41,13 @@ Perhaps the best features can be imported from different open-source extensions 
 * It is always recommended checking the [extension's GitHub repository](https://github.com/mdsecresearch/BurpSuiteSharpener) rather than BApp Store for the latest updates
 * A sample of icons and the latest releases should also be accessible in the `/release` directory
 
+![image](https://user-images.githubusercontent.com/1798313/136854808-d916f051-effc-483f-a388-b26d5b5f3ff2.png)
+
+![image](https://user-images.githubusercontent.com/1798313/136855916-eabf9a51-354a-4655-beb7-9e56c41d1fea.png)
+
+![image](https://user-images.githubusercontent.com/1798313/136855827-d97584d0-0e69-496a-a203-5b61f97926ab.png)
+
+
 # Limitation
 * It has been tested against v2.0.x but should work fine against v1.7.x (hopefully)
 
