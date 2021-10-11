@@ -57,6 +57,9 @@ public class BurpExtensionSharedParameters {
     public IBurpExtenderCallbacks callbacks = null;
     public Preferences preferences; // to use the ability of this project: https://github.com/CoreyD97/BurpExtenderUtilities
 
+    // these are the parameters which are used per extension but needs to be shared - like registers
+    public boolean addedIconListener = false;
+
     // params with custom getter or setter - the `setUIParametersFromExtensionTab` method should be used to set them
     private JFrame _mainFrame = null; // This is Burp Suite's main jFrame
     private JMenuBar _mainMenuBar = null; // This is Burp Suite's main menu bar
