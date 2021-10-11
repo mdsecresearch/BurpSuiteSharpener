@@ -114,6 +114,10 @@ public class SubTabWatcher implements ContainerListener {
                 if (!is_isUpdateInProgress() && evt.getPropertyName().equalsIgnoreCase("indexForTabComponent")) {
                     // this is a dirty hack to keep the colours as they go black after drag and drop!
                     // this also makes sure we always have the latest version of the tabs saved in the variables after add/remove
+                    int delay = 1000; // this is enough for repeater but Intruder changes the colour, so it should be higher
+                    if(componentTitle.equals(BurpUITools.MainTabs.Intruder)){
+                        delay = 10000;
+                    }
                     new java.util.Timer().schedule(
                             new java.util.TimerTask() {
                                 @Override
@@ -123,7 +127,7 @@ public class SubTabWatcher implements ContainerListener {
                                     set_isUpdateInProgress(false);
                                 }
                             },
-                            1000
+                            delay
                     );
                 }
             }

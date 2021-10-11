@@ -193,7 +193,7 @@ public class SubTabSettings extends StandardSettings {
             //subTabContainerHandler.setTabTitle(newTitle);
             TabFeaturesObject originalFO = sharedParameters.supportedTools_SubTabs.get(subTabContainerHandler.currentToolTab).get(initTitle);
             if (originalFO != null) {
-                // the original item has special style so we need to copy it
+                // the original item has special style, so we need to copy it
                 originalFO.title = newTitle; // we will fix the supportedTools_SubTabs parameter in saveSettings()
                 subTabContainerHandler.updateByTabFeaturesObject(originalFO);
             } else {

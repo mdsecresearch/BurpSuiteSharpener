@@ -25,7 +25,7 @@ import java.net.URI;
 public class TopMenuBar extends javax.swing.JMenu {
     private JMenu topMenuForExtension;
     private final SharpenerSharedParameters sharedParameters;
-    private final String[] themeNames = {"none", "game", "hacker", "gradient", "mobster", "office"};
+    private final String[] themeNames = {"none", "halloween", "game", "hacker", "gradient", "mobster", "office"};
     private final Boolean isPrefsRegistered = false;
 
     public TopMenuBar(SharpenerSharedParameters sharedParameters) {
@@ -170,19 +170,30 @@ public class TopMenuBar extends javax.swing.JMenu {
 
 
                     // Reset title button
-                    JMenuItem resetTitle = new JMenuItem(new AbstractAction("Reset Burp Suite Title & Icon") {
+                    JMenuItem resetTitle = new JMenuItem(new AbstractAction("Reset Burp Suite Title") {
                         @Override
                         public void actionPerformed(ActionEvent actionEvent) {
-                            int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Title & Icon", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                            int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Title", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
                             if (response == 0) {
-                                BurpTitleAndIcon.resetTitleAndIcon(TopMenuBar.this.sharedParameters);
-                                TopMenuBar.this.sharedParameters.allSettings.saveSettings("BurpIconCustomPath", "");
+                                BurpTitleAndIcon.resetTitle(TopMenuBar.this.sharedParameters);
                                 TopMenuBar.this.sharedParameters.allSettings.saveSettings("BurpTitle", "");
                             }
                         }
                     });
                     projectMenu.add(resetTitle);
 
+                    // Reset icon button
+                    JMenuItem resetIcon = new JMenuItem(new AbstractAction("Reset Burp Suite Icon") {
+                        @Override
+                        public void actionPerformed(ActionEvent actionEvent) {
+                            int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Icon", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                            if (response == 0) {
+                                BurpTitleAndIcon.resetIcon(TopMenuBar.this.sharedParameters);
+                                TopMenuBar.this.sharedParameters.allSettings.saveSettings("BurpIconCustomPath", "");
+                            }
+                        }
+                    });
+                    projectMenu.add(resetIcon);
 
                     JCheckBoxMenuItem topMenuScrollableLayout = new JCheckBoxMenuItem("Scrollable Tool Pane");
 
