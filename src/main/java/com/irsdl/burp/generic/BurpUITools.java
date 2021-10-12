@@ -26,7 +26,7 @@ public class BurpUITools {
         Extender("Extender"),
         ProjectOptions("Project options"),
         UserOptions("User options"),
-        //LoggerPlusPlus("Logger++"), // Burp refreshes extension tabs when adding a new extension
+        Logger("Logger"),
         //HackVertor("Hackvertor"),
         ;
         private final String text;

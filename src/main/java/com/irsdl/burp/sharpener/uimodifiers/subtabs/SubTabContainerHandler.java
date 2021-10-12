@@ -42,7 +42,7 @@ public class SubTabContainerHandler {
         this.sharedParameters = sharedParameters;
         this.parentTabbedPane = tabbedPane;
         Component currentTabTemp = tabbedPane.getTabComponentAt(tabIndex);
-        if (!(currentTabTemp instanceof Container)) return; // this is not a container so it is not useful for us
+        if (!(currentTabTemp instanceof Container)) return; // this is not a container, so it is not useful for us
 
         // to find whether this subtab is in repeater or intruder:
         String toolTabName = "";
@@ -111,15 +111,23 @@ public class SubTabContainerHandler {
                         }
 
                     }else if (evt.getPropertyName().equalsIgnoreCase("disabledTextColor")) {
-                        if(!isFromSetColor){
-                            Color newColor = (Color) evt.getNewValue();
-                            loadDefaultSetting();
-                            if(newColor.equals(sharedParameters.defaultSubTabObject.getColor())){
+                        boolean isFromSetToDefault = false;
+                        Color newColor = (Color) evt.getNewValue();
+
+                        if(newColor!=null && Integer.toHexString(newColor.getRGB()).substring(2) == "010101"){
+                            isFromSetToDefault = true;
+                        }
+
+                        loadDefaultSetting();
+
+                        if(!isFromSetColor && !isFromSetToDefault){
+                            if(newColor!=null && newColor.equals(sharedParameters.defaultSubTabObject.getColor())){
                                 // we have a case for auto tab colour change which we want to avoid
                                 setColor((Color) evt.getOldValue());
                             }
+                        }else if(newColor==null || isFromSetToDefault){
+                            setColor(sharedParameters.defaultSubTabObject.getColor());
                         }
-
                         isFromSetColor = false;
                     }
                 }
@@ -200,7 +208,12 @@ public class SubTabContainerHandler {
 
     public void setToDefault() {
         loadDefaultSetting();
-        updateByTabFeaturesObjectStyle(sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle());
+        // in order to set the right colour when reset to default is used, we need to use a special colour to detect this event
+        // this is because Burp does use the default colour when an item is changed - we have a workaround for that but
+        // the workaround stops reset to default to change the colour as well so we need another workaround!!!
+        TabFeaturesObjectStyle tfosDefault = sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle();
+        tfosDefault.setColorCode(Color.decode("#010101"));
+        updateByTabFeaturesObjectStyle(tfosDefault);
     }
 
     public boolean isCurrentTitleUnique() {

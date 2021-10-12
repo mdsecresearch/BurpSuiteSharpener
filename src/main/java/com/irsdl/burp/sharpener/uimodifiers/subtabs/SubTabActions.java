@@ -164,7 +164,7 @@ public class SubTabActions {
 
         JCheckBoxMenuItem lowProfile = new JCheckBoxMenuItem("Low: Yellow, Bold");
         lowProfile.addActionListener(e -> {
-            TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("Low: Yellow, Bold", "Arial", 14, true, false, false, Color.decode("#ffef0d"));
+            TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("Low: Yellow, Bold", "Arial", 14, true, false, false, Color.decode("#fadc00"));
             currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle);
             sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
         });
@@ -243,7 +243,7 @@ public class SubTabActions {
             for (AbstractColorChooserPanel p : panels) {
                 String displayName = p.getDisplayName();
                 switch (displayName) {
-                    case "RGB":
+                    //case "RGB":
                     case "HSL":
                     case "HSV":
                     case "CMYK":

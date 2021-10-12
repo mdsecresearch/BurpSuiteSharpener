@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
     //public static MainExtensionClass instance;
-    private String version = "1.06";
+    private String version = "1.07";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
@@ -200,7 +200,8 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
 
             sharedParameters.printDebugMessages("reset Burp title and icon");
             // reset Burp title and icon
-            BurpTitleAndIcon.resetTitleAndIcon(sharedParameters);
+            BurpTitleAndIcon.resetTitle(sharedParameters);
+            BurpTitleAndIcon.resetIcon(sharedParameters);
 
             sharedParameters.printDebugMessages("removing toolbar menu");
             // removing toolbar menu
