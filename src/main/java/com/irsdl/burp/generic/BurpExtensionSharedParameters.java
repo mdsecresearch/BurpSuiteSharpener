@@ -206,7 +206,15 @@ public class BurpExtensionSharedParameters {
 
             if (toolTabName.toString().equalsIgnoreCase(componentTitle)) {
                 // we have our tool tab, now we need to find its right component
-                subTabbedPane = (JTabbedPane) tabComponent;
+                try {
+                    subTabbedPane = (JTabbedPane) tabComponent;
+                }catch(Exception e1){
+                    try{
+                        subTabbedPane = (JTabbedPane) tabComponent.getComponentAt(0,0);
+                    }catch(Exception e2){
+                        this.stderr.println("The " + componentTitle + " tool seems to be empty or different. Cannot find the tabs.");
+                    }
+                }
                 break;
             }
         }

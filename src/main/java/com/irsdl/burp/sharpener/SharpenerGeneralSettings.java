@@ -27,6 +27,11 @@ public class SharpenerGeneralSettings extends StandardSettings {
     }
 
     @Override
+    public void init() {
+
+    }
+
+    @Override
     public Collection<PreferenceObject> definePreferenceObjectCollection() {
         Collection<PreferenceObject> preferenceObjectCollection = new ArrayList<>();
 

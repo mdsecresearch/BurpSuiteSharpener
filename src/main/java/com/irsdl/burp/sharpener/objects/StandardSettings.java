@@ -16,10 +16,13 @@ public abstract class StandardSettings {
 
     public StandardSettings(SharpenerSharedParameters sharedParameters) {
         this.sharedParameters = sharedParameters;
+        init();
         this._preferenceObjectCollection = definePreferenceObjectCollection();
         registerSettings();
         loadSettings();
     }
+
+    abstract public void init();
 
     abstract public Collection<PreferenceObject> definePreferenceObjectCollection();
 

@@ -56,6 +56,7 @@ public class ImageHelper {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g.drawImage(originalIcon.getImage(), null, null);
             } catch (Exception e) {
+                System.err.println(e.getMessage() + "\r\n" + e.getStackTrace());
             }
         }
         return bufferedImage;

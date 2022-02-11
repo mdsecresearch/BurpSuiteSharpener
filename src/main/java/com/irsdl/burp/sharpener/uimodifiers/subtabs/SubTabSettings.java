@@ -23,12 +23,18 @@ import java.util.HashMap;
 
 public class SubTabSettings extends StandardSettings {
 
-    public String lastSavedImageLocation = "";
-    boolean isFirstLoad = true;
+    public String lastSavedImageLocation;
+    public boolean isFirstLoad;
 
     public SubTabSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
         sharedParameters.printDebugMessages("SubTabSettings");
+    }
+
+    @Override
+    public void init() {
+        lastSavedImageLocation = "";
+        isFirstLoad = true;
     }
 
     @Override
