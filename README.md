@@ -49,7 +49,8 @@ Perhaps the best features can be imported from different open-source extensions 
 
 
 # Limitation
-* It has been tested against v2.0.x but should work fine against v1.7.x (hopefully)
+* It has been tested against v2.0.x and v2022.1.1 but should work fine against v1.7.x (hopefully)
+* The extension breaks if Burp Suite updates its UI which happened in Burp Suite v2022.1. Use the latest version to fix the potential issues and submit your bugs.
 
 # Thanks To
 * Corey Arthur [CoreyD97](https://twitter.com/CoreyD97)
