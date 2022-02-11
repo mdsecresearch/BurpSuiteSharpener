@@ -116,7 +116,7 @@ public class HTTPMessageHelper {
         if (fullMessage != null) {
             // splitting the message to retrieve the header and the body
             if (fullMessage.contains("\r\n\r\n") || fullMessage.contains("\n\n"))
-                result = fullMessage.split("\r?\n\r?\n|\r\n?\r\n?", 2);
+                result = fullMessage.split("\\r?\\n\\r?\\n|\\r\\n?\\r\\n?", 2);
         }
         return result;
     }
@@ -172,7 +172,7 @@ public class HTTPMessageHelper {
         List<List<String>> qs_list = new ArrayList<List<String>>();
 
         // we assume that we are dealing with one HTTP message (not multiple in a pipeline)
-        String firstline = reqMessage.split("\r?\n|\r\n?", 2)[0];
+        String firstline = reqMessage.split("\\r?\\n|\\r\\n?", 2)[0];
 
         // we assume that we are dealing with an standard HTTP message in which there is a space after the last parameter value
         String QS = "";
@@ -240,7 +240,7 @@ public class HTTPMessageHelper {
         String finalMessage = reqMessage;
         if (delimiter_QS.isEmpty()) delimiter_QS = "?";
         // we assume that we are dealing with one HTTP message (not multiple in a pipeline)
-        String[] splittedRequest = reqMessage.split("\r?\n|\r\n?", 2);
+        String[] splittedRequest = reqMessage.split("\\r?\\n|\\r\\n?", 2);
         String firstline = splittedRequest[0];
         firstline = firstline.trim(); // we don't have spaces before or after the first line if it is standard!
 
@@ -433,7 +433,7 @@ public class HTTPMessageHelper {
             flags = Pattern.MULTILINE;
         }
 
-        String cookie_pattern_string = Pattern.quote(targetCookieName) + "\s*=\s*[^;\r\n]+";
+        String cookie_pattern_string = Pattern.quote(targetCookieName) + "\\s*=\\s*[^;\\r\\n]+";
 
         Pattern cookie_pattern = Pattern.compile(cookie_pattern_string, flags);
         Matcher m = cookie_pattern.matcher(cookieHeaderValue);
@@ -513,7 +513,7 @@ public class HTTPMessageHelper {
             flags = Pattern.MULTILINE;
         }
 
-        String cookie_pattern_string = "^(" + Pattern.quote(headerName) + "\s*:\s*.*" + Pattern.quote(targetCookieName) + "\s*=\s*)[^;\r\n]+(.*)$";
+        String cookie_pattern_string = "^(" + Pattern.quote(headerName) + "\\s*:\\s*.*" + Pattern.quote(targetCookieName) + "\\s*=\\s*)[^;\\r\\n]+(.*)$";
 
         Pattern cookie_pattern = Pattern.compile(cookie_pattern_string, flags);
         Matcher m = cookie_pattern.matcher(strHeader);
@@ -590,14 +590,14 @@ public class HTTPMessageHelper {
     public static String addHeader(String strHeader, String newHeader) {
         String result = "";
         // adding the new header to the second line after the HTTP version!
-        result = strHeader.replaceFirst("([\r\n]+)", "$1" + newHeader + "$1");
+        result = strHeader.replaceFirst("([\\r\\n]+)", "$1" + newHeader + "$1");
         return result;
     }
 
     // replace a header verb with a new verb
     public static String replaceHeaderVerb(String strHeader, String newVerb) {
         String result = "";
-        result = strHeader.replaceFirst("^[^ \t]+", newVerb);
+        result = strHeader.replaceFirst("^[^ \\t]+", newVerb);
         return result;
     }
 }
