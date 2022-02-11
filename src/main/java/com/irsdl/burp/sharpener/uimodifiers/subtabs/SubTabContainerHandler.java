@@ -59,6 +59,14 @@ public class SubTabContainerHandler {
 
         currentToolTab = BurpUITools.getMainTabsObjFromString(toolTabName);
 
+        if(currentToolTab == BurpUITools.MainTabs.None){
+            // this is the new changes introduce by burp 2022.1 so we need this code now
+            int currentTabToolIndex = sharedParameters.get_rootTabbedPane().indexOfComponent(tabbedPane.getParent());
+            toolTabName = sharedParameters.get_rootTabbedPane().getTitleAt(currentTabToolIndex);
+        }
+
+        currentToolTab = BurpUITools.getMainTabsObjFromString(toolTabName);
+
         this.currentTab = (Container) currentTabTemp;
         this.currentTabLabel = currentTab.getComponent(0);
 

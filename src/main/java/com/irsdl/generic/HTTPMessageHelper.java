@@ -1,22 +1,25 @@
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
+// Copyright (c) 2021.
+// An extension for Burp Suite
 // Developed by Soroush Dalili (@irsdl)
-// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
 // Released under AGPL see LICENSE for more information
 
 package com.irsdl.generic;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// This is a basic HTTP Message Helper which can get certain values by having raw HTTP message or the headers
+// ToDo -> write tests for these functions -> some of them have been coded without any testing so they might be buggy!
+// ToDo -> add support of LWSP when finding header values - It currently does not support LWSP anywhere
 public class HTTPMessageHelper {
 
-    //private static String LWSP_Regex= "(([\\r\\n]|\\r\\n)[ \\t]+|[ \\t])*"; // https://tools.ietf.org/html/rfc5234 - ToDo -> add support of LWSP when finding header values
+    //private static String LWSP_Regex= "(([\\r\\n]|\\r\\n)[ \\t]+|[ \\t])*"; // https://tools.ietf.org/html/rfc5234
 
-    // Reads the Content-Type value from the header - no LWSP support yet!  - reads the value before ";", "," or space
+    // Reads the Content-Type value from the header - reads the value before ";", "," or space
     public static String findHeaderContentType(String strHeader) {
         String contentType = "";
         if (!strHeader.equals("")) {
@@ -104,15 +107,7 @@ public class HTTPMessageHelper {
 
     // Splits header and body of a request or response
     public static String[] getHeaderAndBody(byte[] fullMessage, String encoding) throws UnsupportedEncodingException {
-        String[] result = {"", ""};
-        String strFullMessage = "";
-        if (fullMessage != null) {
-            // splitting the message to retrieve the header and the body
-            strFullMessage = new String(fullMessage, encoding);
-            if (strFullMessage.contains("\r\n\r\n"))
-                result = strFullMessage.split("\r\n\r\n", 2);
-        }
-        return result;
+        return getHeaderAndBody(new String(fullMessage, encoding));
     }
 
     // Splits header and body of a request or response
@@ -120,11 +115,45 @@ public class HTTPMessageHelper {
         String[] result = {"", ""};
         if (fullMessage != null) {
             // splitting the message to retrieve the header and the body
-            if (fullMessage.contains("\r\n\r\n"))
-                result = fullMessage.split("\r\n\r\n", 2);
+            if (fullMessage.contains("\r\n\r\n") || fullMessage.contains("\n\n"))
+                result = fullMessage.split("\r?\n\r?\n|\r\n?\r\n?", 2);
         }
         return result;
     }
+
+    // Splits header and body of a request or response
+    public static List<String> getHeadersList(byte[] fullMessage, String encoding) throws UnsupportedEncodingException{
+        return getHeadersList(new String(fullMessage, encoding));
+    }
+
+    // Splits header and body of a request or response
+    public static List<String> getHeadersList(String fullMessage) {
+        String[] result = getHeaderAndBody(fullMessage);
+        return new ArrayList<>(Arrays.asList(result[0].split("\r?\n")));
+    }
+
+    // Get the body of a raw http request
+    public static String getBody(String fullMessage) {
+        return getHeaderAndBody(fullMessage)[1];
+    }
+    // Add a new header to a full raw request
+    public static String addSingleHeader(String fullMessage, String newSingleHeader) {
+        List<String> headers = getHeadersList(fullMessage);
+        headers.add(newSingleHeader);
+        return replaceAllHeaders(fullMessage, headers);
+    }
+
+    // Replace the header of a full raw request with a new header list
+    public static String replaceAllHeaders(String fullMessage, List<String> newHeader) {
+        return replaceAllHeaders(fullMessage, String.join("\r\n", newHeader));
+    }
+
+    // Replace the header of a full raw request with a new header list
+    public static String replaceAllHeaders(String fullMessage, String newHeader) {
+        var headerAndBody = getHeaderAndBody(fullMessage);
+        return newHeader + "\r\n\r\n" + headerAndBody[1];
+    }
+
 
 
     public static List<List<String>> getQueryString(String fullMessage) {
@@ -143,18 +172,19 @@ public class HTTPMessageHelper {
         List<List<String>> qs_list = new ArrayList<List<String>>();
 
         // we assume that we are dealing with one HTTP message (not multiple in a pipeline)
-        String firstline = reqMessage.split("\r\n|\r|\n", 2)[0];
+        String firstline = reqMessage.split("\r?\n|\r\n?", 2)[0];
 
         // we assume that we are dealing with an standard HTTP message in which there is a space after the last parameter value
         String QS = "";
-        Pattern pattern = Pattern.compile("\\" + delimiter_QS + "([^ \\s]+)");
+
+        Pattern pattern = Pattern.compile(Encoding.unicodeEscape(delimiter_QS, true, false)  + "([^ \\s]+)");
         Matcher matcher = pattern.matcher(firstline);
         if (matcher.find()) {
             QS = matcher.group(1);
         }
 
         if (!QS.isEmpty()) {
-            String[] keyValues = QS.split("\\" + delimiter_QS_param);
+            String[] keyValues = QS.split(Encoding.unicodeEscape(delimiter_QS_param, true, false));
             for (String keyValue : keyValues) {
                 List<String> keyValueList = new ArrayList<String>();
                 String key = keyValue;
@@ -184,7 +214,7 @@ public class HTTPMessageHelper {
         }
         // final object with param name and its value
         List<List<String>> param_list = new ArrayList<List<String>>();
-        String[] keyValues = strMessage.split("\\" + delimiter_urlencoded_body_param);
+        String[] keyValues = strMessage.split(Encoding.unicodeEscape(delimiter_urlencoded_body_param, true, false));
         for (String keyValue : keyValues) {
             List<String> keyValueList = new ArrayList<String>();
             String key = keyValue;
@@ -210,11 +240,11 @@ public class HTTPMessageHelper {
         String finalMessage = reqMessage;
         if (delimiter_QS.isEmpty()) delimiter_QS = "?";
         // we assume that we are dealing with one HTTP message (not multiple in a pipeline)
-        String[] splittedRequest = reqMessage.split("\r\n|\r|\n", 2);
+        String[] splittedRequest = reqMessage.split("\r?\n|\r\n?", 2);
         String firstline = splittedRequest[0];
         firstline = firstline.trim(); // we don't have spaces before or after the first line if it is standard!
 
-        String QS_pattern = "\\" + delimiter_QS + "[^ \\s]+";
+        String QS_pattern = Encoding.unicodeEscape(delimiter_QS, true, false) + "[^ \\s]+";
         Pattern pattern = Pattern.compile(QS_pattern);
         Matcher matcher = pattern.matcher(firstline);
         if (matcher.find()) {
@@ -238,7 +268,7 @@ public class HTTPMessageHelper {
     }
 
     // get values of a header even when it is duplicated
-    public static ArrayList<String> getHeaderValuesByName(List<String> headers, String headername) {
+    public static ArrayList<String> getAllHeaderValuesByName(List<String> headers, String headername) {
         ArrayList<String> result = new ArrayList<String>();
         headername = headername.toLowerCase();
         for (String item : headers) {
@@ -255,7 +285,7 @@ public class HTTPMessageHelper {
     }
 
     // get the first value of a header
-    public static String getHeaderValueByName(List<String> headers, String headerName) {
+    public static String getFirstHeaderValueByNameFromHeaders(List<String> headers, String headerName) {
         String result = "";
         headerName = headerName.toLowerCase();
         for (String item : headers) {
@@ -272,12 +302,239 @@ public class HTTPMessageHelper {
         return result;
     }
 
-    // replace a header value with the new value
-    public static List<String> replaceHeaderValue(List<String> headers, String headerName, String newHeaderValue, boolean isCaseSensitive) {
+    // get values of a header even when it is duplicated
+    public static ArrayList<String> removeHeadersByName(List<String> headers, String headername) {
+        ArrayList<String> result = new ArrayList<String>();
+        headername = headername.toLowerCase();
+        for (String item : headers) {
+            if (item.indexOf(":") >= 0) {
+                String[] headerItem = item.split(":", 2);
+                String headerNameLC = headerItem[0].toLowerCase();
+                if (!headerNameLC.equals(headername)) {
+                    // Header name is different so we keep it!
+                    result.add(item);
+                }
+            }else{
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    // get values of a cookie even when it is duplicated
+    public static ArrayList<String> getAllCookieValuesByName(String cookieHeaderValue, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
+        ArrayList<String> result = new ArrayList<String>();
+        if(!isCaseSensitive){
+            targetCookieName = targetCookieName.toLowerCase();
+        }
+
+        var cookieNameValues = cookieHeaderValue.split(";");
+
+        if(!isRequest){
+            cookieNameValues = new String[]{cookieNameValues[0]};
+        }
+
+        for (var cookieNameValue : cookieNameValues) {
+            cookieNameValue = cookieNameValue.trim();
+            var cookieNameValueArray = cookieNameValue.split("=",2);
+            var cookieName = cookieNameValueArray[0].trim();
+            var cookieValue = "";
+            if(cookieNameValueArray.length == 2){
+                cookieValue = cookieNameValueArray[1].trim();
+            }
+
+            if(!isCaseSensitive){
+                cookieName = cookieName.toLowerCase();
+            }
+
+            if(targetCookieName.equals(cookieName)){
+                // we have a match
+                result.add(cookieValue);
+            }
+        }
+        return result;
+    }
+
+    // get the first value of a cookie
+    public static String getFirstCookieValueByName(String cookieHeaderValue, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
+        String result = "";
+
+        if(!isCaseSensitive){
+            targetCookieName = targetCookieName.toLowerCase();
+        }
+
+        var cookieNameValues = cookieHeaderValue.split(";");
+
+        if(!isRequest){
+            cookieNameValues = new String[]{cookieNameValues[0]};
+        }
+
+        for (var cookieNameValue : cookieNameValues) {
+            cookieNameValue = cookieNameValue.trim();
+            var cookieNameValueArray = cookieNameValue.split("=",2);
+            var cookieName = cookieNameValueArray[0].trim();
+            var cookieValue = "";
+            if(cookieNameValueArray.length == 2){
+                cookieValue = cookieNameValueArray[1].trim();
+            }
+
+            if(!isCaseSensitive){
+                cookieName = cookieName.toLowerCase();
+            }
+
+            if(targetCookieName.equals(cookieName)){
+                // we have a match
+                result = cookieValue;
+                break;
+            }
+        }
+        return result;
+    }
+
+    // get values of a cookie even when it is duplicated
+    public static ArrayList<String> getAllCookieValuesByNameFromHeaders(List<String> headers, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
+        ArrayList<String> result = new ArrayList<String>();
+        String headerName = "Cookie";
+        if(!isRequest){
+            headerName = "Set-cookie";
+        }
+
+        var allCookieHeaders = getAllHeaderValuesByName(headers, headerName);
+        for(var cookieHeader : allCookieHeaders){
+            var currentResults = getAllCookieValuesByName(cookieHeader, targetCookieName, isCaseSensitive, isRequest);
+            if(currentResults.size() > 0){
+                result.addAll(currentResults);
+            }
+        }
+
+        return result;
+    }
+
+    // get the first value of a cookie
+    public static String getFirstCookieValueByNameFromHeaders(List<String> headers, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
+        String result = "";
+        String headerName = "Cookie";
+        if(!isRequest){
+            headerName = "Set-cookie";
+        }
+
+        var cookieHeader = getFirstHeaderValueByNameFromHeaders(headers, headerName);
+        result =  getFirstCookieValueByName(cookieHeader, targetCookieName, isCaseSensitive, isRequest);
+
+        return result;
+    }
+
+    // replace or add a cookie value with the new value
+    public static String replaceOrAddCookieValuesInCookieString(String cookieHeaderValue, String targetCookieName, String newCookieValue, boolean isCaseSensitive) {
+        var result = cookieHeaderValue;
+
+        var flags = Pattern.CASE_INSENSITIVE | Pattern.MULTILINE;
+        if (isCaseSensitive) {
+            flags = Pattern.MULTILINE;
+        }
+
+        String cookie_pattern_string = Pattern.quote(targetCookieName) + "\s*=\s*[^;\r\n]+";
+
+        Pattern cookie_pattern = Pattern.compile(cookie_pattern_string, flags);
+        Matcher m = cookie_pattern.matcher(cookieHeaderValue);
+        if (m.find()) {
+            // replacing
+            result = m.replaceAll(targetCookieName + "=" + newCookieValue);
+        } else {
+            // adding
+            result = cookieHeaderValue + "; " + targetCookieName + "=" + newCookieValue + ";";
+        }
+        return result;
+    }
+
+    // replace or add a cookie value with the new value
+    public static List<String> replaceOrAddCookieValuesInHeaderList(List<String> headers, String targetCookieName, String newCookieValue, boolean isCaseSensitive, Boolean isRequest) {
+        List<String> result = new ArrayList<String>();
+
+        String headerName = "cookie";
+        if(!isRequest){
+            headerName = "set-cookie";
+        }
+
+        var currentCookieHeaders = getAllHeaderValuesByName(headers, headerName);
+        var currentCookiesWithName = getAllCookieValuesByNameFromHeaders(headers, targetCookieName, isCaseSensitive, isRequest);
+
+        if(currentCookieHeaders.size() <= 0 || (!isRequest && currentCookiesWithName.size() <=0)) {
+            result.addAll(headers);
+            result.add(headerName + ": " + targetCookieName + "=" + newCookieValue + ";");
+        }else{
+            if(currentCookiesWithName.size() <= 0){
+                // this is a request but has a cookie header
+                result = removeHeadersByName(headers,headerName);
+                var newCookieStr = replaceOrAddCookieValuesInCookieString(currentCookieHeaders.get(0), targetCookieName, newCookieValue, isCaseSensitive);
+                result.add(headerName + ": " + newCookieStr);
+            }else{
+                // this is a request or response - we have at least a match...
+                int counter = 0;
+                boolean matchFound = false;
+                for (String item : headers) {
+                    if (item.indexOf(":") >= 0 && counter != 0) {
+                        String[] headerItem = item.split(":", 2);
+                        String headerNameForComp = headerItem[0];
+                        if (!isCaseSensitive)
+                            headerNameForComp = headerNameForComp.toLowerCase();
+                        if (headerNameForComp.equals(headerName)) {
+                            // We have a cookie header, now we need to see whether it has the targetedCookie inside it
+                            var cookieHeaderValue = headerItem[1].trim();
+                            if(getAllCookieValuesByName(cookieHeaderValue,targetCookieName,isCaseSensitive, isRequest).size() > 0){
+                                // this is the cookie we are after
+                                headerItem[1] = replaceOrAddCookieValuesInCookieString(cookieHeaderValue, targetCookieName, newCookieValue, isCaseSensitive);
+                            }
+                        }
+                        result.add(headerItem[0] + ": " + headerItem[1].trim());
+                    } else {
+                        result.add(item);
+                    }
+                    counter++;
+                }
+            }
+
+        }
+
+        return result;
+    }
+
+    // replace or add a cookie value with the new value - this uses a RegEx which might be a faster approach...
+    public static String replaceOrAddCookieValuesInHeaderString(String strHeader, String targetCookieName, String newCookieValue, boolean isCaseSensitive, Boolean isRequest) {
+        String result = "";
+
+        String headerName = "Cookie";
+        if(!isRequest){
+            headerName = "Set-Cookie";
+        }
+
+        var flags = Pattern.CASE_INSENSITIVE | Pattern.MULTILINE;
+        if (isCaseSensitive) {
+            flags = Pattern.MULTILINE;
+        }
+
+        String cookie_pattern_string = "^(" + Pattern.quote(headerName) + "\s*:\s*.*" + Pattern.quote(targetCookieName) + "\s*=\s*)[^;\r\n]+(.*)$";
+
+        Pattern cookie_pattern = Pattern.compile(cookie_pattern_string, flags);
+        Matcher m = cookie_pattern.matcher(strHeader);
+        if (m.find()) {
+            // replacing
+            result = m.replaceAll("$1" + targetCookieName + "=" + newCookieValue + "$2");
+        } else {
+            // adding
+            result = addHeader(strHeader, headerName, newCookieValue + "=" + newCookieValue + ";");
+        }
+
+        return result;
+    }
+
+    // replace or add a header value with the new value
+    public static List<String> replaceOrAddHeaderValuesInHeaderList(List<String> headers, String headerName, String newHeaderValue, boolean isCaseSensitive) {
         List<String> result = new ArrayList<String>();
         if (!isCaseSensitive)
             headerName = headerName.toLowerCase();
         int counter = 0;
+        boolean matchFound = false;
         for (String item : headers) {
             if (item.indexOf(":") >= 0 && counter != 0) {
                 String[] headerItem = item.split(":", 2);
@@ -287,6 +544,7 @@ public class HTTPMessageHelper {
                 if (headerNameForComp.equals(headerName)) {
                     // We have a match
                     headerItem[1] = newHeaderValue;
+                    matchFound = true;
                 }
                 result.add(headerItem[0] + ": " + headerItem[1].trim());
             } else {
@@ -294,11 +552,16 @@ public class HTTPMessageHelper {
             }
             counter++;
         }
+
+        if(!matchFound){
+            result.add(headerName + ": " + newHeaderValue);
+        }
+
         return result;
     }
 
-    // replace a header value with the new value
-    public static String replaceHeaderValue(String strHeader, String headerName, String newHeaderValue, boolean isCaseSensitive) {
+    // replace or add a header value with the new value - this uses a RegEx which might be a faster approach...
+    public static String replaceOrAddHeaderValuesInHeaderString(String strHeader, String headerName, String newHeaderValue, boolean isCaseSensitive) {
         String result = "";
         String header_pattern_string = "(?im)^(" + Pattern.quote(headerName) + ":).*$";
         if (isCaseSensitive) {
@@ -316,6 +579,7 @@ public class HTTPMessageHelper {
         }
         return result;
     }
+
 
     // add a new header and its value - this is vulnerable to CRLF but that's intentional
     public static String addHeader(String strHeader, String newHeaderName, String newHeaderValue) {

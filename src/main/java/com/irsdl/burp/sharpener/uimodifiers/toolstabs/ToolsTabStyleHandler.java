@@ -23,6 +23,9 @@ public class ToolsTabStyleHandler {
                     sharedParameters.printDebugMessages("setToolTabStyle");
                     String themeName = sharedParameters.preferences.getSetting("ToolsThemeName");
                     String themeCustomPath = sharedParameters.preferences.getSetting("ToolsThemeCustomPath");
+                    String iconSizeStr = sharedParameters.preferences.getSetting("ToolsIconSize");
+                    int iconSize = Integer.parseInt(iconSizeStr, 32);
+
                     JTabbedPane tabbedPane = sharedParameters.get_rootTabbedPane();
                     for (Component component : tabbedPane.getComponents()) {
                         int componentIndex = tabbedPane.indexOfComponent(component);
@@ -42,10 +45,10 @@ public class ToolsTabStyleHandler {
                                 try {
                                     Image myImg;
                                     if (!themeName.equalsIgnoreCase("custom")) {
-                                        myImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource("/themes/" + themeName + "/" + toolName.toString() + ".png", sharedParameters.extensionClass), 32);
+                                        myImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource("/themes/" + themeName + "/" + toolName.toString() + ".png", sharedParameters.extensionClass), iconSize);
                                     } else {
                                         // custom path!
-                                        myImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(themeCustomPath + "/" + toolName.toString() + ".png"), 32);
+                                        myImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(themeCustomPath + "/" + toolName.toString() + ".png"), iconSize);
                                         if (myImg == null) {
                                             sharedParameters.printlnError("'" + themeCustomPath + "/" + toolName.toString() + ".png' could not be loaded or did not exist.");
                                         }
