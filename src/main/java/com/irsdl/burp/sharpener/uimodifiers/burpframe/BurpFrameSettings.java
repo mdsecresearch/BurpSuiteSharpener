@@ -23,6 +23,11 @@ public class BurpFrameSettings extends StandardSettings {
     }
 
     @Override
+    public void init() {
+
+    }
+
+    @Override
     public Collection<PreferenceObject> definePreferenceObjectCollection() {
         Collection<PreferenceObject> preferenceObjectCollection = new ArrayList<>();
 
@@ -50,7 +55,7 @@ public class BurpFrameSettings extends StandardSettings {
 
         String newIconPath = sharedParameters.preferences.getSetting("BurpIconCustomPath");
         if (!newIconPath.isEmpty()) {
-            BurpTitleAndIcon.setIcon(sharedParameters, newIconPath);
+            BurpTitleAndIcon.setIcon(sharedParameters, newIconPath, 48);
         }
     }
 }

@@ -9,6 +9,7 @@ package com.irsdl.burp.sharpener.uimodifiers.subtabs;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
+import com.irsdl.burp.sharpener.uimodifiers.toolstabs.ToolsTabStyleHandler;
 import com.irsdl.generic.ImageHelper;
 import com.irsdl.generic.JScrollMenu;
 import com.irsdl.generic.UIHelper;
@@ -556,67 +557,124 @@ public class SubTabActions {
         });
         popupMenu.add(jumpToAddTabMenu);
 
+        /*
+        JMenu filterMenu = new JMenu();
+
+        boolean filterInUse = true;
+        if(filterInUse){
+            filterMenu.setText("Filters (some tabs might not be visible)");
+        }else{
+            filterMenu.setText("Filters (all tabs are visible)");
+        }
+
+        ButtonGroup filtersGroup = new ButtonGroup();
+
+        JRadioButtonMenuItem showAllTabsMenu = new JRadioButtonMenuItem("Show All Tabs");
+
+        showAllTabsMenu.addActionListener((e) -> {
+
+        });
+        filtersGroup.add(showAllTabsMenu);
+        filterMenu.add(showAllTabsMenu);
+
+        JRadioButtonMenuItem hideNumericalTabsMenu = new JRadioButtonMenuItem("Hide Numerical Tabs");
+
+        hideNumericalTabsMenu.addActionListener((e) -> {
+
+        });
+        filtersGroup.add(hideNumericalTabsMenu);
+        filterMenu.add(hideNumericalTabsMenu);
+
+        JRadioButtonMenuItem showCustomTabsMenu = new JRadioButtonMenuItem("Show Tabs with Custom Style or Name");
+
+        showCustomTabsMenu.addActionListener((e) -> {
+
+        });
+        filtersGroup.add(showCustomTabsMenu);
+        filterMenu.add(showCustomTabsMenu);
+
+        JRadioButtonMenuItem showTitlesRegexTabsMenu = new JRadioButtonMenuItem("Show Titles Matching RegEx");
+
+        showTitlesRegexTabsMenu.addActionListener((e) -> {
+
+        });
+        filtersGroup.add(showTitlesRegexTabsMenu);
+        filterMenu.add(showTitlesRegexTabsMenu);
+
+        JRadioButtonMenuItem hideTitlesRegexTabsMenu = new JRadioButtonMenuItem("Hide Titles Matching RegEx");
+        hideTitlesRegexTabsMenu.addActionListener((e) -> {
+
+        });
+        filtersGroup.add(hideTitlesRegexTabsMenu);
+        filterMenu.add(hideTitlesRegexTabsMenu);
+
+        popupMenu.add(filterMenu);
+
+*/
+
         popupMenu.addSeparator();
 
         BurpUITools.MainTabs tool = currentSubTabContainerHandler.currentToolTab;
 
-        JCheckBoxMenuItem toolSubTabPaneScrollableLayout = new JCheckBoxMenuItem("Scrollable " + tool.toString() + " Tabs");
-        if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
-            toolSubTabPaneScrollableLayout.setSelected(true);
-        }
-
-        toolSubTabPaneScrollableLayout.addActionListener((e) -> {
+        if(tool == BurpUITools.MainTabs.Repeater || tool == BurpUITools.MainTabs.Intruder) {
+            JCheckBoxMenuItem toolSubTabPaneScrollableLayout = new JCheckBoxMenuItem("Scrollable " + tool.toString() + " Tabs");
             if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        new Thread(() -> {
-                            sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
-                        }).start();
-                    }
-                });
-                sharedParameters.allSettings.saveSettings("isScrollable_" + tool.toString(), false);
-            } else {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        new Thread(() -> {
-                            sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-                            new java.util.Timer().schedule(
-                                    new java.util.TimerTask() {
-                                        @Override
-                                        public void run() {
-                                            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(0);
-                                            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex());
-                                        }
-                                    },
-                                    1000
-                            );
-                        }).start();
-                    }
-                });
-                sharedParameters.allSettings.saveSettings("isScrollable_" + tool.toString(), true);
+                toolSubTabPaneScrollableLayout.setSelected(true);
             }
-        });
 
-        popupMenu.add(toolSubTabPaneScrollableLayout);
+            toolSubTabPaneScrollableLayout.addActionListener((e) -> {
+                if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            new Thread(() -> {
+                                sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                            }).start();
+                        }
+                    });
+                    sharedParameters.allSettings.saveSettings("isScrollable_" + tool.toString(), false);
+                } else {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            new Thread(() -> {
+                                sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                                new java.util.Timer().schedule(
+                                        new java.util.TimerTask() {
+                                            @Override
+                                            public void run() {
+                                                currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(0);
+                                                currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex());
+                                            }
+                                        },
+                                        1000
+                                );
+                            }).start();
+                        }
+                    });
+                    sharedParameters.allSettings.saveSettings("isScrollable_" + tool.toString(), true);
+                }
+            });
 
-        JCheckBoxMenuItem toolSubTabPaneMouseWheelScroll = new JCheckBoxMenuItem(tool.toString() + " Tab Scroll by Mouse Wheel");
-        if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
-            toolSubTabPaneMouseWheelScroll.setSelected(true);
-        }
+            popupMenu.add(toolSubTabPaneScrollableLayout);
 
-        toolSubTabPaneMouseWheelScroll.addActionListener((e) -> {
+            JCheckBoxMenuItem toolSubTabPaneMouseWheelScroll = new JCheckBoxMenuItem(tool.toString() + " Tab Scroll by Mouse Wheel");
             if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
-                BurpUITools.removeMouseWheelFromJTabbedPane(currentSubTabContainerHandler.parentTabbedPane, true);
-                sharedParameters.allSettings.saveSettings("mouseWheelToScroll_" + tool.toString(), false);
-            } else {
-                BurpUITools.addMouseWheelToJTabbedPane(currentSubTabContainerHandler.parentTabbedPane, false);
-                sharedParameters.allSettings.saveSettings("mouseWheelToScroll_" + tool.toString(), true);
+                toolSubTabPaneMouseWheelScroll.setSelected(true);
             }
-        });
 
-        popupMenu.add(toolSubTabPaneMouseWheelScroll);
+            toolSubTabPaneMouseWheelScroll.addActionListener((e) -> {
+                if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
+                    BurpUITools.removeMouseWheelFromJTabbedPane(currentSubTabContainerHandler.parentTabbedPane, true);
+                    sharedParameters.allSettings.saveSettings("mouseWheelToScroll_" + tool.toString(), false);
+                } else {
+                    BurpUITools.addMouseWheelToJTabbedPane(currentSubTabContainerHandler.parentTabbedPane, false);
+                    sharedParameters.allSettings.saveSettings("mouseWheelToScroll_" + tool.toString(), true);
+                }
+            });
+
+            popupMenu.add(toolSubTabPaneMouseWheelScroll);
+        }
 
         return popupMenu;
     }

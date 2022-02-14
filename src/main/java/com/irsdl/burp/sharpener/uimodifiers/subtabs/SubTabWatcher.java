@@ -89,12 +89,23 @@ public class SubTabWatcher implements ContainerListener {
 
         accessibleTabs.add(componentTitle);
 
-        tabComponent.addMouseListener(new SubTabClickHandler(this.mouseEventConsumer));
+
+        // Burp has changed something in the UI so we need this if condition to support older versions
+        Component targetComponent;
+
+        if(tabComponent.getMouseListeners().length > 0){
+            targetComponent = tabComponent;
+        }else{
+            //tabComponent.getComponentAt(0,0).addMouseListener(new SubTabClickHandler(this.mouseEventConsumer));
+            targetComponent = tabComponent.getComponentAt(0,0);
+        }
+
+        targetComponent.addMouseListener(new SubTabClickHandler(this.mouseEventConsumer));
         //tabComponent.removeMouseListener(tabComponent.getMouseListeners()[1]); --> this will remove the current right click menu!
 
         // Loading all the tabs
-        for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
-            JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(tool);
+        //for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
+            JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(componentTitle);
             ArrayList<SubTabContainerHandler> subTabContainerHandlers = new ArrayList<>();
             if (subTabbedPane != null) {
                 for (Component subTabComponent : subTabbedPane.getComponents()) {
@@ -105,8 +116,8 @@ public class SubTabWatcher implements ContainerListener {
                     subTabContainerHandlers.add(subTabContainerHandler);
                 }
             }
-            sharedParameters.allSubTabContainerHandlers.put(tool, subTabContainerHandlers);
-        }
+            sharedParameters.allSubTabContainerHandlers.put(componentTitle, subTabContainerHandlers);
+        //}
 
         tabPropertyChangeListener = new PropertyChangeListener() {
             @Override
@@ -133,7 +144,7 @@ public class SubTabWatcher implements ContainerListener {
             }
         };
 
-        tabComponent.addPropertyChangeListener("indexForTabComponent", tabPropertyChangeListener);
+        targetComponent.addPropertyChangeListener("indexForTabComponent", tabPropertyChangeListener);
     }
 
     @Override
@@ -153,15 +164,25 @@ public class SubTabWatcher implements ContainerListener {
 
         accessibleTabs.add(componentTitle);
 
-        // as there is no other PropertyChangeListener with propertyName of "indexForTabComponent" by default, we can remove them all
-        PropertyChangeListener[] pclArray = tabComponent.getPropertyChangeListeners("indexForTabComponent");
-        for (PropertyChangeListener pcl : pclArray) {
-            tabComponent.removePropertyChangeListener("indexForTabComponent", pcl);
+        // Burp has changed something in the UI so we need this if condition to support older versions
+        Component targetComponent;
+
+        if(tabComponent.getMouseListeners().length > 0){
+            targetComponent = tabComponent;
+        }else{
+            //tabComponent.getComponentAt(0,0).addMouseListener(new SubTabClickHandler(this.mouseEventConsumer));
+            targetComponent = tabComponent.getComponentAt(0,0);
         }
 
-        for (MouseListener mouseListener : tabComponent.getMouseListeners()) {
+        // as there is no other PropertyChangeListener with propertyName of "indexForTabComponent" by default, we can remove them all
+        PropertyChangeListener[] pclArray = targetComponent.getPropertyChangeListeners("indexForTabComponent");
+        for (PropertyChangeListener pcl : pclArray) {
+            targetComponent.removePropertyChangeListener("indexForTabComponent", pcl);
+        }
+
+        for (MouseListener mouseListener : targetComponent.getMouseListeners()) {
             if (mouseListener instanceof SubTabClickHandler) {
-                tabComponent.removeMouseListener(mouseListener);
+                targetComponent.removeMouseListener(mouseListener);
             }
         }
 

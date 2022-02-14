@@ -26,6 +26,7 @@ public class TopMenuBar extends javax.swing.JMenu {
     private JMenu topMenuForExtension;
     private final SharpenerSharedParameters sharedParameters;
     private final String[] themeNames = {"none", "halloween", "game", "hacker", "gradient", "mobster", "office"};
+    private final String[] iconSizes = {"48", "32", "24", "20", "16", "14", "12", "10"};
     private final Boolean isPrefsRegistered = false;
 
     public TopMenuBar(SharpenerSharedParameters sharedParameters) {
@@ -112,6 +113,24 @@ public class TopMenuBar extends javax.swing.JMenu {
                     toolsUniqueStyleThemeMenu.add(toolStyleThemeCustom);
                     toolsUniqueStyleMenu.add(toolsUniqueStyleThemeMenu);
 
+                    String iconSize = sharedParameters.preferences.getSetting("ToolsIconSize");
+                    JMenu toolsUniqueStyleIconSizeMenu = new JMenu("Icons' Size");
+                    ButtonGroup iconSizeGroup = new ButtonGroup();
+                    for (String definedIconSize: iconSizes) {
+                        JRadioButtonMenuItem toolIconSize = new JRadioButtonMenuItem(definedIconSize);
+                        if (iconSize.equals(definedIconSize)) {
+                            toolIconSize.setSelected(true);
+                        }
+                        toolIconSize.addActionListener((e) -> {
+                            String chosenOne = definedIconSize;
+                            sharedParameters.allSettings.saveSettings("ToolsIconSize", chosenOne);
+                            ToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
+                        });
+                        iconSizeGroup.add(toolIconSize);
+                        toolsUniqueStyleIconSizeMenu.add(toolIconSize);
+                    }
+                    toolsUniqueStyleMenu.add(toolsUniqueStyleIconSizeMenu);
+
                     toolsUniqueStyleMenu.addSeparator();
 
                     for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
@@ -161,7 +180,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                             FileFilter imageFilter = new FileNameExtensionFilter("Image files", ImageIO.getReaderFileSuffixes());
                             String newIconPath = UIHelper.showFileDialog(currentIconPath, imageFilter, sharedParameters.get_mainFrame());
                             if (newIconPath != null && !newIconPath.trim().isEmpty()) {
-                                BurpTitleAndIcon.setIcon(TopMenuBar.this.sharedParameters, newIconPath);
+                                BurpTitleAndIcon.setIcon(TopMenuBar.this.sharedParameters, newIconPath, 48);
                                 TopMenuBar.this.sharedParameters.allSettings.saveSettings("BurpIconCustomPath", newIconPath);
                             }
                         }

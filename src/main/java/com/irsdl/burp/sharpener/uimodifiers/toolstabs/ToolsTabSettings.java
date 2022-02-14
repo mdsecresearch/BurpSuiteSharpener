@@ -22,6 +22,11 @@ public class ToolsTabSettings extends StandardSettings {
     }
 
     @Override
+    public void init() {
+
+    }
+
+    @Override
     public Collection<PreferenceObject> definePreferenceObjectCollection() {
         Collection<PreferenceObject> preferenceObjectCollection = new ArrayList<>();
 
@@ -35,6 +40,9 @@ public class ToolsTabSettings extends StandardSettings {
 
         PreferenceObject preferenceObject_ToolsThemeName = new PreferenceObject("ToolsThemeName", String.class, "office", Preferences.Visibility.GLOBAL);
         preferenceObjectCollection.add(preferenceObject_ToolsThemeName);
+
+        PreferenceObject preferenceObject_ToolsIconSize = new PreferenceObject("ToolsIconSize", String.class, "16", Preferences.Visibility.GLOBAL);
+        preferenceObjectCollection.add(preferenceObject_ToolsIconSize);
 
         PreferenceObject preferenceObject_ToolsThemeCustomPath = new PreferenceObject("ToolsThemeCustomPath", String.class, "", Preferences.Visibility.GLOBAL);
         preferenceObjectCollection.add(preferenceObject_ToolsThemeCustomPath);
