@@ -4,6 +4,7 @@
 // Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
 // Released under AGPL see LICENSE for more information
 
+apply plugin: 'java'
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
@@ -11,8 +12,8 @@ group 'com.irsdl'
 version '1.08-SNAPSHOT'
 //version '1.04-BETA'
 
-targetCompatibility = '1.8'
-sourceCompatibility = '1.8'
+//targetCompatibility = '1.8'
+//sourceCompatibility = '1.8'
 
 repositories {
     mavenCentral()
@@ -26,6 +27,12 @@ dependencies {
     implementation 'com.github.CoreyD97:BurpExtenderUtilities:-SNAPSHOT'
     implementation 'com.google.code.gson:gson:2.8.9'
     //compileOnly 'org.python:jython-standalone:2.7.2'
+}
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(15))
+  }
 }
 
 jar{
