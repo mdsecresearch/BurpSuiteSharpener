@@ -6,10 +6,13 @@
 
 package com.irsdl.burp.generic;
 
+import com.irsdl.generic.UIHelper;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.util.ArrayList;
 import java.util.Set;
 
 public class BurpUITools {
@@ -58,6 +61,21 @@ public class BurpUITools {
             }
         }
         return result;
+    }
+
+    public static void switchToMainTab(String tabName, JTabbedPane tabbedPane) {
+        for (Component component : tabbedPane.getComponents()) {
+            int componentIndex = tabbedPane.indexOfComponent(component);
+            if (componentIndex == -1) {
+                continue;
+            }
+
+            String componentTitle = tabbedPane.getTitleAt(componentIndex);
+            if (componentTitle.trim().equalsIgnoreCase(tabName.trim())) {
+                tabbedPane.setSelectedIndex(componentIndex);
+                break;
+            }
+        }
     }
 
     public static Boolean isStringInMainTabs(String tabTitleName) {
@@ -185,20 +203,42 @@ public class BurpUITools {
         MouseWheelListener mwl = new MouseWheelListener() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
-                int offset = 0;
-                if (!isLastOneSelectable)
-                    offset = 1;
+                if (e.isControlDown()) {
+                    JTabbedPane pane = (JTabbedPane) e.getSource();
+                    // works with version 2022.1.1 - not tested in the previous versions!
+                    Component component = ((JComponent) pane.getTabComponentAt(pane.getSelectedIndex())).getComponent(0);
 
-                JTabbedPane pane = (JTabbedPane) e.getSource();
-                int units = e.getWheelRotation();
-                int oldIndex = pane.getSelectedIndex();
-                int newIndex = oldIndex + units;
-                if (newIndex < 0)
-                    pane.setSelectedIndex(0);
-                else if (newIndex >= pane.getTabCount() - offset)
-                    pane.setSelectedIndex(pane.getTabCount() - 1 - offset);
-                else
-                    pane.setSelectedIndex(newIndex);
+                    float currentFontSize = component.getFont().getSize();
+
+                    if (e.getWheelRotation() < 0) {
+                        //scrolled up
+                        if(currentFontSize<=36){
+                            component.setFont(component.getFont().deriveFont(currentFontSize+2));
+
+                        }
+                    } else {
+                        //scrolled down
+                        if(currentFontSize>=12) {
+                            component.setFont(component.getFont().deriveFont(currentFontSize - 2));
+                        }
+                    }
+                }else{
+                    int offset = 0;
+                    if (!isLastOneSelectable)
+                        offset = 1;
+
+                    JTabbedPane pane = (JTabbedPane) e.getSource();
+                    int units = e.getWheelRotation();
+                    int oldIndex = pane.getSelectedIndex();
+                    int newIndex = oldIndex + units;
+                    if (newIndex < 0)
+                        pane.setSelectedIndex(0);
+                    else if (newIndex >= pane.getTabCount() - offset)
+                        pane.setSelectedIndex(pane.getTabCount() - 1 - offset);
+                    else
+                        pane.setSelectedIndex(newIndex);
+                }
+
             }
         };
         jTabbedPane.addMouseWheelListener(mwl);

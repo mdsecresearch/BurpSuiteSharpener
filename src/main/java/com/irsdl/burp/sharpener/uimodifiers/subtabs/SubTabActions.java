@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 
 public class SubTabActions {
     public static void tabClicked(final MouseEvent e, SharpenerSharedParameters sharedParameters) {
-        if (SwingUtilities.isMiddleMouseButton(e) || e.isAltDown() || ((e.getModifiers() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK)) {
+        if (SwingUtilities.isMiddleMouseButton(e) || e.isAltDown() || ((e.getModifiersEx() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK)) {
             if (e.getComponent() instanceof JTabbedPane) {
                 JTabbedPane tabbedPane = (JTabbedPane) e.getComponent();
                 int tabIndex;
@@ -54,10 +54,10 @@ public class SubTabActions {
 
                 if (!subTabContainerHandler.isValid()) return;
 
-                boolean isCTRL_Key = (e.getModifiers() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK || e.isControlDown();
+                boolean isCTRL_Key = (e.getModifiersEx() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK || e.isControlDown();
                 // Middle key is like the Alt key!
                 //boolean isALT_Key = (e.getModifiers() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK;
-                boolean isSHIFT_Key = (e.getModifiers() & ActionEvent.SHIFT_MASK) == ActionEvent.SHIFT_MASK || e.isShiftDown();
+                boolean isSHIFT_Key = (e.getModifiersEx() & ActionEvent.SHIFT_MASK) == ActionEvent.SHIFT_MASK || e.isShiftDown();
 
                 int maxSize = 40;
                 int minSize = 10;
@@ -658,7 +658,7 @@ public class SubTabActions {
 
             popupMenu.add(toolSubTabPaneScrollableLayout);
 
-            JCheckBoxMenuItem toolSubTabPaneMouseWheelScroll = new JCheckBoxMenuItem(tool.toString() + " Tab Scroll by Mouse Wheel");
+            JCheckBoxMenuItem toolSubTabPaneMouseWheelScroll = new JCheckBoxMenuItem("Scroll by [Mouse Wheel] & Resize by [Ctrl + Mouse Wheel]");
             if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
                 toolSubTabPaneMouseWheelScroll.setSelected(true);
             }

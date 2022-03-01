@@ -398,11 +398,13 @@ public class TopMenuBar extends javax.swing.JMenu {
                         //sharedParameters.get_mainFrame().revalidate();
                         //sharedParameters.get_mainMenuBar().repaint();
                         // to set back to plain after a few seconds
+
                         new java.util.Timer().schedule(
                                 new java.util.TimerTask() {
                                     @Override
                                     public void run() {
-                                        topMenuForExtension.setFont(topMenuForExtension.getFont().deriveFont(topMenuForExtension.getFont().getStyle() ^ Font.BOLD));
+                                        //topMenuForExtension.setFont(topMenuForExtension.getFont().deriveFont(topMenuForExtension.getFont().getStyle() ^ Font.BOLD)); // this would set the font so if we change them later in the UI, this menu will not be updated!
+                                        topMenuForExtension.setFont(UIManager.getLookAndFeelDefaults().getFont(topMenuForExtension.getComponent()));
                                     }
                                 },
                                 2000

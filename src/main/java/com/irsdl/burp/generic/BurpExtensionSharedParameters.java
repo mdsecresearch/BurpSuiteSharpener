@@ -56,6 +56,7 @@ public class BurpExtensionSharedParameters {
     public PrintWriter stderr = null;
     public IBurpExtenderCallbacks callbacks = null;
     public Preferences preferences; // to use the ability of this project: https://github.com/CoreyD97/BurpExtenderUtilities
+    public Boolean unloadWithoutSave = false; // this is useful if we need to exit without save in some situation
 
     // these are the parameters which are used per extension but needs to be shared - like registers
     public boolean addedIconListener = false;

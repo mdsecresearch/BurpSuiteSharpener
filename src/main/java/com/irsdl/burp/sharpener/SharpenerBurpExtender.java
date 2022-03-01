@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
     //public static MainExtensionClass instance;
-    private String version = "1.08";
+    private String version = "1.09";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
@@ -135,13 +135,16 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                 lookAndFeelPropChangeListener = new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
+                        sharedParameters.unloadWithoutSave = true; // we need to unload the extension without saving it as major change in UI has occurred (switch to dark/light mode)
                         new java.util.Timer().schedule(
                                 new java.util.TimerTask() {
                                     @Override
                                     public void run() {
                                         sharedParameters.printDebugMessages("lookAndFeelPropChangeListener");
                                         sharedParameters.defaultSubTabObject = null;
-                                        UIHelper.showWarningMessage("Due to the major UI change, it is recommended to reload the " + sharedParameters.extensionName + " extension.", sharedParameters.get_mainFrame());
+                                        UIHelper.showWarningMessage("Due to a major UI change, the " + sharedParameters.extensionName + " extension needs to be unload. Please load it manually.", sharedParameters.get_mainFrame());
+                                        BurpUITools.switchToMainTab("Extender", sharedParameters.get_rootTabbedPane());
+                                        sharedParameters.callbacks.unloadExtension();
                                     }
                                 },
                                 2000
