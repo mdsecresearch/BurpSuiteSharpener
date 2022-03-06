@@ -406,16 +406,6 @@ public class SubTabActions {
         });
         jumpMenu.add(jumpToLastTabMenu);
 
-        JMenuItem jumpToNextTabMenu = new JMenuItem("Next Tab");
-        if (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2) {
-            jumpToNextTabMenu.setEnabled(false);
-        }
-
-        jumpToNextTabMenu.addActionListener(e -> {
-            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex() + 1);
-        });
-        jumpMenu.add(jumpToNextTabMenu);
-
         JMenuItem jumpToPreviousTabMenu = new JMenuItem("Previous Tab");
         if (currentSubTabContainerHandler.getTabIndex() == 0) {
             jumpToPreviousTabMenu.setEnabled(false);
@@ -426,12 +416,24 @@ public class SubTabActions {
         });
         jumpMenu.add(jumpToPreviousTabMenu);
 
+        JMenuItem jumpToNextTabMenu = new JMenuItem("Next Tab");
+        if (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2) {
+            jumpToNextTabMenu.setEnabled(false);
+        }
 
-        JMenu searchAndJumpMenu = new JMenu("Title RegEx Search");
-        JMenuItem jumpToFirstTabByTitleMenu = new JMenuItem("Find (case-sensitive)");
+        jumpToNextTabMenu.addActionListener(e -> {
+            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex() + 1);
+        });
+        jumpMenu.add(jumpToNextTabMenu);
+
+        popupMenu.add(jumpMenu);
+
+
+        JMenu searchAndJumpMenu = new JMenu("Search RegEx in Title");
+        JMenuItem jumpToFirstTabByTitleMenu = new JMenuItem("Search RegEx");
 
         jumpToFirstTabByTitleMenu.addActionListener(e -> {
-            String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression (case-sensitive):", "Search in titles and jump to tab", sharedParameters.searchedTabTitleForJumpToTab, sharedParameters.get_mainFrame());
+            String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression:", "Search in titles and jump to tab", sharedParameters.searchedTabTitleForJumpToTab, sharedParameters.get_mainFrame());
             if (!titleKeyword.isEmpty()) {
                 boolean result = false;
                 if (Utilities.isValidRegExPattern(titleKeyword)) {
@@ -439,7 +441,7 @@ public class SubTabActions {
                     ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
                     for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
                         String subTabTitle = subTabContainerHandlerItem.getTabTitle();
-                        if (Pattern.compile(titleKeyword).matcher(subTabTitle).find()) {
+                        if (Pattern.compile(titleKeyword, Pattern.CASE_INSENSITIVE).matcher(subTabTitle).find()) {
                             subTabContainerHandlerItem.parentTabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
                             result = true;
                             break;
@@ -471,10 +473,13 @@ public class SubTabActions {
                 boolean result = false;
                 ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
                 for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
-                    if (subTabContainerHandlerItem.getTabIndex() > currentSubTabContainerHandler.getTabIndex()) {
+                    //if (subTabContainerHandlerItem.getTabIndex() > currentSubTabContainerHandler.getTabIndex()) {
+                    if (subTabContainerHandlerItem.getTabIndex() > subTabContainerHandlerItem.parentTabbedPane.getSelectedIndex()) {
                         String subTabTitle = subTabContainerHandlerItem.getTabTitle();
-                        if (Pattern.compile(sharedParameters.searchedTabTitleForJumpToTab).matcher(subTabTitle).find()) {
+                        if (Pattern.compile(sharedParameters.searchedTabTitleForJumpToTab, Pattern.CASE_INSENSITIVE).matcher(subTabTitle).find()) {
                             subTabContainerHandlerItem.parentTabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
+                            // This is because when we click on the Search RegEx, this will be triggered but the menu won't be closed
+                            menuItem.setText("Tab Title: " + subTabContainerHandlerItem.parentTabbedPane.getTitleAt(subTabContainerHandlerItem.parentTabbedPane.getSelectedIndex()));
                             result = true;
                             break;
                         }
@@ -483,14 +488,42 @@ public class SubTabActions {
 
                 if (result) {
                     sharedParameters.printDebugMessages("Next matched title was found");
+                    sharedParameters.printDebugMessages("Jumped to a next title which matched: " + sharedParameters.searchedTabTitleForJumpToTab);
                 } else {
                     sharedParameters.printDebugMessages("No new next match was found");
                 }
-                sharedParameters.printDebugMessages("Jumped to a next title which matched: " + sharedParameters.searchedTabTitleForJumpToTab);
             }
         });
         searchAndJumpMenu.add(jumpToNextTabByTitleMenu);
 
+        if (sharedParameters.searchedTabTitleForJumpToTab.isEmpty() || (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2)) {
+            // do nothing
+        } else {
+            // we want to rename searchAndJumpMenu so it shows what would happen when it is clicked!
+            searchAndJumpMenu.setText("Search RegEx in Title (Click for Next)");
+            searchAndJumpMenu.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    jumpToNextTabByTitleMenu.doClick();
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                }
+            });
+        }
         JMenuItem jumpToPreviousTabByTitleMenu = new JMenuItem("Previous");
         if (sharedParameters.searchedTabTitleForJumpToTab.isEmpty() || (currentSubTabContainerHandler.getTabIndex() == 0)) {
             jumpToPreviousTabByTitleMenu.setEnabled(false);
@@ -503,9 +536,10 @@ public class SubTabActions {
                 boolean result = false;
                 ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
                 for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
-                    if (subTabContainerHandlerItem.getTabIndex() < currentSubTabContainerHandler.getTabIndex()) {
+                    //if (subTabContainerHandlerItem.getTabIndex() < currentSubTabContainerHandler.getTabIndex()) {
+                    if (subTabContainerHandlerItem.getTabIndex() < subTabContainerHandlerItem.parentTabbedPane.getSelectedIndex()) {
                         String subTabTitle = subTabContainerHandlerItem.getTabTitle();
-                        if (Pattern.compile(sharedParameters.searchedTabTitleForJumpToTab).matcher(subTabTitle).find()) {
+                        if (Pattern.compile(sharedParameters.searchedTabTitleForJumpToTab, Pattern.CASE_INSENSITIVE).matcher(subTabTitle).find()) {
                             subTabContainerHandlerItem.parentTabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
                             result = true;
                             break;
@@ -514,16 +548,16 @@ public class SubTabActions {
                 }
                 if (result) {
                     sharedParameters.printDebugMessages("Previous matched title was found");
+                    sharedParameters.printDebugMessages("Jumped to a previous title which matched: " + sharedParameters.searchedTabTitleForJumpToTab);
                 } else {
                     sharedParameters.printDebugMessages("No new previous match was found");
                 }
-
-                sharedParameters.printDebugMessages("Jumped to a previous title which matched: " + sharedParameters.searchedTabTitleForJumpToTab);
             }
         });
+
         searchAndJumpMenu.add(jumpToPreviousTabByTitleMenu);
-        jumpMenu.add(searchAndJumpMenu);
-        popupMenu.add(jumpMenu);
+
+        popupMenu.add(searchAndJumpMenu);
 
 /*
         JMenu closingTabsMenu = new JMenu("Closing tab options");
@@ -678,4 +712,5 @@ public class SubTabActions {
 
         return popupMenu;
     }
+
 }
