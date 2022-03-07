@@ -8,6 +8,7 @@ package com.irsdl.burp.sharpener.uimodifiers.subtabs;
 
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
+import com.irsdl.generic.MouseAdapterExtensionHandler;
 import com.irsdl.generic.UIHelper;
 
 import javax.swing.*;
@@ -100,7 +101,7 @@ public class SubTabWatcher implements ContainerListener {
             targetComponent = tabComponent.getComponentAt(0,0);
         }
 
-        targetComponent.addMouseListener(new SubTabClickHandler(this.mouseEventConsumer));
+        targetComponent.addMouseListener(new MouseAdapterExtensionHandler(this.mouseEventConsumer, MouseEvent.MOUSE_RELEASED));
         //tabComponent.removeMouseListener(tabComponent.getMouseListeners()[1]); --> this will remove the current right click menu!
 
         // Loading all the tabs
@@ -181,7 +182,7 @@ public class SubTabWatcher implements ContainerListener {
         }
 
         for (MouseListener mouseListener : targetComponent.getMouseListeners()) {
-            if (mouseListener instanceof SubTabClickHandler) {
+            if (mouseListener instanceof MouseAdapterExtensionHandler) {
                 targetComponent.removeMouseListener(mouseListener);
             }
         }

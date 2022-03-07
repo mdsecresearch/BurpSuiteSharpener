@@ -6,14 +6,12 @@
 
 package com.irsdl.burp.sharpener.uimodifiers.subtabs;
 
+import com.google.common.collect.Lists;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
 import com.irsdl.burp.sharpener.uimodifiers.toolstabs.ToolsTabStyleHandler;
-import com.irsdl.generic.ImageHelper;
-import com.irsdl.generic.JScrollMenu;
-import com.irsdl.generic.UIHelper;
-import com.irsdl.generic.Utilities;
+import com.irsdl.generic.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -34,17 +32,18 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.ListIterator;
 import java.util.regex.Pattern;
 
 public class SubTabActions {
-    public static void tabClicked(final MouseEvent e, SharpenerSharedParameters sharedParameters) {
-        if (SwingUtilities.isMiddleMouseButton(e) || e.isAltDown() || ((e.getModifiersEx() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK)) {
-            if (e.getComponent() instanceof JTabbedPane) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getComponent();
+    public static void tabClicked(final MouseEvent mouseEvent, SharpenerSharedParameters sharedParameters) {
+        if (SwingUtilities.isMiddleMouseButton(mouseEvent) || mouseEvent.isAltDown() || ((mouseEvent.getModifiersEx() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK)) {
+            if (mouseEvent.getComponent() instanceof JTabbedPane) {
+                JTabbedPane tabbedPane = (JTabbedPane) mouseEvent.getComponent();
                 int tabIndex;
                 /*
                 // this was useful when we did not know which tab has been selected but in Burp Suite a tab will be selected upon a click so we can find the index that way
-                int tabIndex = tabbedPane.getUI().tabForCoordinate(tabbedPane, e.getX(), e.getY());
+                int tabIndex = tabbedPane.getUI().tabForCoordinate(tabbedPane, mouseEvent.getX(), mouseEvent.getY());
                 if (tabIndex < 0 || tabIndex > tabbedPane.getTabCount() - 1) return;
                 */
 
@@ -54,21 +53,21 @@ public class SubTabActions {
 
                 if (!subTabContainerHandler.isValid()) return;
 
-                boolean isCTRL_Key = (e.getModifiersEx() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK || e.isControlDown();
+                boolean isCTRL_Key = (mouseEvent.getModifiersEx() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK || mouseEvent.isControlDown();
                 // Middle key is like the Alt key!
-                //boolean isALT_Key = (e.getModifiers() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK;
-                boolean isSHIFT_Key = (e.getModifiersEx() & ActionEvent.SHIFT_MASK) == ActionEvent.SHIFT_MASK || e.isShiftDown();
+                //boolean isALT_Key = (mouseEvent.getModifiers() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK;
+                boolean isSHIFT_Key = (mouseEvent.getModifiersEx() & ActionEvent.SHIFT_MASK) == ActionEvent.SHIFT_MASK || mouseEvent.isShiftDown();
 
                 int maxSize = 40;
                 int minSize = 10;
                 if (!isCTRL_Key && !isSHIFT_Key) {
                     JPopupMenu popupMenu = createPopupMenu(sharedParameters, subTabContainerHandler);
-                    //popupMenu.show(tabbedPane, e.getX(), e.getY());
+                    //popupMenu.show(tabbedPane, mouseEvent.getX(), mouseEvent.getY());
                     int x;
                     int y;
                     if (tabbedPane.getTabLayoutPolicy() == JTabbedPane.SCROLL_TAB_LAYOUT) {
-                        x = e.getX();
-                        y = e.getY() + tabbedPane.getTabComponentAt(tabIndex).getHeight() / 2;
+                        x = mouseEvent.getX();
+                        y = mouseEvent.getY() + tabbedPane.getTabComponentAt(tabIndex).getHeight() / 2;
                     } else {
                         x = tabbedPane.getTabComponentAt(tabIndex).getX();
                         y = tabbedPane.getTabComponentAt(tabIndex).getY() + tabbedPane.getTabComponentAt(tabIndex).getHeight();
@@ -385,52 +384,60 @@ public class SubTabActions {
 
         popupMenu.addSeparator();
 
-        JMenu jumpMenu = new JMenu("Jump to");
+        JMenu jumpMenu = new JMenu("Jump To (Click > Next, Right-Click > Prev)");
         JMenuItem jumpToFirstTabMenu = new JMenuItem("First Tab");
-        if (currentSubTabContainerHandler.getTabIndex() == 0) {
-            jumpToFirstTabMenu.setEnabled(false);
-        }
 
         jumpToFirstTabMenu.addActionListener(e -> {
             currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(0);
         });
+
+
         jumpMenu.add(jumpToFirstTabMenu);
 
         JMenuItem jumpToLastTabMenu = new JMenuItem("Last Tab");
-        if (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2) {
-            jumpToLastTabMenu.setEnabled(false);
-        }
 
         jumpToLastTabMenu.addActionListener(e -> {
             currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2);
         });
+
         jumpMenu.add(jumpToLastTabMenu);
 
         JMenuItem jumpToPreviousTabMenu = new JMenuItem("Previous Tab");
-        if (currentSubTabContainerHandler.getTabIndex() == 0) {
-            jumpToPreviousTabMenu.setEnabled(false);
-        }
 
         jumpToPreviousTabMenu.addActionListener(e -> {
-            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex() - 1);
+            if (currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() > 0) {
+                currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() - 1);
+                // This is because when we click on the Search RegEx, this will be triggered but the menu won't be closed
+                menuItem.setText("Tab Title: " + currentSubTabContainerHandler.parentTabbedPane.getTitleAt(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex()));
+            }
         });
+
         jumpMenu.add(jumpToPreviousTabMenu);
 
         JMenuItem jumpToNextTabMenu = new JMenuItem("Next Tab");
-        if (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2) {
-            jumpToNextTabMenu.setEnabled(false);
-        }
-
         jumpToNextTabMenu.addActionListener(e -> {
-            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.getTabIndex() + 1);
+            if (currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() < currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2) {
+                currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() + 1);
+                // This is because when we click on the Search RegEx, this will be triggered but the menu won't be closed
+                menuItem.setText("Tab Title: " + currentSubTabContainerHandler.parentTabbedPane.getTitleAt(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex()));
+            }
         });
+
         jumpMenu.add(jumpToNextTabMenu);
+
+        jumpMenu.addMouseListener(new MouseAdapterExtensionHandler(mouseEvent -> {
+            if(SwingUtilities.isRightMouseButton(mouseEvent)){
+                jumpToPreviousTabMenu.doClick();
+            }else{
+                jumpToNextTabMenu.doClick();
+            }
+        }, MouseEvent.MOUSE_CLICKED));
 
         popupMenu.add(jumpMenu);
 
 
         JMenu searchAndJumpMenu = new JMenu("Search RegEx in Title");
-        JMenuItem jumpToFirstTabByTitleMenu = new JMenuItem("Search RegEx");
+        JMenuItem jumpToFirstTabByTitleMenu = new JMenuItem("Define New RegEx (case insensitive)");
 
         jumpToFirstTabByTitleMenu.addActionListener(e -> {
             String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression:", "Search in titles and jump to tab", sharedParameters.searchedTabTitleForJumpToTab, sharedParameters.get_mainFrame());
@@ -473,13 +480,12 @@ public class SubTabActions {
                 boolean result = false;
                 ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
                 for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
-                    //if (subTabContainerHandlerItem.getTabIndex() > currentSubTabContainerHandler.getTabIndex()) {
                     if (subTabContainerHandlerItem.getTabIndex() > subTabContainerHandlerItem.parentTabbedPane.getSelectedIndex()) {
                         String subTabTitle = subTabContainerHandlerItem.getTabTitle();
                         if (Pattern.compile(sharedParameters.searchedTabTitleForJumpToTab, Pattern.CASE_INSENSITIVE).matcher(subTabTitle).find()) {
                             subTabContainerHandlerItem.parentTabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
                             // This is because when we click on the Search RegEx, this will be triggered but the menu won't be closed
-                            menuItem.setText("Tab Title: " + subTabContainerHandlerItem.parentTabbedPane.getTitleAt(subTabContainerHandlerItem.parentTabbedPane.getSelectedIndex()));
+                            menuItem.setText("Tab Title: " + currentSubTabContainerHandler.parentTabbedPane.getTitleAt(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex()));
                             result = true;
                             break;
                         }
@@ -496,34 +502,6 @@ public class SubTabActions {
         });
         searchAndJumpMenu.add(jumpToNextTabByTitleMenu);
 
-        if (sharedParameters.searchedTabTitleForJumpToTab.isEmpty() || (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2)) {
-            // do nothing
-        } else {
-            // we want to rename searchAndJumpMenu so it shows what would happen when it is clicked!
-            searchAndJumpMenu.setText("Search RegEx in Title (Click for Next)");
-            searchAndJumpMenu.addMouseListener(new MouseListener() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    jumpToNextTabByTitleMenu.doClick();
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                }
-            });
-        }
         JMenuItem jumpToPreviousTabByTitleMenu = new JMenuItem("Previous");
         if (sharedParameters.searchedTabTitleForJumpToTab.isEmpty() || (currentSubTabContainerHandler.getTabIndex() == 0)) {
             jumpToPreviousTabByTitleMenu.setEnabled(false);
@@ -535,12 +513,13 @@ public class SubTabActions {
             if (!sharedParameters.searchedTabTitleForJumpToTab.isEmpty()) {
                 boolean result = false;
                 ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
-                for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
-                    //if (subTabContainerHandlerItem.getTabIndex() < currentSubTabContainerHandler.getTabIndex()) {
+                for (SubTabContainerHandler subTabContainerHandlerItem : Lists.reverse(subTabContainerHandlers)) {
                     if (subTabContainerHandlerItem.getTabIndex() < subTabContainerHandlerItem.parentTabbedPane.getSelectedIndex()) {
                         String subTabTitle = subTabContainerHandlerItem.getTabTitle();
                         if (Pattern.compile(sharedParameters.searchedTabTitleForJumpToTab, Pattern.CASE_INSENSITIVE).matcher(subTabTitle).find()) {
                             subTabContainerHandlerItem.parentTabbedPane.setSelectedIndex(subTabContainerHandlerItem.getTabIndex());
+                            // This is because when we click on the Search RegEx, this will be triggered but the menu won't be closed
+                            menuItem.setText("Tab Title: " + currentSubTabContainerHandler.parentTabbedPane.getTitleAt(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex()));
                             result = true;
                             break;
                         }
@@ -556,6 +535,23 @@ public class SubTabActions {
         });
 
         searchAndJumpMenu.add(jumpToPreviousTabByTitleMenu);
+
+        if (sharedParameters.searchedTabTitleForJumpToTab.isEmpty() || (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2)) {
+            // do nothing
+        } else {
+            // we want to rename searchAndJumpMenu so it shows what would happen when it is clicked!
+            searchAndJumpMenu.setText("Search RegEx in Title (Click > Next, Right-Click > Prev)");
+
+            searchAndJumpMenu.addMouseListener(new MouseAdapterExtensionHandler(mouseEvent -> {
+                if(SwingUtilities.isRightMouseButton(mouseEvent)){
+                    jumpToPreviousTabByTitleMenu.doClick();
+                }else{
+                    jumpToNextTabByTitleMenu.doClick();
+                }
+            }, MouseEvent.MOUSE_CLICKED));
+        }
+
+
 
         popupMenu.add(searchAndJumpMenu);
 
@@ -580,15 +576,35 @@ public class SubTabActions {
 */
 
         JMenuItem jumpToAddTabMenu = new JMenuItem("Add an Empty New Tab");
-        jumpToAddTabMenu.addActionListener(e -> {
+
+        jumpToAddTabMenu.addActionListener(actionEvent -> {
+
             Container dotdotdotTabContainer = (Container) currentSubTabContainerHandler.parentTabbedPane.getTabComponentAt(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 1);
             Component dotdotdotTab = dotdotdotTabContainer.getComponents()[0];
-            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 1);
-            MouseEvent me = new MouseEvent(dotdotdotTab, 0, 0, 0, dotdotdotTab.getLocationOnScreen().x, dotdotdotTab.getLocationOnScreen().y, 1, true);
-            for (MouseListener ml : dotdotdotTab.getMouseListeners()) {
-                ml.mouseClicked(me);
+
+            // this is a hack to get the Y location of the ... tab!
+            Component tabArea = dotdotdotTabContainer.getParent().getParent().getComponent(dotdotdotTabContainer.getParent().getParent().getComponentCount()-1);
+
+            //int x = dotdotdotTab.getLocationOnScreen().x;
+
+            int x= tabArea.getLocationOnScreen().x + tabArea.getWidth() - dotdotdotTabContainer.getWidth() + dotdotdotTab.getWidth();
+            int y= tabArea.getLocationOnScreen().y + tabArea.getHeight() - dotdotdotTabContainer.getHeight() + dotdotdotTab.getHeight();
+
+            if (currentSubTabContainerHandler.parentTabbedPane.getTabLayoutPolicy() == JTabbedPane.SCROLL_TAB_LAYOUT) {
+                x = tabArea.getParent().getParent().getLocationOnScreen().x + tabArea.getParent().getParent().getWidth();
             }
+
+
+            try{
+                Robot robot = new Robot();
+                robot.mouseMove(x, y);
+            }catch (Exception errRobot){
+                sharedParameters.printlnError("Could not change mouse location: " + errRobot.getMessage());
+            }
+
+            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 1);
         });
+
         popupMenu.add(jumpToAddTabMenu);
 
         /*
@@ -662,7 +678,7 @@ public class SubTabActions {
                         @Override
                         public void run() {
                             new Thread(() -> {
-                                sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                                currentSubTabContainerHandler.parentTabbedPane.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
                             }).start();
                         }
                     });
@@ -672,7 +688,7 @@ public class SubTabActions {
                         @Override
                         public void run() {
                             new Thread(() -> {
-                                sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                                currentSubTabContainerHandler.parentTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
                                 new java.util.Timer().schedule(
                                         new java.util.TimerTask() {
                                             @Override
