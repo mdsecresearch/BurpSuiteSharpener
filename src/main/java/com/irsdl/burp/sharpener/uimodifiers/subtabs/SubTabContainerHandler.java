@@ -122,7 +122,7 @@ public class SubTabContainerHandler {
                         boolean isFromSetToDefault = false;
                         Color newColor = (Color) evt.getNewValue();
 
-                        if(newColor!=null && Integer.toHexString(newColor.getRGB()).substring(2) == "010101"){
+                        if(newColor!=null && isSetToDefaultColour(newColor)){
                             isFromSetToDefault = true;
                         }
 
@@ -137,6 +137,15 @@ public class SubTabContainerHandler {
                             setColor(sharedParameters.defaultSubTabObject.getColor());
                         }
                         isFromSetColor = false;
+                    }else if (evt.getPropertyName().equalsIgnoreCase("font")) {
+                        if(sharedParameters.allSettings !=null){
+                            setFont((Font)evt.getNewValue());
+                            if (hasChanged) {
+                                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(instance);
+                                hasChanged = false;
+                                sharedParameters.allSettings.subTabSettings.loadSettings();
+                            }
+                        }
                     }
                 }
             };
@@ -205,9 +214,24 @@ public class SubTabContainerHandler {
         }
     }
 
+    public Boolean isDefaultColour(Color color){
+        return Integer.toHexString(color.getRGB()).substring(2).equals("000000") || Integer.toHexString(color.getRGB()).substring(2).equals("010101")
+                || Integer.toHexString(color.getRGB()).substring(2).equals("bbbbbb") || Integer.toHexString(color.getRGB()).substring(2).equals("bcbcbc");
+    }
+
+    public Boolean isSetToDefaultColour(Color color){
+        return Integer.toHexString(color.getRGB()).substring(2).equals("010101") || Integer.toHexString(color.getRGB()).substring(2).equals("bcbcbc");
+    }
+
     public boolean isDefault() {
         boolean result = false;
         loadDefaultSetting();
+
+        if(isDefaultColour(sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle().getColorCode())){
+            // this is useful when user has changed dark <-> light mode; so we can still detect a default colour!
+            sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle().setColorCode(getTabFeaturesObjectStyle().getColorCode());
+        }
+
         if (getTabIndex() == parentTabbedPane.getTabCount() - 1 || sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle().equals(getTabFeaturesObjectStyle())) {
             result = true;
         }
@@ -220,7 +244,14 @@ public class SubTabContainerHandler {
         // this is because Burp does use the default colour when an item is changed - we have a workaround for that but
         // the workaround stops reset to default to change the colour as well so we need another workaround!!!
         TabFeaturesObjectStyle tfosDefault = sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle();
-        tfosDefault.setColorCode(Color.decode("#010101"));
+        if(Integer.toHexString(tfosDefault.getColorCode().getRGB()).substring(2).equals("000000")){
+            // light mode workaround
+            tfosDefault.setColorCode(Color.decode("#010101"));
+        }else{
+            // dark mode workaround
+            tfosDefault.setColorCode(Color.decode("#bcbcbc"));
+        }
+
         updateByTabFeaturesObjectStyle(tfosDefault);
     }
 
@@ -274,7 +305,10 @@ public class SubTabContainerHandler {
     }
 
     public String getTabTitle() {
-        return parentTabbedPane.getTitleAt(getTabIndex());
+        String title = "";
+        if(getTabIndex() != -1)
+            title = parentTabbedPane.getTitleAt(getTabIndex());
+        return title;
     }
 
     public void setTabTitle(String title) {
@@ -407,4 +441,5 @@ public class SubTabContainerHandler {
         }
         return result;
     }
+
 }

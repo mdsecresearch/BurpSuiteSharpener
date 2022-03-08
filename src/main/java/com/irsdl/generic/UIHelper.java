@@ -10,6 +10,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 
 public class UIHelper {
 
@@ -41,6 +42,29 @@ public class UIHelper {
         if (output == null) {
             output = defaultValue;
         }
+        return output;
+    }
+
+    // Common method to ask a multiline question
+    public static String[] showPlainInputMessages(final String strMessages[], final String strTitle, final String defaultValues[], Component parentcmp) {
+        String[] output = new String[strMessages.length];
+        java.util.List<Object> strMessagesObjectList = new ArrayList<Object>();
+
+        for(int i=0;i<strMessages.length;i++){
+            String defaultValue = "";
+            if(defaultValues.length > i)
+                defaultValue = defaultValues[i];
+            strMessagesObjectList.add(strMessages[i]);
+            strMessagesObjectList.add(new JTextField(defaultValue));
+        }
+
+        int option = JOptionPane.showConfirmDialog(parentcmp, strMessagesObjectList.toArray(), strTitle, JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            for(int i=0;i<strMessages.length;i++){
+                output[i] = ((JTextField) strMessagesObjectList.get(i*2+1)).getText();
+            }
+        }
+
         return output;
     }
 
