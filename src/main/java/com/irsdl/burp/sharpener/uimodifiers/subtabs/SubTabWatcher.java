@@ -13,13 +13,12 @@ import com.irsdl.generic.UIHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.function.Consumer;
 
 public class SubTabWatcher implements ContainerListener {
@@ -101,24 +100,73 @@ public class SubTabWatcher implements ContainerListener {
             targetComponent = tabComponent.getComponentAt(0,0);
         }
 
-        targetComponent.addMouseListener(new MouseAdapterExtensionHandler(this.mouseEventConsumer, MouseEvent.MOUSE_RELEASED));
-        //tabComponent.removeMouseListener(tabComponent.getMouseListeners()[1]); --> this will remove the current right click menu!
-
         // Loading all the tabs
-        //for (BurpUITools.MainTabs tool : sharedParameters.subTabWatcherSupportedTabs) {
-            JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(componentTitle);
-            ArrayList<SubTabContainerHandler> subTabContainerHandlers = new ArrayList<>();
-            if (subTabbedPane != null) {
-                for (Component subTabComponent : subTabbedPane.getComponents()) {
-                    int subTabIndex = subTabbedPane.indexOfComponent(subTabComponent);
-                    if (subTabIndex == -1)
-                        continue;
-                    SubTabContainerHandler subTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabIndex);
-                    subTabContainerHandlers.add(subTabContainerHandler);
-                }
+
+        JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(componentTitle);
+        ArrayList<SubTabContainerHandler> subTabContainerHandlers = new ArrayList<>();
+        if (subTabbedPane != null) {
+            for (Component subTabComponent : subTabbedPane.getComponents()) {
+                int subTabIndex = subTabbedPane.indexOfComponent(subTabComponent);
+                if (subTabIndex == -1)
+                    continue;
+                SubTabContainerHandler subTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabIndex);
+                subTabContainerHandlers.add(subTabContainerHandler);
             }
-            sharedParameters.allSubTabContainerHandlers.put(componentTitle, subTabContainerHandlers);
-        //}
+
+            targetComponent.addMouseListener(new MouseAdapterExtensionHandler(mouseEventConsumer, MouseEvent.MOUSE_RELEASED));
+            //tabComponent.removeMouseListener(tabComponent.getMouseListeners()[1]); --> this will remove the current right click menu!
+
+        }else{
+            // when Burp Suite is loaded for the first time, Repeater and Intruder tabs are empty in the latest versions rather than having one tab
+            // This is to address the issue of component change when the first tab is being created
+            targetComponent.addComponentListener(new ComponentListener() {
+                @Override
+                public void componentResized(ComponentEvent e) {}
+
+                @Override
+                public void componentMoved(ComponentEvent e) {}
+
+                @Override
+                public void componentShown(ComponentEvent e) {}
+
+                @Override
+                public void componentHidden(ComponentEvent e) {
+                    new java.util.Timer().schedule(
+                            new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    // This will be triggered when Burp creates items in Repeater or Intruder
+                                    BurpUITools.MainTabs componentTitle = BurpUITools.getMainTabsObjFromString(sharedParameters.get_rootTabbedPane().getTitleAt(sharedParameters.get_rootTabbedPane().indexOfComponent(((Component) e.getSource()).getParent())));
+
+                                    JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(componentTitle);
+                                    ArrayList<SubTabContainerHandler> subTabContainerHandlers = new ArrayList<>();
+                                    if (subTabbedPane != null) {
+                                        for (Component subTabComponent : subTabbedPane.getComponents()) {
+                                            int subTabIndex = subTabbedPane.indexOfComponent(subTabComponent);
+                                            if (subTabIndex == -1)
+                                                continue;
+                                            SubTabContainerHandler subTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabIndex);
+                                            subTabContainerHandlers.add(subTabContainerHandler);
+                                        }
+                                        sharedParameters.allSubTabContainerHandlers.put(componentTitle, subTabContainerHandlers);
+
+                                        subTabbedPane.addMouseListener(new MouseAdapterExtensionHandler(mouseEventConsumer, MouseEvent.MOUSE_RELEASED));
+                                        //tabComponent.removeMouseListener(tabComponent.getMouseListeners()[1]); --> this will remove the current right click menu!
+
+                                        // as there is no other getComponentListeners by default, we can remove them all
+                                        for (ComponentListener cl : subTabbedPane.getComponentListeners()) {
+                                            subTabbedPane.removeComponentListener(cl);
+                                        }
+                                    }
+                                }
+                            },
+                            5000 // 5 seconds delay just in case Burp is very slow on the device
+                    );
+                }
+            });
+        }
+        sharedParameters.allSubTabContainerHandlers.put(componentTitle, subTabContainerHandlers);
+
 
         tabPropertyChangeListener = new PropertyChangeListener() {
             @Override
@@ -130,8 +178,8 @@ public class SubTabWatcher implements ContainerListener {
                     if(componentTitle.equals(BurpUITools.MainTabs.Intruder)){
                         delay = 10000;
                     }
-                    new java.util.Timer().schedule(
-                            new java.util.TimerTask() {
+                    new Timer().schedule(
+                            new TimerTask() {
                                 @Override
                                 public void run() {
                                     sharedParameters.allSettings.subTabSettings.loadSettings(componentTitle);
@@ -146,6 +194,7 @@ public class SubTabWatcher implements ContainerListener {
         };
 
         targetComponent.addPropertyChangeListener("indexForTabComponent", tabPropertyChangeListener);
+
     }
 
     @Override
@@ -179,6 +228,11 @@ public class SubTabWatcher implements ContainerListener {
         PropertyChangeListener[] pclArray = targetComponent.getPropertyChangeListeners("indexForTabComponent");
         for (PropertyChangeListener pcl : pclArray) {
             targetComponent.removePropertyChangeListener("indexForTabComponent", pcl);
+        }
+
+        // as there is no other getComponentListeners by default, we can remove them all
+        for (ComponentListener cl : targetComponent.getComponentListeners()) {
+            targetComponent.removeComponentListener(cl);
         }
 
         for (MouseListener mouseListener : targetComponent.getMouseListeners()) {

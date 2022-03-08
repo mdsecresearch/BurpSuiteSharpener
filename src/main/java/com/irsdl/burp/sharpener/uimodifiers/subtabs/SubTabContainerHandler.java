@@ -305,7 +305,10 @@ public class SubTabContainerHandler {
     }
 
     public String getTabTitle() {
-        return parentTabbedPane.getTitleAt(getTabIndex());
+        String title = "";
+        if(getTabIndex() != -1)
+            title = parentTabbedPane.getTitleAt(getTabIndex());
+        return title;
     }
 
     public void setTabTitle(String title) {

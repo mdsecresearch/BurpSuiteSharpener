@@ -580,20 +580,19 @@ public class SubTabActions {
         jumpToAddTabMenu.addActionListener(actionEvent -> {
 
             Container dotdotdotTabContainer = (Container) currentSubTabContainerHandler.parentTabbedPane.getTabComponentAt(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 1);
-            Component dotdotdotTab = dotdotdotTabContainer.getComponents()[0];
 
             // this is a hack to get the Y location of the ... tab!
-            Component tabArea = dotdotdotTabContainer.getParent().getParent().getComponent(dotdotdotTabContainer.getParent().getParent().getComponentCount()-1);
-
-            //int x = dotdotdotTab.getLocationOnScreen().x;
-
-            int x= tabArea.getLocationOnScreen().x + tabArea.getWidth() - dotdotdotTabContainer.getWidth() + dotdotdotTab.getWidth();
-            int y= tabArea.getLocationOnScreen().y + tabArea.getHeight() - dotdotdotTabContainer.getHeight() + dotdotdotTab.getHeight();
-
-            if (currentSubTabContainerHandler.parentTabbedPane.getTabLayoutPolicy() == JTabbedPane.SCROLL_TAB_LAYOUT) {
-                x = tabArea.getParent().getParent().getLocationOnScreen().x + tabArea.getParent().getParent().getWidth();
+            int x = dotdotdotTabContainer.getLocationOnScreen().x + dotdotdotTabContainer.getWidth()/2;
+            int burp_x = dotdotdotTabContainer.getParent().getLocationOnScreen().x + dotdotdotTabContainer.getParent().getWidth() - dotdotdotTabContainer.getWidth()/2;
+            if(x > burp_x){
+                x = burp_x;
             }
 
+            int y = dotdotdotTabContainer.getLocationOnScreen().y + dotdotdotTabContainer.getHeight()/2;
+            int burp_y = dotdotdotTabContainer.getParent().getLocationOnScreen().y + dotdotdotTabContainer.getParent().getHeight() - dotdotdotTabContainer.getHeight()/2;
+            if(y > burp_y || y < burp_y - dotdotdotTabContainer.getHeight()){
+                y = burp_y;
+            }
 
             try{
                 Robot robot = new Robot();
@@ -708,7 +707,7 @@ public class SubTabActions {
 
             popupMenu.add(toolSubTabPaneScrollableLayout);
 
-            JCheckBoxMenuItem toolSubTabPaneMouseWheelScroll = new JCheckBoxMenuItem("Scroll by [Mouse Wheel] & Resize by [Ctrl + Mouse Wheel]");
+            JCheckBoxMenuItem toolSubTabPaneMouseWheelScroll = new JCheckBoxMenuItem("Activate Mouse Wheel: MW > Scroll, MW+Ctrl > Resize");
             if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
                 toolSubTabPaneMouseWheelScroll.setSelected(true);
             }
