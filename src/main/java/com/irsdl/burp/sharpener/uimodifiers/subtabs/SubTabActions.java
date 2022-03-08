@@ -144,7 +144,7 @@ public class SubTabActions {
             defaultProfile.setEnabled(false);
         popupMenu.add(defaultProfile);
 
-        JMenu profileMenu = new JMenu("Predefined Patterns");
+        JMenu profileMenu = new JMenu("Predefined Styles");
 
         JCheckBoxMenuItem highProfile = new JCheckBoxMenuItem("High: Red, Big, and Bold");
         highProfile.addActionListener(e -> {
@@ -269,21 +269,21 @@ public class SubTabActions {
         customStyleMenu.add(colorMenu);
         popupMenu.add(customStyleMenu);
 
-        JMenuItem pasteStyleSearchTitleMenu = new JMenuItem("Paste Style by Title RegEx Search");
+        JMenuItem pasteStyleSearchTitleMenu = new JMenuItem("Find/Replace Style (Use RegEx in Title)");
         if (sharedParameters.copiedTabFeaturesObjectStyle == null) {
             pasteStyleSearchTitleMenu.setEnabled(false);
         }
         pasteStyleSearchTitleMenu.addActionListener(e -> {
             if (sharedParameters.copiedTabFeaturesObjectStyle != null) {
                 //currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
-                String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression:", "Search in titles and replace their style", sharedParameters.searchedTabTitleForPasteStyle, sharedParameters.get_mainFrame());
+                String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression (case insensitive):", "Search in titles and replace their style", sharedParameters.searchedTabTitleForPasteStyle, sharedParameters.get_mainFrame());
                 if (!titleKeyword.isEmpty()) {
                     if (Utilities.isValidRegExPattern(titleKeyword)) {
                         sharedParameters.searchedTabTitleForPasteStyle = titleKeyword;
                         ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
                         for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
                             String subTabTitle = subTabContainerHandlerItem.getTabTitle();
-                            if (Pattern.compile(titleKeyword).matcher(subTabTitle).find()) {
+                            if (Pattern.compile(titleKeyword, Pattern.CASE_INSENSITIVE).matcher(subTabTitle).find()) {
                                 subTabContainerHandlerItem.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
                             }
                         }
@@ -301,145 +301,10 @@ public class SubTabActions {
 
         popupMenu.addSeparator();
 
-        JMenuItem copyTitleMenu = new JMenuItem("Copy Title");
-        copyTitleMenu.addActionListener(e -> {
-            String tabTitle = currentSubTabContainerHandler.getTabTitle();
-            // copying to clipboard as well
-            Toolkit.getDefaultToolkit()
-                    .getSystemClipboard()
-                    .setContents(
-                            new StringSelection(tabTitle),
-                            null
-                    );
+        JMenu searchAndJumpMenu = new JMenu("Find Title (Use RegEx)");
+        JMenuItem searchAndJumpDefineRegExMenu = new JMenuItem("Search by RegEx (case insensitive)");
 
-            tabTitle = tabTitle.replaceAll("(?<=[^\\s])\\s+#\\d+\\s*$", "");
-            sharedParameters.copiedTabTitle = tabTitle;
-            sharedParameters.printDebugMessages("Title copied...");
-        });
-        popupMenu.add(copyTitleMenu);
-
-        JMenuItem pasteTitleMenu = new JMenuItem("Paste Title");
-        if (sharedParameters.copiedTabTitle.isEmpty()) {
-            pasteTitleMenu.setEnabled(false);
-        } else {
-            pasteTitleMenu.setText("Paste Title (" + sharedParameters.copiedTabTitle + ")");
-        }
-
-        pasteTitleMenu.addActionListener(e -> {
-            if (!sharedParameters.copiedTabTitle.isEmpty()) {
-                currentSubTabContainerHandler.setTabTitle(sharedParameters.copiedTabTitle);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
-                sharedParameters.printDebugMessages("Title pasted...");
-            }
-        });
-        popupMenu.add(pasteTitleMenu);
-
-        JMenu tabScreenshotMenu = new JMenu("Save Tab Screenshot");
-        JMenuItem saveScreenshotToClipboardMenu = new JMenuItem("Clipboard");
-        saveScreenshotToClipboardMenu.addActionListener(e -> {
-
-            Rectangle componentRect = currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().getBounds();
-            BufferedImage bufferedImage = new BufferedImage(componentRect.width, componentRect.height, BufferedImage.TYPE_INT_RGB);
-            currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().paint(bufferedImage.getGraphics());
-            ImageHelper.setClipboard(bufferedImage);
-        });
-        tabScreenshotMenu.add(saveScreenshotToClipboardMenu);
-
-        JMenuItem saveScreenshotToFileMenu = new JMenuItem("File");
-        saveScreenshotToFileMenu.addActionListener(e -> {
-            Rectangle componentRect = currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().getBounds();
-            BufferedImage bufferedImage = new BufferedImage(componentRect.width, componentRect.height, BufferedImage.TYPE_INT_ARGB);
-            currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().paint(bufferedImage.getGraphics());
-
-            String saveLocation = UIHelper.showDirectorySaveDialog(sharedParameters.allSettings.subTabSettings.lastSavedImageLocation, sharedParameters.get_mainFrame());
-
-            if(!saveLocation.isEmpty()){
-                sharedParameters.allSettings.subTabSettings.lastSavedImageLocation = saveLocation;
-                String strDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-                String imageFileLocation = saveLocation + "/" + currentSubTabContainerHandler.getTabTitle().replaceAll("[^a-zA-Z0-9-_\\.]", "_") + "_" + strDate + ".png";
-
-                try{
-                    ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    ImageIO.write(bufferedImage, "png", os);
-                    try(OutputStream outputStream = new FileOutputStream(imageFileLocation)) {
-                        os.writeTo(outputStream);
-                    }
-                }catch(Exception err){
-                    sharedParameters.printlnError("Image file could not be saved: " + imageFileLocation);
-                    sharedParameters.printDebugMessages(err.getMessage());
-                }
-
-                File imageFile = new File(imageFileLocation);
-                if(imageFile.exists()){
-                    sharedParameters.printlnOutput("Image file saved successfully: " + imageFileLocation);
-                }else{
-                    sharedParameters.printlnError("Image file could not be saved: " + imageFileLocation);
-                    UIHelper.showWarningMessage("Image file could not be saved: " + imageFileLocation, sharedParameters.get_mainFrame());
-                }
-
-            }
-        });
-        tabScreenshotMenu.add(saveScreenshotToFileMenu);
-        popupMenu.add(tabScreenshotMenu);
-
-        popupMenu.addSeparator();
-
-        JMenu jumpMenu = new JMenu("Jump To (Click > Next, Right-Click > Prev)");
-        JMenuItem jumpToFirstTabMenu = new JMenuItem("First Tab");
-
-        jumpToFirstTabMenu.addActionListener(e -> {
-            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(0);
-        });
-
-
-        jumpMenu.add(jumpToFirstTabMenu);
-
-        JMenuItem jumpToLastTabMenu = new JMenuItem("Last Tab");
-
-        jumpToLastTabMenu.addActionListener(e -> {
-            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2);
-        });
-
-        jumpMenu.add(jumpToLastTabMenu);
-
-        JMenuItem jumpToPreviousTabMenu = new JMenuItem("Previous Tab");
-
-        jumpToPreviousTabMenu.addActionListener(e -> {
-            if (currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() > 0) {
-                currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() - 1);
-                // This is because when we click on the Search RegEx, this will be triggered but the menu won't be closed
-                menuItem.setText("Tab Title: " + currentSubTabContainerHandler.parentTabbedPane.getTitleAt(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex()));
-            }
-        });
-
-        jumpMenu.add(jumpToPreviousTabMenu);
-
-        JMenuItem jumpToNextTabMenu = new JMenuItem("Next Tab");
-        jumpToNextTabMenu.addActionListener(e -> {
-            if (currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() < currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2) {
-                currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() + 1);
-                // This is because when we click on the Search RegEx, this will be triggered but the menu won't be closed
-                menuItem.setText("Tab Title: " + currentSubTabContainerHandler.parentTabbedPane.getTitleAt(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex()));
-            }
-        });
-
-        jumpMenu.add(jumpToNextTabMenu);
-
-        jumpMenu.addMouseListener(new MouseAdapterExtensionHandler(mouseEvent -> {
-            if(SwingUtilities.isRightMouseButton(mouseEvent)){
-                jumpToPreviousTabMenu.doClick();
-            }else{
-                jumpToNextTabMenu.doClick();
-            }
-        }, MouseEvent.MOUSE_CLICKED));
-
-        popupMenu.add(jumpMenu);
-
-
-        JMenu searchAndJumpMenu = new JMenu("Search RegEx in Title");
-        JMenuItem jumpToFirstTabByTitleMenu = new JMenuItem("Define New RegEx (case insensitive)");
-
-        jumpToFirstTabByTitleMenu.addActionListener(e -> {
+        searchAndJumpDefineRegExMenu.addActionListener(e -> {
             String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression:", "Search in titles and jump to tab", sharedParameters.searchedTabTitleForJumpToTab, sharedParameters.get_mainFrame());
             if (!titleKeyword.isEmpty()) {
                 boolean result = false;
@@ -466,7 +331,7 @@ public class SubTabActions {
                 }
             }
         });
-        searchAndJumpMenu.add(jumpToFirstTabByTitleMenu);
+        searchAndJumpMenu.add(searchAndJumpDefineRegExMenu);
 
         JMenuItem jumpToNextTabByTitleMenu = new JMenuItem("Next");
         if (sharedParameters.searchedTabTitleForJumpToTab.isEmpty() || (currentSubTabContainerHandler.getTabIndex() == currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2)) {
@@ -540,7 +405,7 @@ public class SubTabActions {
             // do nothing
         } else {
             // we want to rename searchAndJumpMenu so it shows what would happen when it is clicked!
-            searchAndJumpMenu.setText("Search RegEx in Title (Click > Next, Right-Click > Prev)");
+            searchAndJumpMenu.setText("Find Title (Click > Next, Right-Click > Prev)");
 
             searchAndJumpMenu.addMouseListener(new MouseAdapterExtensionHandler(mouseEvent -> {
                 if(SwingUtilities.isRightMouseButton(mouseEvent)){
@@ -552,9 +417,129 @@ public class SubTabActions {
         }
 
 
-
         popupMenu.add(searchAndJumpMenu);
 
+
+        JMenuItem copyTitleMenu = new JMenuItem("Copy Title");
+        copyTitleMenu.addActionListener(e -> {
+            String tabTitle = currentSubTabContainerHandler.getTabTitle();
+            // copying to clipboard as well
+            Toolkit.getDefaultToolkit()
+                    .getSystemClipboard()
+                    .setContents(
+                            new StringSelection(tabTitle),
+                            null
+                    );
+
+            tabTitle = tabTitle.replaceAll("(?<=[^\\s])\\s+#\\d+\\s*$", "");
+            sharedParameters.copiedTabTitle = tabTitle;
+            sharedParameters.printDebugMessages("Title copied...");
+        });
+        popupMenu.add(copyTitleMenu);
+
+        JMenuItem pasteTitleMenu = new JMenuItem("Paste Title");
+        if (sharedParameters.copiedTabTitle.isEmpty()) {
+            pasteTitleMenu.setEnabled(false);
+        } else {
+            pasteTitleMenu.setText("Paste Title (" + sharedParameters.copiedTabTitle + ")");
+        }
+
+        pasteTitleMenu.addActionListener(e -> {
+            if (!sharedParameters.copiedTabTitle.isEmpty()) {
+                currentSubTabContainerHandler.setTabTitle(sharedParameters.copiedTabTitle);
+                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
+                sharedParameters.printDebugMessages("Title pasted...");
+            }
+        });
+        popupMenu.add(pasteTitleMenu);
+
+        JMenuItem renameTitleMenu = new JMenuItem("Rename Title");
+        renameTitleMenu.addActionListener(e -> {
+            String newTitle = UIHelper.showPlainInputMessage("Edit the Title", "Rename Title", currentSubTabContainerHandler.getTabTitle(), sharedParameters.get_mainFrame());
+            if (!newTitle.isEmpty() && !newTitle.equals(currentSubTabContainerHandler.getTabTitle())) {
+                currentSubTabContainerHandler.setTabTitle(newTitle);
+            }
+        });
+        popupMenu.add(renameTitleMenu);
+
+
+        JMenuItem matchReplaceTitleMenu = new JMenuItem("Match/Replace Titles (Use RegEx)");
+        matchReplaceTitleMenu.addActionListener(e -> {
+            //currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
+            String[] matchReplaceResult = UIHelper.showPlainInputMessages(new String[]{"Find what (start it with `(?i)` for case insensitive RegEx):","Replace with:"}, "Title Match and Replace (RegEx)", new String[]{sharedParameters.matchReplaceTitle_RegEx,sharedParameters.matchReplaceTitle_ReplaceWith}, sharedParameters.get_mainFrame());
+            sharedParameters.matchReplaceTitle_RegEx = matchReplaceResult[0];
+            sharedParameters.matchReplaceTitle_ReplaceWith = matchReplaceResult[1];
+            if (!sharedParameters.matchReplaceTitle_RegEx.isEmpty()) {
+                if (Utilities.isValidRegExPattern(sharedParameters.matchReplaceTitle_RegEx)) {
+                    ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
+                    for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
+                        String subTabTitle = subTabContainerHandlerItem.getTabTitle();
+                        if (Pattern.compile(sharedParameters.matchReplaceTitle_RegEx).matcher(subTabTitle).find()) {
+                            subTabContainerHandlerItem.setTabTitle(subTabContainerHandlerItem.getTabTitle().replaceAll(sharedParameters.matchReplaceTitle_RegEx,sharedParameters.matchReplaceTitle_ReplaceWith));
+                        }
+                    }
+                    sharedParameters.allSettings.subTabSettings.saveSettings(currentSubTabContainerHandler.currentToolTab);
+                    sharedParameters.printDebugMessages("Match and replace titles finished. -RegEx: " + sharedParameters.matchReplaceTitle_RegEx + " -Replace with: "+sharedParameters.matchReplaceTitle_ReplaceWith);
+                } else {
+                    UIHelper.showWarningMessage("Regular expression was invalid.", sharedParameters.get_mainFrame());
+                    sharedParameters.printlnError("invalid regex: " + sharedParameters.matchReplaceTitle_RegEx);
+                }
+            }
+        });
+        popupMenu.add(matchReplaceTitleMenu);
+
+        popupMenu.addSeparator();
+
+        JMenu jumpMenu = new JMenu("Jump To (Click > Next, Right-Click > Prev)");
+        JMenuItem jumpToFirstTabMenu = new JMenuItem("First Tab");
+
+        jumpToFirstTabMenu.addActionListener(e -> {
+            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(0);
+        });
+
+
+        jumpMenu.add(jumpToFirstTabMenu);
+
+        JMenuItem jumpToLastTabMenu = new JMenuItem("Last Tab");
+
+        jumpToLastTabMenu.addActionListener(e -> {
+            currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2);
+        });
+
+        jumpMenu.add(jumpToLastTabMenu);
+
+        JMenuItem jumpToPreviousTabMenu = new JMenuItem("Previous Tab");
+
+        jumpToPreviousTabMenu.addActionListener(e -> {
+            if (currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() > 0) {
+                currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() - 1);
+                // This is because when we click on the Search RegEx, this will be triggered but the menu won't be closed
+                menuItem.setText("Tab Title: " + currentSubTabContainerHandler.parentTabbedPane.getTitleAt(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex()));
+            }
+        });
+
+        jumpMenu.add(jumpToPreviousTabMenu);
+
+        JMenuItem jumpToNextTabMenu = new JMenuItem("Next Tab");
+        jumpToNextTabMenu.addActionListener(e -> {
+            if (currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() < currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2) {
+                currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() + 1);
+                // This is because when we click on the Search RegEx, this will be triggered but the menu won't be closed
+                menuItem.setText("Tab Title: " + currentSubTabContainerHandler.parentTabbedPane.getTitleAt(currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex()));
+            }
+        });
+
+        jumpMenu.add(jumpToNextTabMenu);
+
+        jumpMenu.addMouseListener(new MouseAdapterExtensionHandler(mouseEvent -> {
+            if(SwingUtilities.isRightMouseButton(mouseEvent)){
+                jumpToPreviousTabMenu.doClick();
+            }else{
+                jumpToNextTabMenu.doClick();
+            }
+        }, MouseEvent.MOUSE_CLICKED));
+
+        popupMenu.add(jumpMenu);
 /*
         JMenu closingTabsMenu = new JMenu("Closing tab options");
         JMenuItem showOriginalTabCloseMenuMenu = new JMenuItem("Show original Burp Suite tab closing options");
@@ -574,6 +559,54 @@ public class SubTabActions {
 
         popupMenu.add(closingTabsMenu);
 */
+
+        JMenu tabScreenshotMenu = new JMenu("Capture Screenshot");
+        JMenuItem saveScreenshotToClipboardMenu = new JMenuItem("Clipboard");
+        saveScreenshotToClipboardMenu.addActionListener(e -> {
+
+            Rectangle componentRect = currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().getBounds();
+            BufferedImage bufferedImage = new BufferedImage(componentRect.width, componentRect.height, BufferedImage.TYPE_INT_RGB);
+            currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().paint(bufferedImage.getGraphics());
+            ImageHelper.setClipboard(bufferedImage);
+        });
+        tabScreenshotMenu.add(saveScreenshotToClipboardMenu);
+
+        JMenuItem saveScreenshotToFileMenu = new JMenuItem("File");
+        saveScreenshotToFileMenu.addActionListener(e -> {
+            Rectangle componentRect = currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().getBounds();
+            BufferedImage bufferedImage = new BufferedImage(componentRect.width, componentRect.height, BufferedImage.TYPE_INT_ARGB);
+            currentSubTabContainerHandler.parentTabbedPane.getSelectedComponent().paint(bufferedImage.getGraphics());
+
+            String saveLocation = UIHelper.showDirectorySaveDialog(sharedParameters.allSettings.subTabSettings.lastSavedImageLocation, sharedParameters.get_mainFrame());
+
+            if(!saveLocation.isEmpty()){
+                sharedParameters.allSettings.subTabSettings.lastSavedImageLocation = saveLocation;
+                String strDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+                String imageFileLocation = saveLocation + "/" + currentSubTabContainerHandler.getTabTitle().replaceAll("[^a-zA-Z0-9-_\\.]", "_") + "_" + strDate + ".png";
+
+                try{
+                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                    ImageIO.write(bufferedImage, "png", os);
+                    try(OutputStream outputStream = new FileOutputStream(imageFileLocation)) {
+                        os.writeTo(outputStream);
+                    }
+                }catch(Exception err){
+                    sharedParameters.printlnError("Image file could not be saved: " + imageFileLocation);
+                    sharedParameters.printDebugMessages(err.getMessage());
+                }
+
+                File imageFile = new File(imageFileLocation);
+                if(imageFile.exists()){
+                    sharedParameters.printlnOutput("Image file saved successfully: " + imageFileLocation);
+                }else{
+                    sharedParameters.printlnError("Image file could not be saved: " + imageFileLocation);
+                    UIHelper.showWarningMessage("Image file could not be saved: " + imageFileLocation, sharedParameters.get_mainFrame());
+                }
+
+            }
+        });
+        tabScreenshotMenu.add(saveScreenshotToFileMenu);
+        popupMenu.add(tabScreenshotMenu);
 
         JMenuItem jumpToAddTabMenu = new JMenuItem("Add an Empty New Tab");
 

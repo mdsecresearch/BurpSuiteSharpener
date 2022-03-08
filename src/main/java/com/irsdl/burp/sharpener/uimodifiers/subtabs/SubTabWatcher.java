@@ -153,6 +153,8 @@ public class SubTabWatcher implements ContainerListener {
                                         subTabbedPane.addMouseListener(new MouseAdapterExtensionHandler(mouseEventConsumer, MouseEvent.MOUSE_RELEASED));
                                         //tabComponent.removeMouseListener(tabComponent.getMouseListeners()[1]); --> this will remove the current right click menu!
 
+                                        sharedParameters.printDebugMessages("Menu has now been loaded for " + componentTitle.toString());
+
                                         // as there is no other getComponentListeners by default, we can remove them all
                                         for (ComponentListener cl : subTabbedPane.getComponentListeners()) {
                                             subTabbedPane.removeComponentListener(cl);
