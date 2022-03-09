@@ -75,11 +75,22 @@ public class SubTabSettings extends StandardSettings {
                     public void run() {
                         new Thread(() -> {
                             if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
-                                sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                                try{
+                                    sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                                }catch(Exception e){
+                                    sharedParameters.printDebugMessages("Error when applying the isScrollable setting, disabling the setting...");
+                                    sharedParameters.preferences.setSetting("isScrollable_" + tool.toString(),false);
+                                }
+
                             }
 
                             if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
-                                BurpUITools.addMouseWheelToJTabbedPane(sharedParameters.get_toolTabbedPane(tool), false);
+                                try{
+                                    BurpUITools.addMouseWheelToJTabbedPane(sharedParameters.get_toolTabbedPane(tool), false);
+                                }catch(Exception e){
+                                    sharedParameters.printDebugMessages("Error when applying the Mouse Wheel setting, disabling the setting...");
+                                    sharedParameters.preferences.setSetting("mouseWheelToScroll_" + tool.toString(),false);
+                                }
                             }
                         }).start();
                     }

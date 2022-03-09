@@ -9,7 +9,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group 'com.irsdl'
-version '1.08-SNAPSHOT'
+version '1.09-SNAPSHOT'
 //version '1.04-BETA'
 
 //targetCompatibility = '1.8'
@@ -25,7 +25,8 @@ repositories {
 dependencies {
     implementation 'net.portswigger.burp.extender:burp-extender-api:2.3'
     implementation 'com.github.CoreyD97:BurpExtenderUtilities:-SNAPSHOT'
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'com.google.guava:guava:31.1-jre'
     //compileOnly 'org.python:jython-standalone:2.7.2'
 }
 
