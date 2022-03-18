@@ -30,5 +30,6 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         path: ./build/libs/*.jar
+        name: Downloadable Extension File
     - name: Run copyJarForArchiving task
       run: ./gradlew -b build.gradle copyJarForArchiving
