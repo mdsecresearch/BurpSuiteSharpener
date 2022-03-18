@@ -40,12 +40,11 @@ jar{
 }
 
 tasks.withType(Jar) {
-    destinationDirectory = file("$buildDir/libs")
-    //destinationDirectory = file("$rootDir/release")
+    destinationDirectory = file("$rootDir/build/libs")
 }
 
 tasks.register('copyJarForArchiving', Copy) {
-    from layout.buildDirectory.dir("$buildDir/libs")
+    from layout.buildDirectory.dir("$rootDir/build/libs")
     include "*.jar"
     into layout.buildDirectory.dir("$rootDir/release")
 }
