@@ -28,3 +28,8 @@ jobs:
       run: ./gradlew jar
     - name: Upload artifact
       uses: actions/upload-artifact@v2
+      with:
+        path: ./build/libs/*.jar
+    - name: Run copyJarForArchiving task
+      with:
+        arguments: -b build.gradle copyJarForArchiving
