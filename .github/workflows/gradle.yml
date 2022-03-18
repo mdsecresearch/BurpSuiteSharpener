@@ -28,5 +28,3 @@ jobs:
       run: ./gradlew jar
     - name: Upload artifact
       uses: actions/upload-artifact@v2
-      with:
-        path: ./release/*.jar
