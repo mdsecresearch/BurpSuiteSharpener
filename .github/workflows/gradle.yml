@@ -31,5 +31,4 @@ jobs:
       with:
         path: ./build/libs/*.jar
     - name: Run copyJarForArchiving task
-      with:
-        arguments: -b build.gradle copyJarForArchiving
+      run: ./gradlew -b build.gradle copyJarForArchiving
