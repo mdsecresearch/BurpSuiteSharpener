@@ -36,12 +36,12 @@ public class BurpExtensionSharedParameters {
 
         // registering and getting the isDebug setting
         try {
-            preferences.registerSetting("isDebug", Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+            preferences.registerSetting("debugLevel", Integer.TYPE, 0, Preferences.Visibility.GLOBAL);
         } catch (Exception e) {
             // already registered!
             printlnError(e.getMessage());
         }
-        isDebug = preferences.getSetting("isDebug");
+        debugLevel = preferences.getSetting("debugLevel");
     }
 
 
@@ -49,7 +49,7 @@ public class BurpExtensionSharedParameters {
     public String extensionName = "MyExtension";
     public String extensionURL = "https://github.com/user/proj";
     public String extensionIssueTracker = "https://github.com/user/proj/issues";
-    public Boolean isDebug = null;
+    public Integer debugLevel = null;
     public IBurpExtender burpExtender;
     public Class extensionClass = null; // this is useful when trying to load a resource such as an image
     public PrintWriter stdout = null;
@@ -60,6 +60,10 @@ public class BurpExtensionSharedParameters {
 
     // these are the parameters which are used per extension but needs to be shared - like registers
     public boolean addedIconListener = false;
+
+    public boolean isDarkMode = false; // Sometimes extensions need to see whether Burp uses dark or light mode
+
+    public Boolean isScopeChangeDecisionOngoing = false; // this is useful to not ask the scope question more than once at the time
 
     // params with custom getter or setter - the `setUIParametersFromExtensionTab` method should be used to set them
     private JFrame _mainFrame = null; // This is Burp Suite's main jFrame
@@ -80,12 +84,13 @@ public class BurpExtensionSharedParameters {
                     set_extensionJPanel(extensionJPanel);
                 }
 
-                if (get_rootTabbedPane() != null)
+                if (get_rootTabbedPane() != null) {
+                    isDarkMode = BurpUITools.isDarkMode(get_rootTabbedPane());
                     foundUI = true;
-                else
+                }else
                     throw new Exception("no ui");
 
-                printDebugMessages("UI parameters have been loaded successfully");
+                printDebugMessage("UI parameters have been loaded successfully");
 
             } catch (Exception e) {
                 attemptsRemaining--;
@@ -98,20 +103,25 @@ public class BurpExtensionSharedParameters {
 
         if (!foundUI) {
             printlnError(extensionName + " extension UI elements could not be added. Please try again.");
-            printDebugMessages("Perhaps unload the extension at this point");
+            printDebugMessage("Perhaps unload the extension at this point");
         } else {
             _originalBurpTitle = get_mainFrame().getTitle();
             _originalBurpIcon = get_mainFrame().getIconImage();
-            printDebugMessages("Original title and icon has been set");
+
+            printDebugMessage("Original title and icon has been set");
         }
         _isUILoaded = foundUI;
     }
 
 
-    public void printDebugMessages(String message, String note, boolean alreadyPrinted) {
-        if (isDebug) {
+    public void printDebugMessage(String message, String note, boolean alreadyPrinted) {
+        if (debugLevel > 0) {
             String strDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
-            String fullMessage = "DEBUG->\r\n\tNote: " + note + " - Timestamp: " + strDate + "\r\n\tMessage: " + message;
+            String fullMessage = "\r\nDEBUG->\r\n\t";
+            if(!note.isBlank())
+                fullMessage +="Note: " + note + " - Timestamp: " + strDate + "\r\n\tMessage: " + message;
+            else
+                fullMessage +="Timestamp: " + strDate + "\r\n\tMessage: " + message;
             System.out.println(fullMessage);
             if (!alreadyPrinted) {
                 this.stdout.println(fullMessage);
@@ -119,35 +129,40 @@ public class BurpExtensionSharedParameters {
         }
     }
 
-    public void printDebugMessages(String message) {
-        if (isDebug) {
+    public void printDebugMessage(String message) {
+        if (debugLevel > 0) {
             StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-            String methods = "\t\t";
-            for (int i = 2; i < stackTraceElements.length; i++) {
-                methods += stackTraceElements[i] + " <- ";
+            String methods = "";
+            if(debugLevel > 1){
+                methods +="\t\t";
+                // very verbose
+                for (int i = 2; i < stackTraceElements.length; i++) {
+                    methods += stackTraceElements[i] + " <- ";
+                }
             }
-            printDebugMessages(message, methods, false);
+
+            printDebugMessage(message, methods, false);
         }
     }
 
     public void printlnError(String message) {
         this.stderr.println(message);
-        printDebugMessages(message, "printlnError", true);
+        printDebugMessage(message, "printlnError", true);
     }
 
     public void printError(String message) {
         this.stderr.print(message);
-        printDebugMessages(message, "printError", true);
+        printDebugMessage(message, "printError", true);
     }
 
     public void printlnOutput(String message) {
         this.stdout.println(message);
-        printDebugMessages(message, "printlnOutput", true);
+        printDebugMessage(message, "printlnOutput", true);
     }
 
     public void printOutput(String message) {
         this.stdout.print(message);
-        printDebugMessages(message, "printOutput", true);
+        printDebugMessage(message, "printOutput", true);
     }
 
     public void resetAllSettings() {
@@ -192,36 +207,6 @@ public class BurpExtensionSharedParameters {
         this._extensionJPanel = extensionJPanel;
         JRootPane rootPane = ((JFrame) SwingUtilities.getWindowAncestor(extensionJPanel)).getRootPane();
         set_rootTabbedPane((JTabbedPane) rootPane.getContentPane().getComponent(0));
-    }
-
-    public JTabbedPane get_toolTabbedPane(BurpUITools.MainTabs toolTabName) {
-        JTabbedPane subTabbedPane = null;
-        for (Component tabComponent : _rootTabbedPane.getComponents()) {
-
-            //Check tab titles and continue for accepted tab paths.
-            int componentIndex = _rootTabbedPane.indexOfComponent(tabComponent);
-            if (componentIndex == -1) {
-                continue;
-            }
-            String componentTitle = _rootTabbedPane.getTitleAt(componentIndex);
-
-            if (toolTabName.toString().equalsIgnoreCase(componentTitle)) {
-                // we have our tool tab, now we need to find its right component
-                try {
-                    subTabbedPane = (JTabbedPane) tabComponent;
-                }catch(Exception e1){
-                    try{
-                        subTabbedPane = (JTabbedPane) tabComponent.getComponentAt(0,0);
-                    }catch(Exception e2){
-                        this.stderr.println("The " + componentTitle + " tool seems to be empty or different. Cannot find the tabs.");
-                    }
-                }
-                break;
-            }
-        }
-
-
-        return subTabbedPane;
     }
 
     public JTabbedPane get_rootTabbedPane() {

@@ -7,15 +7,20 @@
 package com.irsdl.burp.sharpener.objects;
 
 import java.awt.*;
+import java.util.Arrays;
 
 public class TabFeaturesObject extends TabFeaturesObjectStyle {
-    public int index;
-    public String title;
+    public int index = -1;
+    public String title = "";
+    //public LinkedHashSet<String> titleHistory = new LinkedHashSet<>(); // https://github.com/CoreyD97/BurpExtenderUtilities/issues/7 we still can't keep the order using LinkedHashSet
+    public String[] titleHistory = new String[]{};
 
-    public TabFeaturesObject(int index, String title, String fontName, float fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, Color colorCode) {
+    public TabFeaturesObject(int index, String title, String[] titleHistory, String fontName, float fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, Color colorCode) {
         super("", fontName, fontSize, isBold, isItalic, isCloseButtonVisible, colorCode);
         this.index = index;
         this.title = title;
+        //this.titleHistory = Arrays.stream(titleHistory).filter(s -> (s != null && s.length() > 0)).collect(Collectors.toCollection( LinkedHashSet::new ));
+        this.titleHistory = Arrays.stream(titleHistory).filter(s -> (s != null && !s.isBlank())).toArray(String[]::new);
     }
 
     @Override

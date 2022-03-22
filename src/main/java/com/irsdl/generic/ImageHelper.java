@@ -22,7 +22,23 @@ public class ImageHelper {
             return null;
 
         int height = (int) (Math.floor((image.getHeight() * width) / (double) image.getWidth()));
-        return image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        if(image.getWidth() > width){
+            return image.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
+        }else{
+            return image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        }
+    }
+
+    public static Image scaleImageToWidth2(BufferedImage image, int width) {
+        if (image == null)
+            return null;
+
+        int height = (int) (Math.floor((image.getHeight() * width) / (double) image.getWidth()));
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics2D = resizedImage.createGraphics();
+        graphics2D.drawImage(image, 0, 0, width, height, null);
+        graphics2D.dispose();
+        return resizedImage;
     }
 
     public static BufferedImage loadImageResource(String filename) {
