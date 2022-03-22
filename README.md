@@ -88,6 +88,7 @@ Perhaps the best features can be imported from different open-source extensions 
 
 ![images/img_5.png](images/img_5.png)
 
+
 # Thanks To
 * Corey Arthur [CoreyD97](https://twitter.com/CoreyD97)
 * Bruno Demarche (for initial Swing hack inspiration)
