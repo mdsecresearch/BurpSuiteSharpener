@@ -51,21 +51,21 @@ Perhaps the best features can be imported from different open-source extensions 
 # Usage Tips
 * You can use the following key combinations to access the Repeater and Intruder sub-tab menu:
 
-| Description                                      | Combinations/Shortcuts                                                                             |	
-|--------------------------------------------------|----------------------------------------------------------------------------------------------------|	
+| Description                                      | Combinations/Shortcuts                                                                             |
+|--------------------------------------------------|----------------------------------------------------------------------------------------------------|
 | Show Context Menu for Repeater and Intruder Tabs | Mouse Middle-Click<br/>Alt + Any Mouse Key<br/>Down Arrow<br/>Ctrl + Enter<br/>Ctrl + Shift +Enter |
-| Find Tabs for Repeater and Intruder Tab          | Ctrl + Shift + F                                                                                   
+| Find Tabs for Repeater and Intruder Tab          | Ctrl + Shift + F                                                                                   |
 | Find Next                                        | F3 <br/>Ctrl + F3                                                                                  |
 | Find Previous                                    | Shift + F3<br/>Ctrl + Shift + F3                                                                   |
 | Jump to the First Tab                            | Home<br/>Ctrl + Shift + Home                                                                       |
 | Jump to the last Tab                             | End<br/>Ctrl + Shift + End                                                                         |
 | Previous Tab                                     | Left Arrow<br/>Ctrl + Shift + Left                                                                 |
 | Next Tab                                         | Right Arrow<br/>Ctrl + Shift + Right<br/>Mouse Wheel                                               |
-| Back (Previously Selected Tab)                   | Alt + Left<br/>Ctrl + Alt + Left<br/>Mouse Wheel                                                              |
+| Back (Previously Selected Tab)                   | Alt + Left<br/>Ctrl + Alt + Left<br/>Mouse Wheel                                                   |
 | Forward                                          | Alt + Right<br/>Ctrl + Alt + Right                                                                 |
 | Increase Font Size                               | Ctrl + Mouse Wheel                                                                                 |
-| Increase Font Size & Bold                        | Middle Click + CTRL                                                                                |	
-| Decrease Font Size & Bold                        | Middle Click + CTRL + SHIFT                                                                        |	
+| Increase Font Size & Bold                        | Middle Click + CTRL                                                                                |
+| Decrease Font Size & Bold                        | Middle Click + CTRL + SHIFT                                                                        |
 | Big & Red & Bold                                 | Middle Click + SHIFT                                                                               |
 
 * After setting style on a sub-tab, setting the same title on another sub-tab will copy its style
