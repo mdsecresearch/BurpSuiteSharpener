@@ -8,7 +8,6 @@ package com.irsdl.generic;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;
-import java.util.function.Consumer;
 
 public class JMenuItemKeepOpen extends JMenuItem {
 
