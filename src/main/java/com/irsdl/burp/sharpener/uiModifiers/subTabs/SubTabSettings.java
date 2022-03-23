@@ -52,7 +52,12 @@ public class SubTabSettings extends StandardSettings {
             PreferenceObject preferenceObject_mouseWheelToScroll_Tab = new PreferenceObject("mouseWheelToScroll_" + tool.toString(), Boolean.TYPE, true, Preferences.Visibility.GLOBAL);
             preferenceObjectCollection.add(preferenceObject_mouseWheelToScroll_Tab);
 
-            PreferenceObject preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool.toString(), Boolean.TYPE, true, Preferences.Visibility.GLOBAL);
+            PreferenceObject preferenceObject_isTabFixedPositionUI_Tab;
+            if (sharedParameters.burpMajorVersion > 2022 || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion >= 3)) {
+                preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool.toString(), Boolean.TYPE, true, Preferences.Visibility.GLOBAL);
+            }else{
+                preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool.toString(), Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+            }
             preferenceObjectCollection.add(preferenceObject_isTabFixedPositionUI_Tab);
         }
 

@@ -258,9 +258,21 @@ public class SubTabContainerHandler {
         return parentTabbedPane.getTabComponentAt(parentTabbedPane.getTabCount() - 1).equals(currentTabContainer);
     }
 
+    public boolean isWebSocketTab(){
+        if(parentTabbedPane.getComponentAt(getTabIndex()) == null)
+                return false;
+
+        return ((JComponent) parentTabbedPane.getComponentAt(getTabIndex())).getComponents().length < 2;
+    }
+
     public boolean isDefault() {
         boolean result = false;
+
         if(isValid()){
+            if (sharedParameters.defaultSubTabObject == null) {
+                loadDefaultSetting();
+            }
+
             if(isDefaultColour(getColor())){
                 // this is useful when user has changed dark <-> light mode; so we can still detect a default colour!
                 if (getTabIndex() == parentTabbedPane.getTabCount() - 1 || sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle().equalsIgnoreColor(getTabFeaturesObjectStyle())) {
@@ -272,7 +284,6 @@ public class SubTabContainerHandler {
                 }
             }
         }
-        loadDefaultSetting();
         return result;
     }
 
@@ -517,11 +528,13 @@ public class SubTabContainerHandler {
     }
 
     public Boolean getVisible() {
+        if(isDotDotDotTab())
+            return true;
         return _isVisible;
     }
 
     public void setVisible(Boolean visible) {
-        if(visible != getVisible()){
+        if(visible != getVisible() && !isDotDotDotTab()){
             if(!visible) {
                 originalTabColor = getColor();
                 currentTabContainer.setPreferredSize(new Dimension(0,getCurrentDimension().height));
