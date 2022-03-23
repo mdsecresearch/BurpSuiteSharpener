@@ -31,7 +31,7 @@ public class BurpFrameSettings extends StandardSettings {
     public Collection<PreferenceObject> definePreferenceObjectCollection() {
         Collection<PreferenceObject> preferenceObjectCollection = new ArrayList<>();
 
-        String[] projectStringSettingNames = {"BurpTitle", "BurpIconCustomPath"};
+        String[] projectStringSettingNames = {"BurpTitle", "BurpIconCustomPath", "BurpResourceIconName"};
         String[] globalStringSettingNames = {"LastBurpIconCustomPath"};
 
         for (String settingName : projectStringSettingNames) {
@@ -61,14 +61,17 @@ public class BurpFrameSettings extends StandardSettings {
         sharedParameters.printDebugMessage("loadSettings");
 
         String newTitle = sharedParameters.preferences.getSetting("BurpTitle");
-        if (!newTitle.isEmpty()) {
+        if (!newTitle.isBlank()) {
             BurpTitleAndIcon.setTitle(sharedParameters, newTitle);
         }
 
         String newIconPath = sharedParameters.preferences.getSetting("BurpIconCustomPath");
-        if (!newIconPath.isEmpty()) {
+        String newIconResourcePath = sharedParameters.preferences.getSetting("BurpResourceIconName");
+        if (!newIconPath.isBlank()) {
             sharedParameters.preferences.setSetting("LastBurpIconCustomPath", newIconPath);
-            BurpTitleAndIcon.setIcon(sharedParameters, newIconPath, 48);
+            BurpTitleAndIcon.setIcon(sharedParameters, newIconPath, 48, false);
+        }else if(!newIconResourcePath.isBlank()){
+            BurpTitleAndIcon.setIcon(sharedParameters, newIconResourcePath, 48, true);
         }
     }
 }

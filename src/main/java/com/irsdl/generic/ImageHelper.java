@@ -42,11 +42,20 @@ public class ImageHelper {
     }
 
     public static BufferedImage loadImageResource(String filename) {
-        return loadImageResource(filename, UIHelper.class);
+        return loadImageResource(UIHelper.class, filename);
     }
 
-    public static BufferedImage loadImageResource(String filename, Class claz) {
-        URL imageURLMain = claz.getResource(filename);
+    public static BufferedImage loadImageResource(Class claz, String filename) {
+        URL imageURLMain = null;
+
+        if (!filename.startsWith("/")) {
+            imageURLMain = claz.getResource("/" + filename);
+        }
+
+        if (imageURLMain == null) {
+            imageURLMain = claz.getResource(filename);
+        }
+
         if (imageURLMain != null) {
             Image original = new ImageIcon(imageURLMain).getImage();
             ImageIcon originalIcon = new ImageIcon(original);

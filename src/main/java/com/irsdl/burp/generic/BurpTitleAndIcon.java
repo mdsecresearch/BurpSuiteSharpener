@@ -76,8 +76,14 @@ public class BurpTitleAndIcon {
         }
     }
 
-    public static void setIcon(BurpExtensionSharedParameters sharedParameters, String imgPath, int iconSize) {
-        Image loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(imgPath), iconSize);
+    public static void setIcon(BurpExtensionSharedParameters sharedParameters, String imgPath, int iconSize, boolean isResource) {
+        Image loadedImg;
+        if(isResource){
+            loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, imgPath), iconSize);
+        }else{
+            loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(imgPath), iconSize);
+        }
+
         if (loadedImg != null) {
             setIcon(sharedParameters, loadedImg);
 

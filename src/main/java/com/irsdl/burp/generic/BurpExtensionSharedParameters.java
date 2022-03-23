@@ -27,9 +27,27 @@ public class BurpExtensionSharedParameters {
         this.extensionClass = burpExtenderObj.getClass();
         this.callbacks = callbacks;
         this.burpExtender = burpExtenderObj;
+
         // obtain our output stream
         this.stdout = new PrintWriter(callbacks.getStdout(), true);
         this.stderr = new PrintWriter(callbacks.getStderr(), true);
+
+        // getting Burp Suite version
+        try{
+            if(callbacks.getBurpVersion()[0].contains("Professional"))
+                this.isBurpPro = true;
+
+            if(callbacks.getBurpVersion().length > 1){
+                this.burpMajorVersion = Double.parseDouble(callbacks.getBurpVersion()[1]);
+            }
+
+            if(callbacks.getBurpVersion().length > 2){
+                this.burpMinorVersion = Double.parseDouble(callbacks.getBurpVersion()[2]);
+            }
+
+        }catch(Exception e){
+            printlnError(e.getMessage());
+        }
 
         // initialize custom preferences - see https://github.com/CoreyD97/BurpExtenderUtilities/blob/master/src/test/java/extension/PreferencesTest.java
         this.preferences = new Preferences(extensionName, new DefaultGsonProvider(), callbacks);
@@ -57,6 +75,9 @@ public class BurpExtensionSharedParameters {
     public IBurpExtenderCallbacks callbacks = null;
     public Preferences preferences; // to use the ability of this project: https://github.com/CoreyD97/BurpExtenderUtilities
     public Boolean unloadWithoutSave = false; // this is useful if we need to exit without save in some situation
+    public Boolean isBurpPro = false;
+    public double burpMajorVersion = 0.0;
+    public double burpMinorVersion = 0.0;
 
     // these are the parameters which are used per extension but needs to be shared - like registers
     public boolean addedIconListener = false;

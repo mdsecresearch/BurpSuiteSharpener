@@ -59,6 +59,7 @@ public abstract class StandardSettings {
 
 
             if (value != null) {
+                /*
                 try {
                     sharedParameters.preferences.resetSetting(settingName); // to resolve a bug in saving in sitemap when values are similar
                 } catch (Exception e) {
@@ -66,6 +67,7 @@ public abstract class StandardSettings {
                     if(sharedParameters.debugLevel > 1)
                         e.printStackTrace(sharedParameters.stderr);
                 }
+                */
 
                 /*
                 // As Corey's preferences.resetSetting has a new patch, we are going to give it the responsibility to clear everything above

@@ -34,7 +34,7 @@ This extension should add a number of UI and functional features to Burp Suite t
 As PortSwigger has a plan to update Burp Suite UI in a near future, some features in this extension may become redundant or unreliable.
 While we use this extension ourselves we can see potential errors from time to time, as an open source project, it relies on the community feedback for improvements and to fix the issues. Please report any errors in [issues](https://github.com/mdsecresearch/BurpSuiteSharpener/issues).
 
-This extension has been tested against the latest pro version which was 2022.2.4 at the time of writing this document. It should however be also compatible with the community edition.
+This extension has been tested against the latest pro version which was 2022.3 at the time of writing this document. It should however be also compatible with the community edition.
 
 # Suggesting New Features
 The plan is to add simple but effective missing features to this single extension to make tester's life easier as a must-have companion when using Burp Suite (so we cannot Burp without it!).

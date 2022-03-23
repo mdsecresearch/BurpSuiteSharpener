@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
     //public static MainExtensionClass instance;
-    private String version = "1.1";
+    private String version = "1.2";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
