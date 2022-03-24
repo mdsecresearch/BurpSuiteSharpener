@@ -32,7 +32,7 @@ public abstract class StandardSettings {
         return _preferenceObjectCollection;
     }
 
-    public void registerSettings() {
+    public synchronized void registerSettings() {
         if (_preferenceObjectCollection == null)
             return;
 
@@ -41,31 +41,33 @@ public abstract class StandardSettings {
                 sharedParameters.preferences.registerSetting(preferenceObject.settingName, preferenceObject.type, preferenceObject.defaultValue, preferenceObject.visibility);
             } catch (Exception e) {
                 //already registered setting
-                if (sharedParameters.isDebug)
-                    sharedParameters.printlnError(e.getMessage());
+                sharedParameters.printDebugMessage(e.getMessage());
+                if(sharedParameters.debugLevel > 1)
+                    e.printStackTrace(sharedParameters.stderr);
             }
         }
     }
 
-    public void saveSettings(String settingName, Object value) {
+    public synchronized void saveSettings(String settingName, Object value) {
         boolean isSaved = false;
         int tryTimes = 0;
         while (!isSaved && tryTimes < 10) {
             tryTimes++;
 
-            if (sharedParameters.isDebug) {
-                sharedParameters.printlnOutput("Try number: " + tryTimes);
-                sharedParameters.printlnOutput("Trying to save " + settingName);
-            }
+            sharedParameters.printDebugMessage("Try number: " + tryTimes);
+            sharedParameters.printDebugMessage("Trying to save " + settingName);
+
 
             if (value != null) {
+                /*
                 try {
                     sharedParameters.preferences.resetSetting(settingName); // to resolve a bug in saving in sitemap when values are similar
                 } catch (Exception e) {
-                    if (sharedParameters.isDebug) {
-                        sharedParameters.printlnError("Was not possible to reset the value: " + e.getMessage());
-                    }
+                    sharedParameters.printDebugMessage("Was not possible to reset the value: " + e.getMessage());
+                    if(sharedParameters.debugLevel > 1)
+                        e.printStackTrace(sharedParameters.stderr);
                 }
+                */
 
                 /*
                 // As Corey's preferences.resetSetting has a new patch, we are going to give it the responsibility to clear everything above
@@ -91,15 +93,12 @@ public abstract class StandardSettings {
 
                 if (sharedParameters.preferences.getSetting(settingName).equals(value)) {
                     isSaved = true;
-                    if (sharedParameters.isDebug) {
-                        sharedParameters.printlnOutput("This was saved successfully: " + settingName);
-                    }
+                    sharedParameters.printDebugMessage("This was saved successfully: " + settingName);
                 }
             } catch (Exception e) {
-                if (sharedParameters.isDebug) {
-                    sharedParameters.printlnError("Save error: " + e.getMessage());
-                    e.printStackTrace();
-                }
+                sharedParameters.printDebugMessage("Save error: " + e.getMessage());
+                if(sharedParameters.debugLevel > 1)
+                    e.printStackTrace(sharedParameters.stderr);
             }
 
         }
@@ -107,7 +106,7 @@ public abstract class StandardSettings {
 
     }
 
-    public void resetSettings() {
+    public synchronized void resetSettings() {
         if (_preferenceObjectCollection == null)
             return;
 
@@ -116,8 +115,9 @@ public abstract class StandardSettings {
                 // sharedParameters.preferences.resetSetting(preferenceObject.settingName); // there is a bug in the library so we can't use this for now
                 sharedParameters.preferences.setSetting(preferenceObject.settingName, null);
             } catch (Exception e) {
-                if (sharedParameters.isDebug)
-                    sharedParameters.printlnError(e.getMessage());
+                sharedParameters.printDebugMessage(e.getMessage());
+                if(sharedParameters.debugLevel > 1)
+                    e.printStackTrace(sharedParameters.stderr);
             }
         }
     }

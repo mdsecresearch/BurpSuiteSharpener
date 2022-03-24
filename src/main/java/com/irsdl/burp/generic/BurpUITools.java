@@ -6,14 +6,8 @@
 
 package com.irsdl.burp.generic;
 
-import com.irsdl.generic.UIHelper;
-
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.io.*;
-import java.util.ArrayList;
 import java.util.Set;
 
 public class BurpUITools {
@@ -64,7 +58,16 @@ public class BurpUITools {
         return result;
     }
 
-    public static void switchToMainTab(String tabName, JTabbedPane tabbedPane) {
+    public static boolean isDarkMode(Component component){
+        boolean result = false;
+        if(component.getBackground().getBlue() < 128){
+            result = true;
+        }
+        return result;
+    }
+
+    public static boolean switchToMainTab(String tabName, JTabbedPane tabbedPane) {
+        boolean result = false;
         for (Component component : tabbedPane.getComponents()) {
             int componentIndex = tabbedPane.indexOfComponent(component);
             if (componentIndex == -1) {
@@ -74,9 +77,12 @@ public class BurpUITools {
             String componentTitle = tabbedPane.getTitleAt(componentIndex);
             if (componentTitle.trim().equalsIgnoreCase(tabName.trim())) {
                 tabbedPane.setSelectedIndex(componentIndex);
+                result = true;
                 break;
             }
         }
+
+        return result;
     }
 
     public static Boolean isStringInMainTabs(String tabTitleName) {
@@ -198,226 +204,4 @@ public class BurpUITools {
         }
         return result;
     }
-
-    public static void addMouseWheelToJTabbedPane(JTabbedPane jTabbedPane, boolean isLastOneSelectable) {
-        // from https://stackoverflow.com/questions/38463047/use-mouse-to-scroll-through-tabs-in-jtabbedpane
-        MouseWheelListener mwl = new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                JTabbedPane tabbedPane = (JTabbedPane) e.getSource();
-                // works with version 2022.1.1 - not tested in the previous versions!
-                int currentSelection = tabbedPane.getSelectedIndex();
-                JComponent jTabComponent = (JComponent) tabbedPane.getTabComponentAt(currentSelection);
-                Component tabComponent_FirstComp = jTabComponent.getComponent(0);
-
-                if (e.isControlDown()) {
-                    float currentFontSize = tabComponent_FirstComp.getFont().getSize();
-
-                    if (e.getWheelRotation() < 0) {
-                        //scrolled up
-                        if(currentFontSize<=36){
-                            tabComponent_FirstComp.setFont(tabComponent_FirstComp.getFont().deriveFont(currentFontSize+2));
-
-                        }
-                    } else {
-                        //scrolled down
-                        if(currentFontSize>=12) {
-                            tabComponent_FirstComp.setFont(tabComponent_FirstComp.getFont().deriveFont(currentFontSize - 2));
-                        }
-                    }
-                }else if (e.isAltDown() && 1==2) { // mw+alt has been disabled as moved tabs won't be saved in the project file!
-                    JComponent[] components = new JComponent[2];
-                    JComponent[] tabComponents = new JComponent[2];
-                    components[0] = (JComponent) tabbedPane.getSelectedComponent();
-                    tabComponents[0] = jTabComponent;
-
-
-                    if (e.getWheelRotation() > 0) {
-                        //scrolled down
-                        if(currentSelection < tabbedPane.getTabCount() - 2){
-                            components[1] = (JComponent) tabbedPane.getComponentAt(currentSelection+1);
-                            tabComponents[1] = (JComponent) tabbedPane.getTabComponentAt(currentSelection+1);
-
-//*
-                            try{
-                                tabbedPane.remove(currentSelection+1);
-                            }catch(Exception err){
-
-                            }
-
-                            try{
-                                tabbedPane.remove(currentSelection);
-                            }catch(Exception err){
-
-                            }
-
-                            try{
-                                tabbedPane.add(components[1], currentSelection);
-
-                            }catch(Exception err){
-
-                            }finally {
-                                tabbedPane.setTabComponentAt(currentSelection, tabComponents[1]);
-                            }
-
-                            try{
-                                tabbedPane.add(components[0], currentSelection+1);
-                            }catch(Exception err){
-
-                            }finally {
-                                tabbedPane.setTabComponentAt(currentSelection+1, tabComponents[0]);
-                            }
-//*/
-
-                            /*
-
-                            tabbedPane.add(components[1], currentSelection);
-                            tabbedPane.add(components[0], currentSelection+1);
-
-                             */
-
-                            // Null Exception from Burp modules!!! :'(
-                            //tabbedPane.add(((JComponent) tabbedPane.getTabComponentAt(currentSelection)).getComponent(0), currentSelection+1);
-                            //tabbedPane.add(tabbedPane.getTabComponentAt(currentSelection+1), currentSelection);
-
-                            // Null Exception from Burp modules!!! :'(
-                            //tabbedPane.insertTab(((JTextField)tabComponents[0].getComponent(0)).getText(),null,components[0],"",currentSelection+1);
-                            //tabbedPane.insertTab(((JTextField)tabComponents[1].getComponent(0)).getText(),null,components[1],"",currentSelection);
-/*
-                            try{
-                                tabbedPane.setComponentAt(currentSelection, components[1]);
-                            }catch(Exception err){
-
-                            }finally {
-                                tabbedPane.setTabComponentAt(currentSelection, tabComponents[1]);
-                            }
-
-                            try{
-                                tabbedPane.setComponentAt(currentSelection+1, components[0]);
-                            }catch(Exception err){
-
-                            }finally {
-                                tabbedPane.setTabComponentAt(currentSelection+1, tabComponents[0]);
-                            }
-
-
-*/
-                            tabbedPane.setSelectedIndex(currentSelection+1);
-
-
-                            tabbedPane.revalidate();
-                            tabbedPane.repaint();
-                        }
-                    } else{
-                        //scrolled up
-                        if(currentSelection > 0){
-                            components[1] = (JComponent) tabbedPane.getComponentAt(currentSelection-1);
-                            tabComponents[1] = (JComponent) tabbedPane.getTabComponentAt(currentSelection-1);
-//*
-                            try{
-                                tabbedPane.remove(currentSelection);
-                            }catch(Exception err){
-
-                            }
-
-                            try{
-                                tabbedPane.remove(currentSelection-1);
-                            }catch(Exception err){
-
-                            }
-
-                            try{
-                                tabbedPane.add(components[0], currentSelection-1);
-                            }catch(Exception err){
-
-                            }finally {
-                                tabbedPane.setTabComponentAt(currentSelection-1, tabComponents[0]);
-                            }
-
-                            try{
-                                tabbedPane.add(components[1], currentSelection);
-                            }catch(Exception err){
-
-                            }finally {
-                                tabbedPane.setTabComponentAt(currentSelection, tabComponents[1]);
-                            }
-
-
-                           // */
-
-
-
-                            // Null Exception from Burp modules!!! :'(
-                            //tabbedPane.add(((JComponent) tabbedPane.getTabComponentAt(currentSelection)).getComponent(0), currentSelection+1);
-                            //tabbedPane.add(tabbedPane.getTabComponentAt(currentSelection+1), currentSelection);
-
-                            // Null Exception from Burp modules!!! :'(
-                            //tabbedPane.insertTab(((JTextField)tabComponents[0].getComponent(0)).getText(),null,components[0],"",currentSelection+1);
-                            //tabbedPane.insertTab(((JTextField)tabComponents[1].getComponent(0)).getText(),null,components[1],"",currentSelection);
-/*
-                            try{
-                                tabbedPane.setComponentAt(currentSelection, components[1]);
-                            }catch(Exception err){
-
-                            }finally {
-                                tabbedPane.setTabComponentAt(currentSelection, tabComponents[1]);
-                            }
-
-                            try{
-                                tabbedPane.setComponentAt(currentSelection-1, components[0]);
-                            }catch(Exception err){
-
-                            }finally {
-                                tabbedPane.setTabComponentAt(currentSelection-1, tabComponents[0]);
-                            }
-
- */
-
-
-
-
-
-                            tabbedPane.setSelectedIndex(currentSelection-1);
-
-
-                            tabbedPane.revalidate();
-                            tabbedPane.repaint();
-                        }
-                    }
-
-
-
-
-
-                }else{
-                    int offset = 0;
-                    if (!isLastOneSelectable)
-                        offset = 1;
-
-                    int units = e.getWheelRotation();
-                    int oldIndex = tabbedPane.getSelectedIndex();
-                    int newIndex = oldIndex + units;
-                    if (newIndex < 0)
-                        tabbedPane.setSelectedIndex(0);
-                    else if (newIndex >= tabbedPane.getTabCount() - offset)
-                        tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1 - offset);
-                    else
-                        tabbedPane.setSelectedIndex(newIndex);
-                }
-
-            }
-        };
-        jTabbedPane.addMouseWheelListener(mwl);
-    }
-
-    public static void removeMouseWheelFromJTabbedPane(JTabbedPane jTabbedPane, boolean onlyRemoveLast) {
-        MouseWheelListener[] mwlArr = jTabbedPane.getMouseWheelListeners();
-        for (int i = mwlArr.length - 1; i >= 0; i--) {
-            jTabbedPane.removeMouseWheelListener(mwlArr[i]);
-            if (onlyRemoveLast) {
-                break;
-            }
-        }
-    }
-
 }

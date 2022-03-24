@@ -12,8 +12,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 
 public class BurpTitleAndIcon {
     public static void resetTitle(BurpExtensionSharedParameters sharedParameters) {
@@ -36,26 +35,34 @@ public class BurpTitleAndIcon {
             public void run() {
                 new Thread(() -> {
                     sharedParameters.get_mainFrame().setTitle(title);
-                    sharedParameters.printDebugMessages("Burp Suite title was changed to: " + title);
+                    sharedParameters.printDebugMessage("Burp Suite title was changed to: " + title);
                 }).start();
             }
         });
     }
 
     private static void setIcon(BurpExtensionSharedParameters sharedParameters, Image img) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Thread(() -> {
-                    for (Window window : Window.getWindows()) {
-                        window.setIconImage(img);
-                    }
-                    //sharedParameters.get_mainFrame().setIconImage(img);
-                    sharedParameters.printDebugMessages("Burp Suite icon has been updated");
-                }).start();
-            }
-        });
-
+        if(img!=null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    new Thread(() -> {
+                        java.util.List<Image> iconList = new ArrayList<Image>();
+                        iconList.add(img);
+                        /*
+                        for (Frame frame : Frame.getFrames()) {
+                            frame.setIconImages(iconList);
+                        }
+                        */
+                        for (Window window : Window.getWindows()) {
+                            window.setIconImages(iconList);
+                        }
+                        //sharedParameters.get_mainFrame().setIconImage(img);
+                        sharedParameters.printDebugMessage("Burp Suite icon has been updated");
+                    }).start();
+                }
+            });
+        }
     }
 
     private static void removeMainFrameWindowFocusListener(BurpExtensionSharedParameters sharedParameters){
@@ -69,8 +76,14 @@ public class BurpTitleAndIcon {
         }
     }
 
-    public static void setIcon(BurpExtensionSharedParameters sharedParameters, String imgPath, int iconSize) {
-        Image loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(imgPath), iconSize);
+    public static void setIcon(BurpExtensionSharedParameters sharedParameters, String imgPath, int iconSize, boolean isResource) {
+        Image loadedImg;
+        if(isResource){
+            loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, imgPath), iconSize);
+        }else{
+            loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(imgPath), iconSize);
+        }
+
         if (loadedImg != null) {
             setIcon(sharedParameters, loadedImg);
 

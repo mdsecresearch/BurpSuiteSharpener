@@ -62,6 +62,19 @@ public class TabFeaturesObjectStyle implements Serializable {
         return result;
     }
 
+    public boolean equalsIgnoreColor(Object o) {
+        boolean result = false;
+        if (o instanceof TabFeaturesObjectStyle) {
+            TabFeaturesObjectStyle temp = (TabFeaturesObjectStyle) o;
+            if (temp.fontName == fontName && temp.fontSize == fontSize && Boolean.compare(temp.isBold, isBold) == 0 &&
+                    Boolean.compare(temp.isItalic, isItalic) == 0 &&
+                    Boolean.compare(temp.isCloseButtonVisible, isCloseButtonVisible) == 0) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
     /*
     public String get_uid() {
         return _uid;
