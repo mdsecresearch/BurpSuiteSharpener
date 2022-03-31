@@ -42,21 +42,24 @@ public class SubTabSettings extends StandardSettings {
     public Collection<PreferenceObject> definePreferenceObjectCollection() {
         Collection<PreferenceObject> preferenceObjectCollection = new ArrayList<>();
         for (BurpUITools.MainTabs tool : sharedParameters.subTabSupportedTabs) {
-            PreferenceObject preferenceObject = new PreferenceObject("TabFeaturesObject_Array_" + tool.toString().toLowerCase(), new TypeToken<HashMap<String, TabFeaturesObject>>() {
+            PreferenceObject preferenceObject = new PreferenceObject("TabFeaturesObject_Array_" + tool, new TypeToken<HashMap<String, TabFeaturesObject>>() {
             }.getType(), null, Preferences.Visibility.PROJECT);
             preferenceObjectCollection.add(preferenceObject);
 
-            PreferenceObject preferenceObject_isScrollable_Tab = new PreferenceObject("isScrollable_" + tool.toString(), Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+            PreferenceObject preferenceObject_isScrollable_Tab = new PreferenceObject("isScrollable_" + tool, Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
             preferenceObjectCollection.add(preferenceObject_isScrollable_Tab);
 
-            PreferenceObject preferenceObject_mouseWheelToScroll_Tab = new PreferenceObject("mouseWheelToScroll_" + tool.toString(), Boolean.TYPE, true, Preferences.Visibility.GLOBAL);
+            PreferenceObject preferenceObject_mouseWheelToScroll_Tab = new PreferenceObject("mouseWheelToScroll_" + tool, Boolean.TYPE, true, Preferences.Visibility.GLOBAL);
             preferenceObjectCollection.add(preferenceObject_mouseWheelToScroll_Tab);
+
+            PreferenceObject preferenceObject_minimizeSize_Tab = new PreferenceObject("minimizeSize_" + tool, Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+            preferenceObjectCollection.add(preferenceObject_minimizeSize_Tab);
 
             PreferenceObject preferenceObject_isTabFixedPositionUI_Tab;
             if (sharedParameters.burpMajorVersion > 2022 || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion >= 3)) {
-                preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool.toString(), Boolean.TYPE, true, Preferences.Visibility.GLOBAL);
+                preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool, Boolean.TYPE, true, Preferences.Visibility.GLOBAL);
             }else{
-                preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool.toString(), Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+                preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool, Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
             }
             preferenceObjectCollection.add(preferenceObject_isTabFixedPositionUI_Tab);
         }
@@ -105,32 +108,20 @@ public class SubTabSettings extends StandardSettings {
                                     SubTabActions.addMouseWheelToJTabbedPane(sharedParameters, tool, false);
                                 }catch(Exception e){
                                     sharedParameters.printDebugMessage("Error when applying the Mouse Wheel setting, disabling the setting...");
-                                    sharedParameters.preferences.setSetting("mouseWheelToScroll_" + tool.toString(),false);
+                                    sharedParameters.preferences.setSetting("mouseWheelToScroll_" + tool,false);
                                 }
                             }
 
                             if(sharedParameters.originalSubTabbedPaneUI.get(tool) == null && sharedParameters.get_toolTabbedPane(tool) != null)
                                 sharedParameters.originalSubTabbedPaneUI.put(tool,sharedParameters.get_toolTabbedPane(tool).getUI());
 
-                            if ((boolean) sharedParameters.preferences.getSetting("isTabFixedPosition_" + tool)) {
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        new Thread(() -> {
-                                            if(sharedParameters.get_toolTabbedPane(tool) != null){
-                                                sharedParameters.get_toolTabbedPane(tool).setUI(new FlatTabbedPaneUI(){
-                                                    @Override
-                                                    protected boolean shouldRotateTabRuns(int i) {
-                                                        return false;
-                                                    }
-                                                });
-                                            }
-                                        }).start();
-                                    }
-                                });
+                            if (sharedParameters.originalSubTabbedPaneUI.get(tool) == null &&
+                                    sharedParameters.get_toolTabbedPane(tool) != null) {
+                                sharedParameters.originalSubTabbedPaneUI.put(tool,
+                                        sharedParameters.get_toolTabbedPane(tool).getUI());
                             }
 
-
+                            sharedParameters.get_toolTabbedPane(tool).setUI(SubTabCustomTabbedPaneUI.getUI(sharedParameters, tool));
 
                         }).start();
                     }
@@ -139,10 +130,32 @@ public class SubTabSettings extends StandardSettings {
 
             updateAllSubTabContainerHandlersObj(currentMainTab);
 
-            HashMap<String, TabFeaturesObject> tabFeaturesObjectsHashMap = sharedParameters.preferences.getSetting("TabFeaturesObject_Array_" + tool.toString().toLowerCase());
+            HashMap<String, TabFeaturesObject> tabFeaturesObjectsHashMap = sharedParameters.preferences.getSetting("TabFeaturesObject_Array_" + tool);
+
+            boolean isUsingOldSettings = false;
+            if(tabFeaturesObjectsHashMap ==null || tabFeaturesObjectsHashMap.size() <= 0){
+                // backward compatibility as we used the lowercase tool name before version 1.3
+                try {
+                    PreferenceObject preferenceObject = new PreferenceObject("TabFeaturesObject_Array_" + tool.toString().toLowerCase(), new TypeToken<HashMap<String, TabFeaturesObject>>() {
+                    }.getType(), null, Preferences.Visibility.PROJECT);
+                    sharedParameters.preferences.registerSetting(preferenceObject.settingName, preferenceObject.type, preferenceObject.defaultValue, preferenceObject.visibility);
+                    tabFeaturesObjectsHashMap = sharedParameters.preferences.getSetting("TabFeaturesObject_Array_" + tool.toString().toLowerCase());
+                    sharedParameters.preferences.setSetting("TabFeaturesObject_Array_" + tool.toString().toLowerCase(), null);
+                    isUsingOldSettings = true;
+                } catch (Exception e) {
+                    //already registered setting
+                    sharedParameters.printDebugMessage(e.getMessage());
+                    if(sharedParameters.debugLevel > 1)
+                        e.printStackTrace(sharedParameters.stderr);
+                }
+            }
+
             if (tabFeaturesObjectsHashMap != null && sharedParameters.supportedTools_SubTabs.get(tool) != null) {
                 sharedParameters.supportedTools_SubTabs.get(tool).putAll(tabFeaturesObjectsHashMap);
                 updateSubTabsUI(tool);
+                if(isUsingOldSettings){
+                    saveSettings(tool);
+                }
             }
 
         }
@@ -220,11 +233,11 @@ public class SubTabSettings extends StandardSettings {
     public synchronized void unsetSubTabsStyle() {
         sharedParameters.printDebugMessage("unsetSubTabsStyle");
         for (BurpUITools.MainTabs tool : sharedParameters.subTabSupportedTabs) {
-            if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool.toString())) {
+            if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool)) {
                 sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
             }
 
-            if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool.toString())) {
+            if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool)) {
                 SubTabActions.removeMouseWheelFromJTabbedPane(sharedParameters,tool, true);
             }
 
@@ -235,7 +248,7 @@ public class SubTabSettings extends StandardSettings {
                         // Step1 of filter removal
                         if(sharedParameters.isFiltered(tool))
                             subTabContainerHandler.setVisible(true);
-
+                        subTabContainerHandler.removeIcon(true);
                         subTabContainerHandler.removeSubTabWatcher();
                         subTabContainerHandler.setToDefault(true);
                     }
@@ -303,7 +316,7 @@ public class SubTabSettings extends StandardSettings {
                 }
             }
             sharedParameters.supportedTools_SubTabs.get(tool).putAll(tabFeaturesObjectHashMap);
-            sharedParameters.allSettings.saveSettings("TabFeaturesObject_Array_" + tool.toString().toLowerCase(), tabFeaturesObjectHashMap);
+            sharedParameters.allSettings.saveSettings("TabFeaturesObject_Array_" + tool, tabFeaturesObjectHashMap);
         }
     }
 }

@@ -167,7 +167,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                         @Override
                         public void actionPerformed(ActionEvent actionEvent) {
                             for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                                sharedParameters.allSettings.saveSettings("isUnique_" + tool.toString(), true);
+                                sharedParameters.allSettings.saveSettings("isUnique_" + tool, true);
                                 MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
                             }
                             updateTopMenuBar();
@@ -179,7 +179,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                         @Override
                         public void actionPerformed(ActionEvent actionEvent) {
                             for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                                sharedParameters.allSettings.saveSettings("isUnique_" + tool.toString(), false);
+                                sharedParameters.allSettings.saveSettings("isUnique_" + tool, false);
                                 MainToolsTabStyleHandler.unsetToolTabStyle(sharedParameters, tool);
                             }
                             updateTopMenuBar();
@@ -253,16 +253,16 @@ public class TopMenuBar extends javax.swing.JMenu {
                         if (tool.toString().equalsIgnoreCase("none"))
                             continue;
                         JCheckBoxMenuItem toolStyleOption = new JCheckBoxMenuItem(tool.toString());
-                        if ((Boolean) sharedParameters.preferences.getSetting("isUnique_" + tool.toString())) {
+                        if ((Boolean) sharedParameters.preferences.getSetting("isUnique_" + tool)) {
                             toolStyleOption.setSelected(true);
                         }
                         toolStyleOption.addActionListener((e) -> {
-                            Boolean currentSetting = sharedParameters.preferences.getSetting("isUnique_" + tool.toString());
+                            Boolean currentSetting = sharedParameters.preferences.getSetting("isUnique_" + tool);
                             if (currentSetting) {
-                                sharedParameters.allSettings.saveSettings("isUnique_" + tool.toString(), false);
+                                sharedParameters.allSettings.saveSettings("isUnique_" + tool, false);
                                 MainToolsTabStyleHandler.unsetToolTabStyle(sharedParameters, tool);
                             } else {
-                                sharedParameters.allSettings.saveSettings("isUnique_" + tool.toString(), true);
+                                sharedParameters.allSettings.saveSettings("isUnique_" + tool, true);
                                 MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
                             }
                         });

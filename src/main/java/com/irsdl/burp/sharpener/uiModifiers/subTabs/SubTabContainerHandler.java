@@ -10,6 +10,7 @@ import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObject;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
+import com.irsdl.generic.ImageHelper;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -23,7 +24,8 @@ import java.util.Collections;
 public class SubTabContainerHandler {
     public JTabbedPane parentTabbedPane;
     public Container currentTabContainer;
-    public Component currentTabLabel;
+    public Component currentTabTextField;
+    public Component currentTabIcon;
     public Component currentTabCloseButton;
     public ArrayList<Integer> tabIndexHistory = new ArrayList<>();
     public BurpUITools.MainTabs currentToolTab;
@@ -76,14 +78,29 @@ public class SubTabContainerHandler {
 
         currentToolTab = BurpUITools.getMainTabsObjFromString(toolTabName);
         this.currentTabContainer = (Container) currentTabTemp;
-        this.currentTabLabel = currentTabContainer.getComponent(0);
+        if(!hasIcon()){
+            this.currentTabTextField = currentTabContainer.getComponent(0);
+        }
+        else{
+            // we have an icon!
+            this.currentTabTextField = currentTabContainer.getComponent(1);
+        }
 
-        if(currentTabLabel == null){
+
+        if(currentTabTextField == null){
             sharedParameters.printlnError("An error has occurred when reading a specific tab. A restart might be needed.");
             return;
         }
-        if (tabIndex != tabbedPane.getTabCount() - 1)
-            currentTabCloseButton = currentTabContainer.getComponent(1); // to get the X button
+        if (tabIndex != tabbedPane.getTabCount() - 1){
+            if(!hasIcon()){
+                currentTabCloseButton = currentTabContainer.getComponent(1); // to get the X button
+            }
+            else{
+                // we have an icon!
+                currentTabCloseButton = currentTabContainer.getComponent(2); // to get the X button
+            }
+        }
+
 
         // to keep history of previous titles
         if (titleHistory.size() == 0)
@@ -102,12 +119,12 @@ public class SubTabContainerHandler {
         if(!isValid())
             return false;
         // this.currentTabLabel.getPropertyChangeListeners().length is 2 by default in this case ... Burp Suite may change this and break my extension :s
-        if (subTabPropertyChangeListener == null && this.currentTabLabel.getPropertyChangeListeners().length < 3) {
+        if (subTabPropertyChangeListener == null && this.currentTabTextField.getPropertyChangeListeners().length < 3) {
             subTabPropertyChangeListener = new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equalsIgnoreCase("editable")) {
-                        if (evt.getSource().getClass().equals(currentTabLabel.getClass())) {
+                        if (evt.getSource().getClass().equals(currentTabTextField.getClass())) {
                             if (!titleEditInProgress) {
                                 if ((boolean) evt.getNewValue() == true) {
                                     titleEditInProgress = true;
@@ -158,21 +175,21 @@ public class SubTabContainerHandler {
                     }
                 }
             };
-            this.currentTabLabel.addPropertyChangeListener(subTabPropertyChangeListener);
-        } else if (this.currentTabLabel.getPropertyChangeListeners().length == 3) {
-            subTabPropertyChangeListener = this.currentTabLabel.getPropertyChangeListeners()[2];
+            this.currentTabTextField.addPropertyChangeListener(subTabPropertyChangeListener);
+        } else if (this.currentTabTextField.getPropertyChangeListeners().length == 3) {
+            subTabPropertyChangeListener = this.currentTabTextField.getPropertyChangeListeners()[2];
         }
         return true;
     }
 
     public void removeSubTabWatcher() {
         if (subTabPropertyChangeListener != null) {
-            this.currentTabLabel.removePropertyChangeListener(subTabPropertyChangeListener);
+            this.currentTabTextField.removePropertyChangeListener(subTabPropertyChangeListener);
         }
     }
 
     public TabFeaturesObject getTabFeaturesObject() {
-        return new TabFeaturesObject(getTabIndex(), getTabTitle(), getTitleHistory(), getFontName(), getFontSize(), isBold(), isItalic(), getVisibleCloseButton(), getColor());
+        return new TabFeaturesObject(getTabIndex(), getTabTitle(), getTitleHistory(), getFontName(), getFontSize(), isBold(), isItalic(), getVisibleCloseButton(), getColor(), getIconString(), getIconSize());
     }
 
     public TabFeaturesObjectStyle getTabFeaturesObjectStyle() {
@@ -191,6 +208,7 @@ public class SubTabContainerHandler {
     }
 
     public void updateByTabFeaturesObjectStyle(TabFeaturesObjectStyle tabFeaturesObjectStyle, boolean ignoreHasChanges) {
+        this.setIcon(tabFeaturesObjectStyle.iconString, tabFeaturesObjectStyle.iconSize, ignoreHasChanges);
         this.setFontName(tabFeaturesObjectStyle.fontName, ignoreHasChanges);
         this.setFontSize(tabFeaturesObjectStyle.fontSize, ignoreHasChanges);
         this.setBold(tabFeaturesObjectStyle.isBold, ignoreHasChanges);
@@ -216,8 +234,8 @@ public class SubTabContainerHandler {
     public boolean isValid() {
         boolean result = true;
 
-        if (parentTabbedPane == null || getTabIndex() == -1 || currentTabContainer == null || currentTabLabel == null ||
-                currentTabCloseButton == null || currentTabLabel == null ) {
+        if (parentTabbedPane == null || getTabIndex() == -1 || currentTabContainer == null || currentTabTextField == null ||
+                currentTabCloseButton == null || currentTabTextField == null ) {
             result = false;
         }
         return result;
@@ -301,7 +319,7 @@ public class SubTabContainerHandler {
                 // dark mode workaround
                 tfosDefault.setColorCode(Color.decode("#bcbcbc"));
             }
-
+            removeIcon(ignoreHasChanges);
             updateByTabFeaturesObjectStyle(tfosDefault, ignoreHasChanges);
         }
     }
@@ -427,12 +445,12 @@ public class SubTabContainerHandler {
         if (isValid() && !getFont().equals(newFont)) {
             if(!ignoreHasChanges)
                 setHasChanges(true);
-            currentTabLabel.setFont(newFont);
+            currentTabTextField.setFont(newFont);
         }
     }
 
     public Font getFont() {
-        return currentTabLabel.getFont();
+        return currentTabTextField.getFont();
     }
 
     public void setFontName(String name, boolean ignoreHasChanges) {
@@ -445,6 +463,9 @@ public class SubTabContainerHandler {
 
     public void setFontSize(float size, boolean ignoreHasChanges) {
         setFont(getFont().deriveFont(size),ignoreHasChanges);
+        if(hasIcon() && getIconSize() != size){
+            setIcon(getIconString(), (int) size, ignoreHasChanges);
+        }
     }
 
     public float getFontSize() {
@@ -484,7 +505,7 @@ public class SubTabContainerHandler {
     }
 
     public Color getColor() {
-        return currentTabLabel.getForeground();
+        return currentTabTextField.getForeground();
     }
 
     public void setColor(Color color, boolean ignoreHasChanges) {
@@ -510,6 +531,99 @@ public class SubTabContainerHandler {
                 setHasChanges(true);
             currentTabCloseButton.setVisible(false);
         }
+    }
+
+    public void setIcon(String iconString, int iconSize, boolean ignoreHasChanges) {
+        if (isValid() && iconString != null && !iconString.isBlank() && iconSize > 0 && (!getIconString().equals(iconString) || iconSize != getIconSize()) ) {
+            if(!ignoreHasChanges)
+                setHasChanges(true);
+
+            // search the subtab icon to ensure it is valid and get its icon to pass to setIconAt
+            Image myImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, "subtabicons/" + iconString + ".png"), iconSize);
+
+            if(myImg != null){
+                JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
+
+                if (tabComponent.getComponent(0) instanceof JLabel){
+                    // we already have an icon so we remove it!
+                    tabComponent.remove(0);
+                }
+
+                if (tabComponent.getComponent(0) instanceof JTextField) {
+                    // No icon has been added
+                    try {
+                        JLabel jLabel = new JLabel(new ImageIcon(myImg));
+                        jLabel.setName(iconString+":"+iconSize);
+                        jLabel.setOpaque(false);
+                        jLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+                        tabComponent.setLayout(new FlowLayout(FlowLayout.CENTER));
+                        tabComponent.setSize(tabComponent.getComponent(1).getWidth()  + jLabel.getWidth(), tabComponent.getHeight());
+                        tabComponent.add(jLabel, 0);
+                        if(!ignoreHasChanges){
+                            parentTabbedPane.revalidate();
+                            parentTabbedPane.repaint();
+                        }
+                    } catch (Exception err) {
+                        err.printStackTrace(sharedParameters.stderr);
+                    }
+                }
+            }
+        }
+    }
+
+    public void removeIcon(boolean ignoreHasChanges) {
+        if(hasIcon()) {
+            JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
+            if (tabComponent.getComponent(0) instanceof JLabel){
+                // we have an icon set
+                tabComponent.remove(0);
+                if(!ignoreHasChanges){
+                    parentTabbedPane.revalidate();
+                    parentTabbedPane.repaint();
+                }
+            }
+        }
+    }
+
+    public String getIconString(){
+        String _iconString = "";
+        if(hasIcon()){
+            JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
+            if (tabComponent.getComponent(0) instanceof JLabel){
+                // we have an icon set
+                String tempName = tabComponent.getComponent(0).getName();
+                if(!tempName.isBlank() && tempName.contains(":"))
+                    _iconString = tempName.split(":")[0];
+            }
+        }
+
+        return _iconString;
+    }
+
+    public int getIconSize(){
+        int _iconSize = 0;
+        if(hasIcon()){
+            JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
+            if (tabComponent.getComponent(0) instanceof JLabel){
+                // we have an icon set
+                String tempName = tabComponent.getComponent(0).getName();
+                if(!tempName.isBlank() && tempName.contains(":"))
+                    _iconSize = Integer.parseInt(tempName.split(":")[1]);
+            }
+        }
+        return _iconSize;
+    }
+
+    public boolean hasIcon(){
+        boolean result = false;
+
+        JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
+        if (tabComponent.getComponent(0) instanceof JLabel){
+            // we have an icon set
+            result = true;
+        }
+
+        return result;
     }
 
     public void setVisibleCloseButton(boolean isVisible, boolean ignoreHasChanges) {

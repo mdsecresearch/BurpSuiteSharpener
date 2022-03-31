@@ -99,7 +99,7 @@ public class MainToolsTabStyleHandler {
                     }
 
                     for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                        if ((boolean) sharedParameters.preferences.getSetting("isUnique_" + tool.toString())) {
+                        if ((boolean) sharedParameters.preferences.getSetting("isUnique_" + tool)) {
                             MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
                         }
                     }
@@ -125,7 +125,7 @@ public class MainToolsTabStyleHandler {
                     }
 
                     for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                        if ((boolean) sharedParameters.preferences.getSetting("isUnique_" + tool.toString())) {
+                        if ((boolean) sharedParameters.preferences.getSetting("isUnique_" + tool)) {
                             MainToolsTabStyleHandler.unsetToolTabStyle(sharedParameters, tool);
                             MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
                         }
