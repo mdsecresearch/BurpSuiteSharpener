@@ -1,0 +1,52 @@
+// Burp Suite Sharpener
+// Released as open source by MDSec - https://www.mdsec.co.uk
+// Developed by Soroush Dalili (@irsdl)
+// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
+// Released under AGPL see LICENSE for more information
+
+package com.irsdl.burp.sharpener.uiModifiers.subTabs;
+
+import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
+import com.irsdl.burp.generic.BurpUITools;
+import com.irsdl.burp.sharpener.SharpenerSharedParameters;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class SubTabCustomTabbedPaneUI {
+    public static FlatTabbedPaneUI getUI(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab){
+        boolean isMinimzeTabSize = (boolean) sharedParameters.preferences.getSetting("minimizeSize_" + currentToolTab);
+        boolean isFixedTabPosition = ((boolean) sharedParameters.preferences.getSetting("isTabFixedPosition_" + currentToolTab));
+        boolean isFiltered = sharedParameters.isFiltered(currentToolTab);
+        return getUI(sharedParameters, currentToolTab, isFiltered, isMinimzeTabSize, isFixedTabPosition);
+    }
+
+    public static FlatTabbedPaneUI getUI(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab,
+                                         boolean isFiltered, boolean isMinimzeTabSize, boolean isFixedTabPosition){
+        return new FlatTabbedPaneUI() {
+            @Override
+            protected int calculateTabWidth(int tabPlacement, int tabIndex, FontMetrics metrics) {
+                if(isFiltered){
+                    if (sharedParameters.allSubTabContainerHandlers.get(currentToolTab).stream()
+                            .filter(s -> !s.getVisible() && s.getTabIndex() == tabIndex).toArray().length > 0) {
+                        return 0;
+                    }
+                }
+                return super.calculateTabWidth(tabPlacement, tabIndex, metrics);
+            }
+
+            @Override
+            protected int calculateTabHeight(int tabPlacement, int tabIndex, int fontHeight) {
+                if(isMinimzeTabSize || this.tabInsets == null){
+                    this.tabInsets = new Insets(1,1,1,1);
+                }
+                return super.calculateTabHeight(tabPlacement, tabIndex, fontHeight);
+            }
+
+            @Override
+            protected boolean shouldRotateTabRuns(int i) {
+                return !isFixedTabPosition;
+            }
+        };
+    }
+}

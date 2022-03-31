@@ -11,10 +11,10 @@ import com.coreyd97.BurpExtenderUtilities.Preferences;
 import java.lang.reflect.Type;
 
 public class PreferenceObject {
-    String settingName;
-    Type type;
-    Object defaultValue;
-    Preferences.Visibility visibility;
+    public String settingName;
+    public Type type;
+    public Object defaultValue;
+    public Preferences.Visibility visibility;
 
     public PreferenceObject(String settingName, Type type, Object defaultValue, Preferences.Visibility visibility) {
         this.settingName = settingName;

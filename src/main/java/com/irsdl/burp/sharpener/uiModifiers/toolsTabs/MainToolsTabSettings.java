@@ -31,7 +31,7 @@ public class MainToolsTabSettings extends StandardSettings {
         Collection<PreferenceObject> preferenceObjectCollection = new ArrayList<>();
 
         for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-            PreferenceObject preferenceObject_isUnique_Tab = new PreferenceObject("isUnique_" + tool.toString(), Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+            PreferenceObject preferenceObject_isUnique_Tab = new PreferenceObject("isUnique_" + tool, Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
             preferenceObjectCollection.add(preferenceObject_isUnique_Tab);
         }
 
