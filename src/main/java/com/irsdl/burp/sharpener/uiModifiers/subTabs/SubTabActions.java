@@ -7,15 +7,22 @@
 package com.irsdl.burp.sharpener.uiModifiers.subTabs;
 
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
+import com.google.common.io.Files;
+import com.irsdl.burp.generic.BurpTitleAndIcon;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
 import com.irsdl.generic.*;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.Style;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -24,10 +31,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,7 +88,7 @@ public class SubTabActions {
                 }
             } else {
                 // middle click with shift: should make it red and big and bold
-                TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("High: Red, Big, and Bold", "Arial", 18, true, false, false, Color.decode("#f71414"));
+                TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("High: Red, Big, and Bold", "Arial", 18, true, false, false, Color.decode("#f71414") ,"high", 18);
                 subTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle, false);
             }
 
@@ -124,12 +128,8 @@ public class SubTabActions {
                         sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
                     }
                 } else if (e.isAltDown()) {    // experiment here
-                    JComponent[] components = new JComponent[2];
-                    JComponent[] tabComponents = new JComponent[2];
-                    components[0] = (JComponent) tabbedPane.getSelectedComponent();
-                    tabComponents[0] = (JComponent) tabbedPane.getTabComponentAt(currentSelection);
-                    var test = subTabContainerHandler;
-
+                    subTabContainerHandler.setIcon("alert", 16, true);
+                    sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(subTabContainerHandler);
 
                 } else if (e.isAltDown() && 1 == 2) { // mw+alt has been disabled as moved tabs won't be saved in the project file!
                     JComponent[] components = new JComponent[2];
@@ -397,37 +397,20 @@ public class SubTabActions {
 
             JMenu profileMenu = new JMenu("Predefined Styles");
 
-            JMenuItem highProfile = new JMenuItem("High: Red, Big, and Bold");
-            highProfile.addActionListener(e -> {
-                TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("High: Red, Big, and Bold", "Arial", 18, true, false, false, Color.decode("#f71414"));
-                currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle, true);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
-            });
-            profileMenu.add(highProfile);
+            profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "High - Confirmed", "Arial", 18, true, false, false, "#f71414", "high"));
+            profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "High - Unconfirmed", "Arial", 18, true, false, false, "#f71414", "high-tbc"));
 
-            JMenuItem mediumProfile = new JMenuItem("Medium: Orange, Big, and Bold");
-            mediumProfile.addActionListener(e -> {
-                TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("Medium: Orange, Big, and Bold", "Arial", 18, true, false, false, Color.decode("#ff7e0d"));
-                currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle, true);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
-            });
-            profileMenu.add(mediumProfile);
+            profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "Medium - Confirmed", "Arial", 18, true, false, false, "#ff7e0d", "medium"));
+            profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "Medium - Unconfirmed", "Arial", 18, true, false, false, "#ff7e0d", "medium-tbc"));
 
-            JMenuItem lowProfile = new JMenuItem("Low: Yellow, Bold");
-            lowProfile.addActionListener(e -> {
-                TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("Low: Yellow, Bold", "Arial", 14, true, false, false, Color.decode("#fadc00"));
-                currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle, true);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
-            });
-            profileMenu.add(lowProfile);
+            profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "Low - Confirmed", "Arial", 16, true, false, false, "#FAD400", "low"));
+            profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "Low - Unconfirmed", "Arial", 16, true, false, false, "#FAD400", "low-tbc"));
 
-            JCheckBoxMenuItem infoProfile = new JCheckBoxMenuItem("Info: Green, Bold, Italic");
-            infoProfile.addActionListener(e -> {
-                TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle("Info: Green, Bold, Italic", "Arial", 14, true, true, false, Color.decode("#0d9e1e"));
-                currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle, true);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
-            });
-            profileMenu.add(infoProfile);
+            profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "Info - Confirmed", "Arial", 16, true, true, false, "#0d9e1e", "info"));
+            profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "Info - Unconfirmed", "Arial", 16, true, true, false, "#0d9e1e", "info-tbc"));
+
+            profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "Interesting 1", "Arial", 16, true, true, false, "#395EEA", "interesting"));
+            profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "Interesting 2", "Arial", 16, true, true, false, "#D641CF", "interesting2"));
 
             popupMenu.add(profileMenu);
 
@@ -484,6 +467,53 @@ public class SubTabActions {
                 sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
             });
             customStyleMenu.add(italicMenu);
+
+
+            Resource[] resourceIcons = new Resource[]{};
+
+            try {
+                PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(sharedParameters.extensionClass.getClassLoader());
+                resourceIcons = resolver.getResources("classpath:subtabicons/*.*");
+
+            } catch (IOException e) {
+                sharedParameters.printDebugMessage("No icon was found in resources");
+            }
+
+            JMenu changeTabIcon = new JScrollMenu("Icon");
+
+            ButtonGroup subtabIconGroup = new ButtonGroup();
+
+            JRadioButtonMenuItem noneIconImage = new JRadioButtonMenuItem("None");
+            if(!currentSubTabContainerHandler.hasIcon()){
+                noneIconImage.setSelected(true);
+            }
+            noneIconImage.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    currentSubTabContainerHandler.removeIcon(false);
+                    sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
+                }
+            });
+            subtabIconGroup.add(noneIconImage);
+            changeTabIcon.add(noneIconImage);
+
+            for(Resource resourceIcon: resourceIcons){
+                String resourcePath = "/subtabicons/"+resourceIcon.getFilename();
+                JRadioButtonMenuItem subTabIconImage = new JRadioButtonMenuItem(resourceIcon.getFilename().replaceAll("\\..*$",""));
+                subTabIconImage.setIcon(new ImageIcon(ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, resourcePath), 32)));
+                String fileNameWithOutExt = Files.getNameWithoutExtension(resourceIcon.getFilename());
+
+                if (fileNameWithOutExt.equalsIgnoreCase(currentSubTabContainerHandler.getIconString())) {
+                    subTabIconImage.setSelected(true);
+                }
+                subTabIconImage.addActionListener((e) -> {
+                    currentSubTabContainerHandler.setIcon(fileNameWithOutExt, (int) currentSubTabContainerHandler.getFontSize(), false);
+                    sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
+                });
+                subtabIconGroup.add(subTabIconImage);
+                changeTabIcon.add(subTabIconImage);
+            }
+            customStyleMenu.add(changeTabIcon);
 
             JMenuItem colorMenu = new JMenuItem("Set Foreground Color");
             colorMenu.addActionListener(e -> {
@@ -1087,6 +1117,22 @@ public class SubTabActions {
 
             popupMenu.add(toolSubTabPaneScrollableLayout);
 
+            JCheckBoxMenuItem toolSubTabPaneTabMinimizeTabSize = new JCheckBoxMenuItem("Minimize " + tool + " Tabs' Size");
+            if ((boolean) sharedParameters.preferences.getSetting("minimizeSize_" + tool)) {
+                toolSubTabPaneTabMinimizeTabSize.setSelected(true);
+            }
+
+            toolSubTabPaneTabMinimizeTabSize.addActionListener((e) -> {
+                if ((boolean) sharedParameters.preferences.getSetting("minimizeSize_" + tool)) {
+                    changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
+                    sharedParameters.allSettings.saveSettings("minimizeSize_" + tool, false);
+                } else {
+                    changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
+                    sharedParameters.allSettings.saveSettings("minimizeSize_" + tool, true);
+                }
+            });
+            popupMenu.add(toolSubTabPaneTabMinimizeTabSize);
+
             JCheckBoxMenuItem toolSubTabPaneTabFixedPositionLayout = new JCheckBoxMenuItem("Fixed Tab Position for " + tool);
             if ((boolean) sharedParameters.preferences.getSetting("isTabFixedPosition_" + tool)) {
                 toolSubTabPaneTabFixedPositionLayout.setSelected(true);
@@ -1125,6 +1171,27 @@ public class SubTabActions {
         return popupMenu;
     }
 
+    private static JMenuItem predefiniedStyleMenu(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, String text, String fontName, int fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, String colorCode, String iconString) {
+        JMenuItem profile = new JMenuItem(text);
+        int style = profile.getFont().getStyle();
+
+        if(isBold)
+            style ^= Font.BOLD;
+
+        if(isItalic)
+            style ^= Font.ITALIC;
+
+        profile.setFont(new Font(fontName, style, fontSize));
+        profile.setForeground(Color.decode(colorCode));
+        profile.setIcon(new ImageIcon(ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, "subtabicons/"+iconString+".png"), fontSize)));
+        profile.addActionListener(e -> {
+            TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle(text, fontName, fontSize, isBold, isItalic, isCloseButtonVisible, Color.decode(colorCode), iconString, fontSize);
+            currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle, true);
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
+        });
+        return profile;
+    }
+
     private static boolean changeToolTabbedPaneUI(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, boolean shouldOriginalBeSet, int counter) {
         boolean result = true;
         try {
@@ -1136,145 +1203,23 @@ public class SubTabActions {
                         sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).getUI());
             }
 
-
+            boolean isMinimzeTabSize = (boolean) sharedParameters.preferences.getSetting("minimizeSize_" + currentSubTabContainerHandler.currentToolTab);
             boolean isFixedTabPosition = ((boolean) sharedParameters.preferences.getSetting("isTabFixedPosition_" + currentSubTabContainerHandler.currentToolTab));
             boolean isFiltered = sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab);
-            boolean isOriginal = shouldOriginalBeSet;
 
-            if (!isOriginal) {
-                if (sharedParameters.burpMajorVersion > 2022 || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion >= 3)) {
-                    if (isFixedTabPosition && !isFiltered)
-                        isOriginal = true;
-                } else {
-                    if (!isFixedTabPosition && !isFiltered)
-                        isOriginal = true;
-                }
+            boolean isOriginal = true;
+
+
+            if(!shouldOriginalBeSet || isMinimzeTabSize || isFiltered ||
+                    (!isFixedTabPosition && (sharedParameters.burpMajorVersion > 2022 || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion >= 3))) ||
+                    (isFixedTabPosition && (sharedParameters.burpMajorVersion < 2022 || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion < 3)))){
+                isOriginal = false;
             }
 
             if (isOriginal) {
                 sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).updateUI();
             } else {
-                sharedParameters.printDebugMessage("Applying the filter");
-                if (sharedParameters.burpMajorVersion > 2022 || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion >= 3)) {
-                    if (!isFixedTabPosition && isFiltered) {
-                        sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).setUI(new FlatTabbedPaneUI() {
-                            @Override
-                            protected int calculateTabWidth(int tabPlacement, int tabIndex, FontMetrics metrics) {
-                                if (sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab).stream()
-                                        .filter(s -> !s.getVisible() && s.getTabIndex() == tabIndex).toArray().length > 0) {
-                                    return 0;
-                                }
-                                if(this.tabInsets == null){
-                                    this.tabInsets = new Insets(0,0,0,0);
-                                }
-                                return super.calculateTabWidth(tabPlacement, tabIndex, metrics);
-                            }
-
-                            @Override
-                            protected int calculateTabHeight(int tabPlacement, int tabIndex, int fontHeight) {
-                                if(this.tabInsets == null){
-                                    this.tabInsets = new Insets(0,0,0,0);
-                                }
-                                return super.calculateTabHeight(tabPlacement, tabIndex, fontHeight);
-                            }
-
-                            @Override
-                            protected boolean shouldRotateTabRuns(int i) {
-                                return true;
-                            }
-                        });
-                    } else if (!isFixedTabPosition) {
-                        sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).setUI(new FlatTabbedPaneUI() {
-                            @Override
-                            protected boolean shouldRotateTabRuns(int i) {
-                                return true;
-                            }
-                        });
-                    } else {
-                        sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).setUI(new FlatTabbedPaneUI() {
-                            @Override
-                            protected int calculateTabWidth(int tabPlacement, int tabIndex, FontMetrics metrics) {
-                                if (sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab).stream()
-                                        .filter(s -> !s.getVisible() && s.getTabIndex() == tabIndex).toArray().length > 0) {
-                                    return 0;
-                                }
-                                if(this.tabInsets == null){
-                                    this.tabInsets = new Insets(0,0,0,0);
-                                }
-                                return super.calculateTabWidth(tabPlacement, tabIndex, metrics);
-
-                            }
-
-                            @Override
-                            protected int calculateTabHeight(int tabPlacement, int tabIndex, int fontHeight) {
-                                if(this.tabInsets == null){
-                                    this.tabInsets = new Insets(0,0,0,0);
-                                }
-                                return super.calculateTabHeight(tabPlacement, tabIndex, fontHeight);
-                            }
-                        });
-
-                    }
-                } else {
-                    if (isFixedTabPosition && isFiltered) {
-                        sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).setUI(new FlatTabbedPaneUI() {
-                            @Override
-                            protected int calculateTabWidth(int tabPlacement, int tabIndex, FontMetrics metrics) {
-                                if (sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab).stream()
-                                        .filter(s -> !s.getVisible() && s.getTabIndex() == tabIndex).toArray().length > 0) {
-                                    return 0;
-                                }
-                                if(this.tabInsets == null){
-                                    this.tabInsets = new Insets(0,0,0,0);
-                                }
-                                return super.calculateTabWidth(tabPlacement, tabIndex, metrics);
-                            }
-
-                            @Override
-                            protected int calculateTabHeight(int tabPlacement, int tabIndex, int fontHeight) {
-                                if(this.tabInsets == null){
-                                    this.tabInsets = new Insets(0,0,0,0);
-                                }
-                                return super.calculateTabHeight(tabPlacement, tabIndex, fontHeight);
-                            }
-
-                            @Override
-                            protected boolean shouldRotateTabRuns(int i) {
-                                return false;
-                            }
-                        });
-                    } else if (isFixedTabPosition) {
-                        sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).setUI(new FlatTabbedPaneUI() {
-                            @Override
-                            protected boolean shouldRotateTabRuns(int i) {
-                                return false;
-                            }
-                        });
-                    } else {
-                        sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).setUI(new FlatTabbedPaneUI() {
-                            @Override
-                            protected int calculateTabWidth(int tabPlacement, int tabIndex, FontMetrics metrics) {
-                                if (sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab).stream()
-                                        .filter(s -> !s.getVisible() && s.getTabIndex() == tabIndex).toArray().length > 0) {
-                                    return 0;
-                                }
-                                if(this.tabInsets == null){
-                                    this.tabInsets = new Insets(0,0,0,0);
-                                }
-                                return super.calculateTabWidth(tabPlacement, tabIndex, metrics);
-                            }
-
-                            @Override
-                            protected int calculateTabHeight(int tabPlacement, int tabIndex, int fontHeight) {
-                                if(this.tabInsets == null){
-                                    this.tabInsets = new Insets(0,0,0,0);
-                                }
-                                return super.calculateTabHeight(tabPlacement, tabIndex, fontHeight);
-                            }
-                        });
-                    }
-                }
-
+                sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).setUI(SubTabCustomTabbedPaneUI.getUI(sharedParameters, currentSubTabContainerHandler.currentToolTab));
             }
 
             sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).revalidate();

@@ -178,7 +178,7 @@ public class BurpUITools {
     public static boolean reattachTools(Set<BurpUITools.MainTabs> toolName, JMenuBar menuBar) {
         boolean result = false;
         for (BurpUITools.MainTabs tool : toolName) {
-            JMenuItem detachedTool = (JMenuItem) BurpUITools.getSubMenuComponentFromMain("Window", "Reattach " + tool.toString(), menuBar, JMenuItem.class);
+            JMenuItem detachedTool = (JMenuItem) BurpUITools.getSubMenuComponentFromMain("Window", "Reattach " + tool, menuBar, JMenuItem.class);
             if (detachedTool != null) {
                 detachedTool.doClick();
                 result = true;

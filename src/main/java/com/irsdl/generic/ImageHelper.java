@@ -45,15 +45,15 @@ public class ImageHelper {
         return loadImageResource(UIHelper.class, filename);
     }
 
-    public static BufferedImage loadImageResource(Class claz, String filename) {
+    public static BufferedImage loadImageResource(Class claz, String filePath) {
         URL imageURLMain = null;
 
-        if (!filename.startsWith("/")) {
-            imageURLMain = claz.getResource("/" + filename);
+        if (!filePath.startsWith("/")) {
+            imageURLMain = claz.getResource("/" + filePath);
         }
 
         if (imageURLMain == null) {
-            imageURLMain = claz.getResource(filename);
+            imageURLMain = claz.getResource(filePath);
         }
 
         if (imageURLMain != null) {

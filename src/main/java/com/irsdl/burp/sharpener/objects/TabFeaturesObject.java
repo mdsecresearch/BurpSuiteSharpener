@@ -15,8 +15,8 @@ public class TabFeaturesObject extends TabFeaturesObjectStyle {
     //public LinkedHashSet<String> titleHistory = new LinkedHashSet<>(); // https://github.com/CoreyD97/BurpExtenderUtilities/issues/7 we still can't keep the order using LinkedHashSet
     public String[] titleHistory = new String[]{};
 
-    public TabFeaturesObject(int index, String title, String[] titleHistory, String fontName, float fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, Color colorCode) {
-        super("", fontName, fontSize, isBold, isItalic, isCloseButtonVisible, colorCode);
+    public TabFeaturesObject(int index, String title, String[] titleHistory, String fontName, float fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, Color colorCode, String iconString, int iconSize) {
+        super("", fontName, fontSize, isBold, isItalic, isCloseButtonVisible, colorCode, iconString, iconSize);
         this.index = index;
         this.title = title;
         //this.titleHistory = Arrays.stream(titleHistory).filter(s -> (s != null && s.length() > 0)).collect(Collectors.toCollection( LinkedHashSet::new ));
@@ -36,6 +36,6 @@ public class TabFeaturesObject extends TabFeaturesObjectStyle {
     }
 
     public TabFeaturesObjectStyle getStyle() {
-        return new TabFeaturesObjectStyle("", fontName, fontSize, isBold, isItalic, isCloseButtonVisible, getColorCode());
+        return new TabFeaturesObjectStyle("", fontName, fontSize, isBold, isItalic, isCloseButtonVisible, getColorCode(), iconString, iconSize);
     }
 }
