@@ -49,6 +49,12 @@ public class SubTabWatcher implements ContainerListener {
         put("alt RIGHT","NextlySelectedTab");
         put("control alt LEFT","PreviouslySelectedTab");
         put("control alt RIGHT","NextlySelectedTab");
+        put("control C","CopyTitle");
+        put("control shift C","CopyTitle");
+        put("control V","PasteTitle");
+        put("control shift V","PasteTitle");
+        put("F2","RenameTitle");
+        put("control F2","RenameTitle");
     }};
 
     public SubTabWatcher(SharpenerSharedParameters sharedParameters, Consumer<MouseEvent> mouseEventConsumer) {
@@ -301,6 +307,24 @@ public class SubTabWatcher implements ContainerListener {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     SubTabActions.jumpToNextlySelectedTab(sharedParameters, e);
+                }
+            });
+            subTabbedPane.getActionMap().put("CopyTitle", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    SubTabActions.copyTitle(sharedParameters, e);
+                }
+            });
+            subTabbedPane.getActionMap().put("PasteTitle", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    SubTabActions.pasteTitle(sharedParameters, e);
+                }
+            });
+            subTabbedPane.getActionMap().put("RenameTitle", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    SubTabActions.renameTitle(sharedParameters, e);
                 }
             });
         }

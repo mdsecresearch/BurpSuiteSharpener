@@ -15,11 +15,11 @@ import java.util.ArrayList;
 public class UIHelper {
 
     // Show a message to the user
-    public static void showMessage(final String strMsg, Component parentcmp) {
+    public static void showMessage(final String strMsg,final String strTitle, Component parentcmp) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                JOptionPane.showMessageDialog(parentcmp, strMsg);
+                JOptionPane.showMessageDialog(parentcmp, strMsg, strTitle, JOptionPane.INFORMATION_MESSAGE);
             }
         }).start();
 

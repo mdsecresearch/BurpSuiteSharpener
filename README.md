@@ -63,6 +63,9 @@ Perhaps the best features can be imported from different open-source extensions 
 | Next Tab                                         | Right Arrow<br/>Ctrl + Shift + Right<br/>Mouse Wheel                                               |
 | Back (Previously Selected Tab)                   | Alt + Left<br/>Ctrl + Alt + Left<br/>Mouse Wheel                                                   |
 | Forward                                          | Alt + Right<br/>Ctrl + Alt + Right                                                                 |
+| Copy Subtab Title                                | Ctrl + C<br/>Ctrl + Shift + C                                                                      |
+| Paste Subtab Title                               | Ctrl + V<br/>Ctrl + Shift + V                                                                      |
+| Rename Subtab Title                              | F2<br/>Ctrl + F2                                                                                   |
 | Increase Font Size                               | Ctrl + Mouse Wheel                                                                                 |
 | Increase Font Size & Bold                        | Middle Click + CTRL                                                                                |
 | Decrease Font Size & Bold                        | Middle Click + CTRL + SHIFT                                                                        |

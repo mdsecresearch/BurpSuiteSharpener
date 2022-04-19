@@ -493,7 +493,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                                     "Developed by Soroush Dalili (@irsdl)\n" +
                                     "Project link: " + sharedParameters.extensionURL +
                                     "\nReleased under AGPL see LICENSE for more information";
-                            UIHelper.showMessage(aboutMessage, sharedParameters.get_mainFrame());
+                            UIHelper.showMessage(aboutMessage, "About this extension", sharedParameters.get_mainFrame());
                         }
                     });
                     add(mdsecLogoMenu);
