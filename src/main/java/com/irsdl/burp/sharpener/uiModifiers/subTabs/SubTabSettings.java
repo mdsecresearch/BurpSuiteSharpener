@@ -121,7 +121,8 @@ public class SubTabSettings extends StandardSettings {
                                         sharedParameters.get_toolTabbedPane(tool).getUI());
                             }
 
-                            sharedParameters.get_toolTabbedPane(tool).setUI(SubTabCustomTabbedPaneUI.getUI(sharedParameters, tool));
+                            if(sharedParameters.get_toolTabbedPane(tool)!=null)
+                                sharedParameters.get_toolTabbedPane(tool).setUI(SubTabCustomTabbedPaneUI.getUI(sharedParameters, tool));
 
                         }).start();
                     }

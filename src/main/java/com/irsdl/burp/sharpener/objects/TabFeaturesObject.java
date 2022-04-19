@@ -36,6 +36,6 @@ public class TabFeaturesObject extends TabFeaturesObjectStyle {
     }
 
     public TabFeaturesObjectStyle getStyle() {
-        return new TabFeaturesObjectStyle("", fontName, fontSize, isBold, isItalic, isCloseButtonVisible, getColorCode(), iconString, iconSize);
+        return new TabFeaturesObjectStyle("", fontName, fontSize, isBold, isItalic, isCloseButtonVisible, getColor(), get_IconResourceString(), iconSize);
     }
 }

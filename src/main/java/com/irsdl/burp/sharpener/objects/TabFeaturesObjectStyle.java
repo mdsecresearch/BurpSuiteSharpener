@@ -16,23 +16,29 @@ public class TabFeaturesObjectStyle implements Serializable {
     public boolean isBold = false;
     public boolean isItalic = false;
     public boolean isCloseButtonVisible = false;
-    public String iconString = "";
+    private String iconResourceString = "";
     public int iconSize = 0;
-    private String colorCode = "";
+    public String colorCode = "";
 
-    public TabFeaturesObjectStyle(String styleName, String fontName, float fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, Color colorCode, String iconString, int iconSize) {
+    public TabFeaturesObjectStyle(String styleName, String fontName, float fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, Color colorCode, String iconResourceString, int iconSize) {
         this.name = styleName;
         this.fontName = fontName;
         this.fontSize = fontSize;
         this.isBold = isBold;
         this.isItalic = isItalic;
         this.isCloseButtonVisible = isCloseButtonVisible;
-        this.iconString = iconString;
+        this.iconResourceString = iconResourceString;
         this.iconSize = iconSize;
-        setColorCode(colorCode);
+        setColor(colorCode);
     }
 
-    public Color getColorCode() {
+    public String get_IconResourceString(){
+        if(iconResourceString == null)
+            iconResourceString = "";
+        return iconResourceString.replaceAll(":","").replaceAll("\\\\", "/").replaceAll("/+","/").replaceAll("\\.\\s*+/","./").replaceAll("/\\s*\\.+","/.");
+    }
+
+    public Color getColor() {
         Color color;
         try {
             color = Color.decode(this.colorCode);
@@ -47,7 +53,7 @@ public class TabFeaturesObjectStyle implements Serializable {
         return color;
     }
 
-    public void setColorCode(Color _colorObj) {
+    public void setColor(Color _colorObj) {
         this.colorCode = String.format("#%06x", _colorObj.getRGB() & 0xFFFFFF); // new system!
         // this.colorCode = Integer.toString(_colorObj.getRGB()); // old easy approach!
     }
@@ -58,7 +64,7 @@ public class TabFeaturesObjectStyle implements Serializable {
         if (o instanceof TabFeaturesObjectStyle) {
             TabFeaturesObjectStyle temp = (TabFeaturesObjectStyle) o;
             if (temp.fontName == fontName && temp.fontSize == fontSize && Boolean.compare(temp.isBold, isBold) == 0 &&
-                    Boolean.compare(temp.isItalic, isItalic) == 0 && temp.iconString.equals(iconString) && temp.iconSize == iconSize &&
+                    Boolean.compare(temp.isItalic, isItalic) == 0 && temp.iconResourceString.equals(iconResourceString) && temp.iconSize == iconSize &&
                     Boolean.compare(temp.isCloseButtonVisible, isCloseButtonVisible) == 0 && temp.colorCode.equals(colorCode)) {
                 result = true;
             }
@@ -71,7 +77,7 @@ public class TabFeaturesObjectStyle implements Serializable {
         if (o instanceof TabFeaturesObjectStyle) {
             TabFeaturesObjectStyle temp = (TabFeaturesObjectStyle) o;
             if (temp.fontName == fontName && temp.fontSize == fontSize && Boolean.compare(temp.isBold, isBold) == 0 &&
-                    Boolean.compare(temp.isItalic, isItalic) == 0 && temp.iconString.equals(iconString) && temp.iconSize == iconSize &&
+                    Boolean.compare(temp.isItalic, isItalic) == 0 && temp.iconResourceString.equals(iconResourceString) && temp.iconSize == iconSize &&
                     Boolean.compare(temp.isCloseButtonVisible, isCloseButtonVisible) == 0) {
                 result = true;
             }
