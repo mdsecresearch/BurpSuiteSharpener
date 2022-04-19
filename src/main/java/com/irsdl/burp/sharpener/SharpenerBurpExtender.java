@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
     //public static MainExtensionClass instance;
-    private String version = "1.3";
+    private String version = "1.4";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
@@ -126,7 +126,17 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                                     if(!BurpUITools.switchToMainTab("Dashboard",sharedParameters.get_rootTabbedPane()))
                                         if(!BurpUITools.switchToMainTab("Proxy",sharedParameters.get_rootTabbedPane()))
                                             BurpUITools.switchToMainTab("User options",sharedParameters.get_rootTabbedPane());
-                                    sharedParameters.callbacks.includeInScope(burpExtenderUtilitiesURL);
+
+                                    new java.util.Timer().schedule(
+                                            new java.util.TimerTask() {
+                                                @Override
+                                                public void run() {
+                                                    sharedParameters.callbacks.includeInScope(burpExtenderUtilitiesURL);
+                                                }
+                                            },
+                                            2000
+                                    );
+                                    UIHelper.showWarningMessage("Please wait for 5 seconds before clicking on the Target tab to prevent a Burp Suite internal bug when updating the scope!",sharedParameters.get_rootTabbedPane());
                                 }
 
                                 new java.util.Timer().schedule(

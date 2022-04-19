@@ -412,6 +412,10 @@ public class SubTabActions {
             profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "Interesting 1", "Arial", 16, true, true, false, "#395EEA", "interesting"));
             profileMenu.add(predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, "Interesting 2", "Arial", 16, true, true, false, "#D641CF", "interesting2"));
 
+            profileMenu.add(predefiniedStyleMenuByIcon(sharedParameters, currentSubTabContainerHandler, "False Positive", "false-positive"));
+            profileMenu.add(predefiniedStyleMenuByIcon(sharedParameters, currentSubTabContainerHandler, "Duplicate", "duplicate"));
+            profileMenu.add(predefiniedStyleMenuByIcon(sharedParameters, currentSubTabContainerHandler, "Tick", "tick"));
+            profileMenu.add(predefiniedStyleMenuByIcon(sharedParameters, currentSubTabContainerHandler, "Cross", "cross"));
             popupMenu.add(profileMenu);
 
             JMenu customStyleMenu = new JMenu("Custom Style");
@@ -772,21 +776,11 @@ public class SubTabActions {
 
         popupMenu.add(filterTitleMenu);
 
-        JMenuItem copyTitleMenu = new JMenuItem("Copy Title");
-        copyTitleMenu.addActionListener(e -> {
-            String tabTitle = currentSubTabContainerHandler.getTabTitle();
-            // copying to clipboard as well
-            Toolkit.getDefaultToolkit()
-                    .getSystemClipboard()
-                    .setContents(
-                            new StringSelection(tabTitle),
-                            null
-                    );
-            sharedParameters.printDebugMessage("Title copied...");
-        });
+        JMenuItem copyTitleMenu = new JMenuItem("Copy Title [Ctrl+C]");
+        copyTitleMenu.addActionListener(e -> {copyTitle(sharedParameters,currentSubTabContainerHandler);});
         popupMenu.add(copyTitleMenu);
 
-        JMenuItem pasteTitleMenu = new JMenuItem("Paste Title");
+        JMenuItem pasteTitleMenu = new JMenuItem("Paste Title [Ctrl+V]");
 
         try {
             String clipboardText = (String) Toolkit.getDefaultToolkit()
@@ -796,31 +790,17 @@ public class SubTabActions {
             sharedParameters.lastClipboardText = "";
         }
 
-
         if (sharedParameters.lastClipboardText.isBlank()) {
             pasteTitleMenu.setEnabled(false);
         } else {
             pasteTitleMenu.setToolTipText("Clipboard value: " + StringUtils.abbreviate(sharedParameters.lastClipboardText, 100));
         }
 
-        pasteTitleMenu.addActionListener(e -> {
-            if (!sharedParameters.lastClipboardText.isBlank()) {
-                currentSubTabContainerHandler.setTabTitle(sharedParameters.lastClipboardText, true);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
-                sharedParameters.printDebugMessage("Title pasted...");
-            }
-        });
+        pasteTitleMenu.addActionListener(e -> {pasteTitle(sharedParameters, currentSubTabContainerHandler);});
         popupMenu.add(pasteTitleMenu);
 
-        JMenuItem renameTitleMenu = new JMenuItem("Rename Title");
-        renameTitleMenu.addActionListener(e -> {
-            String newTitle = UIHelper.showPlainInputMessage("Edit the Title", "Rename Title", currentSubTabContainerHandler.getTabTitle(), sharedParameters.get_mainFrame());
-            if (!newTitle.isEmpty() && !newTitle.equals(currentSubTabContainerHandler.getTabTitle())) {
-                currentSubTabContainerHandler.setTabTitle(newTitle, true);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
-                sharedParameters.printDebugMessage("Title renamed...");
-            }
-        });
+        JMenuItem renameTitleMenu = new JMenuItem("Rename Title [F2]");
+        renameTitleMenu.addActionListener(e -> {renameTitle(sharedParameters, currentSubTabContainerHandler);});
         popupMenu.add(renameTitleMenu);
 
 
@@ -1169,6 +1149,10 @@ public class SubTabActions {
         }
 
         return popupMenu;
+    }
+
+    private static JMenuItem predefiniedStyleMenuByIcon(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, String text, String iconString) {
+        return predefiniedStyleMenu(sharedParameters, currentSubTabContainerHandler, text, currentSubTabContainerHandler.getFontName(), (int) currentSubTabContainerHandler.getFontSize(), currentSubTabContainerHandler.isBold(), currentSubTabContainerHandler.isItalic(), currentSubTabContainerHandler.getVisibleCloseButton(), currentSubTabContainerHandler.getColorCode(), iconString);
     }
 
     private static JMenuItem predefiniedStyleMenu(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, String text, String fontName, int fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, String colorCode, String iconString) {
@@ -1647,4 +1631,52 @@ public class SubTabActions {
         }
     }
 
+    public static void copyTitle(SharpenerSharedParameters sharedParameters, ActionEvent event) {
+        copyTitle(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event));
+    }
+
+    public static void copyTitle(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
+        String tabTitle = currentSubTabContainerHandler.getTabTitle();
+        // copying to clipboard as well
+        Toolkit.getDefaultToolkit()
+                .getSystemClipboard()
+                .setContents(
+                        new StringSelection(tabTitle),
+                        null
+                );
+        sharedParameters.printDebugMessage("Title has been copied to clipboard");
+    }
+
+    public static void pasteTitle(SharpenerSharedParameters sharedParameters, ActionEvent event) {
+        pasteTitle(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event));
+    }
+
+    public static void pasteTitle(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
+        try {
+            String clipboardText = (String) Toolkit.getDefaultToolkit()
+                    .getSystemClipboard().getData(DataFlavor.stringFlavor);
+            sharedParameters.lastClipboardText = clipboardText.trim().replaceAll("(?<=[^\\s])\\s+\\(#\\d+\\)\\s*$", "");
+        } catch (Exception e) {
+            sharedParameters.lastClipboardText = "";
+        }
+
+        if (!sharedParameters.lastClipboardText.isBlank()) {
+            currentSubTabContainerHandler.setTabTitle(sharedParameters.lastClipboardText, true);
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
+            sharedParameters.printDebugMessage("Title has been pasted");
+        }
+    }
+
+    public static void renameTitle(SharpenerSharedParameters sharedParameters, ActionEvent event) {
+        renameTitle(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event));
+    }
+
+    public static void renameTitle(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
+        String newTitle = UIHelper.showPlainInputMessage("Edit the Title", "Rename Title", currentSubTabContainerHandler.getTabTitle(), sharedParameters.get_mainFrame());
+        if (!newTitle.isEmpty() && !newTitle.equals(currentSubTabContainerHandler.getTabTitle())) {
+            currentSubTabContainerHandler.setTabTitle(newTitle, true);
+            sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
+            sharedParameters.printDebugMessage("Title renamed...");
+        }
+    }
 }

@@ -208,13 +208,13 @@ public class SubTabContainerHandler {
     }
 
     public void updateByTabFeaturesObjectStyle(TabFeaturesObjectStyle tabFeaturesObjectStyle, boolean ignoreHasChanges) {
-        this.setIcon(tabFeaturesObjectStyle.iconString, tabFeaturesObjectStyle.iconSize, ignoreHasChanges);
+        this.setIcon(tabFeaturesObjectStyle.get_IconResourceString(), tabFeaturesObjectStyle.iconSize, ignoreHasChanges);
         this.setFontName(tabFeaturesObjectStyle.fontName, ignoreHasChanges);
         this.setFontSize(tabFeaturesObjectStyle.fontSize, ignoreHasChanges);
         this.setBold(tabFeaturesObjectStyle.isBold, ignoreHasChanges);
         this.setItalic(tabFeaturesObjectStyle.isItalic, ignoreHasChanges);
         this.setVisibleCloseButton(tabFeaturesObjectStyle.isCloseButtonVisible, ignoreHasChanges);
-        this.setColor(tabFeaturesObjectStyle.getColorCode(), ignoreHasChanges);
+        this.setColor(tabFeaturesObjectStyle.getColor(), ignoreHasChanges);
 
         /*
         // enabling auto save on property change after 2 seconds!
@@ -312,12 +312,12 @@ public class SubTabContainerHandler {
             // this is because Burp does use the default colour when an item is changed - we have a workaround for that but
             // the workaround stops reset to default to change the colour as well so we need another workaround!!!
             TabFeaturesObjectStyle tfosDefault = sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle();
-            if(Integer.toHexString(tfosDefault.getColorCode().getRGB()).substring(2).equals("000000")){
+            if(Integer.toHexString(tfosDefault.getColor().getRGB()).substring(2).equals("000000")){
                 // light mode workaround
-                tfosDefault.setColorCode(Color.decode("#010101"));
+                tfosDefault.setColor(Color.decode("#010101"));
             }else{
                 // dark mode workaround
-                tfosDefault.setColorCode(Color.decode("#bcbcbc"));
+                tfosDefault.setColor(Color.decode("#bcbcbc"));
             }
             removeIcon(ignoreHasChanges);
             updateByTabFeaturesObjectStyle(tfosDefault, ignoreHasChanges);
@@ -506,6 +506,10 @@ public class SubTabContainerHandler {
 
     public Color getColor() {
         return currentTabTextField.getForeground();
+    }
+
+    public String getColorCode() {
+        return String.format("#%06x", currentTabTextField.getForeground().getRGB() & 0xFFFFFF);
     }
 
     public void setColor(Color color, boolean ignoreHasChanges) {
