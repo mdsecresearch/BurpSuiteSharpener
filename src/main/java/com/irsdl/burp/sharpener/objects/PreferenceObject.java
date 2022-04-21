@@ -10,7 +10,7 @@ import com.coreyd97.BurpExtenderUtilities.Preferences;
 
 import java.lang.reflect.Type;
 
-public class PreferenceObject {
+public class PreferenceObject{
     public String settingName;
     public Type type;
     public Object defaultValue;

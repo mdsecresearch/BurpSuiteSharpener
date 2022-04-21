@@ -9,14 +9,12 @@ package com.irsdl.burp.sharpener.uiModifiers.subTabs;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
-
-import javax.swing.*;
 import java.awt.*;
 
 public class SubTabCustomTabbedPaneUI {
     public static FlatTabbedPaneUI getUI(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab){
-        boolean isMinimzeTabSize = (boolean) sharedParameters.preferences.getSetting("minimizeSize_" + currentToolTab);
-        boolean isFixedTabPosition = ((boolean) sharedParameters.preferences.getSetting("isTabFixedPosition_" + currentToolTab));
+        boolean isMinimzeTabSize = sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + currentToolTab);
+        boolean isFixedTabPosition = sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + currentToolTab);
         boolean isFiltered = sharedParameters.isFiltered(currentToolTab);
         return getUI(sharedParameters, currentToolTab, isFiltered, isMinimzeTabSize, isFixedTabPosition);
     }
