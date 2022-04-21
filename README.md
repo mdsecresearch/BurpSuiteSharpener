@@ -16,7 +16,7 @@ This extension should add a number of UI and functional features to Burp Suite t
 * Copy & pasting style ability for Repeater and Intruder tabs
 * Pasting style for Repeater and Intruder tabs when their title matches a Regular Expression
 * Copy & pasting titles by creating unique titles by adding a number in the end
-* Rename titles without a need to double click on the title
+* Rename titles without a need to double-click on the title
 * Jump to first and last tabs in Repeater and Intruder
 * Back and Forward feature depends on the previously selected tabs
 * Finding Repeater and Intruder tabs when their title matches a Regular Expression
@@ -29,12 +29,14 @@ This extension should add a number of UI and functional features to Burp Suite t
 * Show previously chosen titles for a tab
 * Fixing tab positions in Repeater and Intruder when there are multiple rows
 * Several keyboard shortcuts to make the tab navigation easier
+* Repeater and Intruder tabs can be minimised to save space
+* Support for PwnFox Firefox extension highlighter
 
 # Burp Suite Compatibility and Reporting Errors
 As PortSwigger has a plan to update Burp Suite UI in a near future, some features in this extension may become redundant or unreliable.
 While we use this extension ourselves we can see potential errors from time to time, as an open source project, it relies on the community feedback for improvements and to fix the issues. Please report any errors in [issues](https://github.com/mdsecresearch/BurpSuiteSharpener/issues).
 
-This extension has been tested against the latest pro version which was 2022.3 at the time of writing this document. It should however be also compatible with the community edition.
+This extension has been tested against the latest pro version which was 2022.3.5 at the time of writing this document. It should however be also compatible with the community edition.
 
 # Suggesting New Features
 The plan is to add simple but effective missing features to this single extension to make tester's life easier as a must-have companion when using Burp Suite (so we cannot Burp without it!).
@@ -77,9 +79,9 @@ Perhaps the best features can be imported from different open-source extensions 
 * Check the [extension's GitHub repository](https://github.com/mdsecresearch/BurpSuiteSharpener) rather than BApp Store for the latest updates
 * A sample of icons and the latest releases should also be accessible in the `/release` directory
 
-![images/img_6.png](images/img_6.png)
-
 ![images/img.png](images/img.png)
+
+![images/img_0.png](images/img_0.png)
 
 ![images/img_1.png](images/img_1.png)
 
@@ -91,6 +93,7 @@ Perhaps the best features can be imported from different open-source extensions 
 
 ![images/img_5.png](images/img_5.png)
 
+![images/img_6.png](images/img_6.png)
 
 # Thanks To
 * Corey Arthur [CoreyD97](https://twitter.com/CoreyD97)
