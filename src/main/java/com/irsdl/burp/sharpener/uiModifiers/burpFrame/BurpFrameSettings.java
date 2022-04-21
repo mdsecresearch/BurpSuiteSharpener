@@ -60,13 +60,13 @@ public class BurpFrameSettings extends StandardSettings {
     public synchronized void loadSettings() {
         sharedParameters.printDebugMessage("loadSettings");
 
-        String newTitle = sharedParameters.preferences.getSetting("BurpTitle");
+        String newTitle = sharedParameters.preferences.safeGetStringSetting("BurpTitle");
         if (!newTitle.isBlank()) {
             BurpTitleAndIcon.setTitle(sharedParameters, newTitle);
         }
 
-        String newIconPath = sharedParameters.preferences.getSetting("BurpIconCustomPath");
-        String newIconResourcePath = sharedParameters.preferences.getSetting("BurpResourceIconName");
+        String newIconPath = sharedParameters.preferences.safeGetStringSetting("BurpIconCustomPath");
+        String newIconResourcePath = sharedParameters.preferences.safeGetStringSetting("BurpResourceIconName");
         if (!newIconPath.isBlank()) {
             sharedParameters.preferences.setSetting("LastBurpIconCustomPath", newIconPath);
             BurpTitleAndIcon.setIcon(sharedParameters, newIconPath, 48, false);

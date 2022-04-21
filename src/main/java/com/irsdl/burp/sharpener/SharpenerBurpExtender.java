@@ -14,6 +14,7 @@ import com.irsdl.burp.sharpener.uiModifiers.subTabs.SubTabWatcher;
 import com.irsdl.burp.sharpener.uiModifiers.toolsTabs.MainToolsTabStyleHandler;
 import com.irsdl.burp.sharpener.uiModifiers.toolsTabs.MainToolsTabWatcher;
 import com.irsdl.burp.sharpener.uiModifiers.topMenu.TopMenuBar;
+import com.irsdl.generic.HTTPMessageHelper;
 import com.irsdl.generic.UIHelper;
 
 import javax.swing.*;
@@ -27,9 +28,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
+public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener, IProxyListener {
     //public static MainExtensionClass instance;
-    private String version = "1.4";
+    private String version = "1.5";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
@@ -59,6 +60,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
         callbacks.setExtensionName(sharedParameters.extensionName);
 
         callbacks.registerExtensionStateListener(this);
+        callbacks.registerProxyListener(this);
 
         // create our UI
         SwingUtilities.invokeLater(new Runnable() {
@@ -364,5 +366,29 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
             }
 
         }).start();
+    }
+
+    @Override
+    public void processProxyMessage(boolean messageIsRequest, IInterceptedProxyMessage message) {
+        if (!messageIsRequest) return;
+        var messageInfo = message.getMessageInfo();
+
+        if (messageInfo != null) {
+            boolean pwnFoxSupportCapability = sharedParameters.preferences.safeGetSetting("pwnFoxSupportCapability", false);
+
+            if(pwnFoxSupportCapability){
+                // From https://github.com/yeswehack/PwnFox/pull/8/commits/27bdb409ec7727f021f739abf50bbb9eb6c26e85
+                var requestInfo = sharedParameters.callbacks.getHelpers().analyzeRequest(messageInfo);
+                var body = messageInfo.getRequest();
+                var bodyAndHeader = HTTPMessageHelper.getHeaderAndBody(body, requestInfo.getBodyOffset());
+                var headerList = HTTPMessageHelper.getHeadersListFromHeader(bodyAndHeader.get(0));
+                var pwnFoxColor = HTTPMessageHelper.getFirstHeaderValueByNameFromHeaders(headerList, "X-PwnFox-Color", false);
+                if(!pwnFoxColor.isEmpty()){
+                    var cleanHeaders = HTTPMessageHelper.removeHeadersByName(headerList, "X-PwnFox-Color");
+                    messageInfo.setHighlight(pwnFoxColor);
+                    messageInfo.setRequest(sharedParameters.callbacks.getHelpers().buildHttpMessage(cleanHeaders, bodyAndHeader.get(1)));
+                }
+            }
+        }
     }
 }

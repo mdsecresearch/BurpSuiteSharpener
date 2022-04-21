@@ -30,9 +30,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.List;
 import java.util.Timer;
 
 
@@ -68,7 +66,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                             if (newTitle != null && !newTitle.trim().isEmpty()) {
                                 if (!sharedParameters.get_mainFrame().getTitle().equals(newTitle)) {
                                     BurpTitleAndIcon.setTitle(sharedParameters, newTitle);
-                                    sharedParameters.allSettings.saveSettings("BurpTitle", newTitle);
+                                    sharedParameters.preferences.safeSetSetting("BurpTitle", newTitle);
                                 }
                             }
                         }
@@ -76,7 +74,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                     projectMenu.add(changeTitle);
 
                     // Change title button
-                    String burpResourceIconName = sharedParameters.preferences.getSetting("BurpResourceIconName");
+                    String burpResourceIconName = sharedParameters.preferences.safeGetStringSetting("BurpResourceIconName");
                     Resource[] resourceIcons = new Resource[]{};
 
                     try {
@@ -99,29 +97,29 @@ public class TopMenuBar extends javax.swing.JMenu {
                         }
                         burpIconImage.addActionListener((e) -> {
                             BurpTitleAndIcon.setIcon(sharedParameters, resourcePath, 48, true);
-                            sharedParameters.allSettings.saveSettings("BurpResourceIconName", resourcePath);
-                            sharedParameters.allSettings.saveSettings("BurpIconCustomPath", "");
+                            sharedParameters.preferences.safeSetSetting("BurpResourceIconName", resourcePath);
+                            sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", "");
                         });
                         burpIconGroup.add(burpIconImage);
                         changeBurpIcon.add(burpIconImage);
                     }
 
                     JRadioButtonMenuItem burpIconImage = new JRadioButtonMenuItem("Custom");
-                    if(!((String) sharedParameters.preferences.getSetting("BurpIconCustomPath")).isBlank()){
+                    if(!((String) sharedParameters.preferences.safeGetStringSetting("BurpIconCustomPath")).isBlank()){
                         burpIconImage.setSelected(true);
                     }
 
                     burpIconImage.addActionListener(new AbstractAction() {
                         @Override
                         public void actionPerformed(ActionEvent actionEvent) {
-                            String lastIconPath = sharedParameters.preferences.getSetting("LastBurpIconCustomPath");
+                            String lastIconPath = sharedParameters.preferences.safeGetStringSetting("LastBurpIconCustomPath");
                             FileFilter imageFilter = new FileNameExtensionFilter("Image files", ImageIO.getReaderFileSuffixes());
                             String newIconPath = UIHelper.showFileDialog(lastIconPath, imageFilter, sharedParameters.get_mainFrame());
                             if (newIconPath != null && !newIconPath.trim().isEmpty()) {
                                 BurpTitleAndIcon.setIcon(sharedParameters, newIconPath, 48, false);
-                                sharedParameters.allSettings.saveSettings("BurpResourceIconName", "");
-                                sharedParameters.allSettings.saveSettings("BurpIconCustomPath", newIconPath);
-                                sharedParameters.allSettings.saveSettings("LastBurpIconCustomPath", newIconPath);
+                                sharedParameters.preferences.safeSetSetting("BurpResourceIconName", "");
+                                sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", newIconPath);
+                                sharedParameters.preferences.safeSetSetting("LastBurpIconCustomPath", newIconPath);
                             }
                         }
                     });
@@ -138,7 +136,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                             int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Title", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
                             if (response == 0) {
                                 BurpTitleAndIcon.resetTitle(sharedParameters);
-                                sharedParameters.allSettings.saveSettings("BurpTitle", "");
+                                sharedParameters.preferences.safeSetSetting("BurpTitle", "");
                             }
                         }
                     });
@@ -151,7 +149,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                             int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Icon", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
                             if (response == 0) {
                                 BurpTitleAndIcon.resetIcon(sharedParameters);
-                                sharedParameters.allSettings.saveSettings("BurpIconCustomPath", "");
+                                sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", "");
                             }
                         }
                     });
@@ -167,7 +165,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                         @Override
                         public void actionPerformed(ActionEvent actionEvent) {
                             for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                                sharedParameters.allSettings.saveSettings("isUnique_" + tool, true);
+                                sharedParameters.preferences.safeSetSetting("isUnique_" + tool, true);
                                 MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
                             }
                             updateTopMenuBar();
@@ -179,7 +177,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                         @Override
                         public void actionPerformed(ActionEvent actionEvent) {
                             for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                                sharedParameters.allSettings.saveSettings("isUnique_" + tool, false);
+                                sharedParameters.preferences.safeSetSetting("isUnique_" + tool, false);
                                 MainToolsTabStyleHandler.unsetToolTabStyle(sharedParameters, tool);
                             }
                             updateTopMenuBar();
@@ -190,7 +188,7 @@ public class TopMenuBar extends javax.swing.JMenu {
 
                     toolsUniqueStyleMenu.addSeparator();
 
-                    String themeName = sharedParameters.preferences.getSetting("ToolsThemeName");
+                    String themeName = sharedParameters.preferences.safeGetStringSetting("ToolsThemeName");
                     JMenu toolsUniqueStyleThemeMenu = new JMenu("Icons' Theme");
                     ButtonGroup themeGroup = new ButtonGroup();
                     for (String definedThemeName : themeNames) {
@@ -202,7 +200,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                             String chosenOne = definedThemeName;
                             if (chosenOne.equalsIgnoreCase("none"))
                                 chosenOne = "";
-                            sharedParameters.allSettings.saveSettings("ToolsThemeName", chosenOne);
+                            sharedParameters.preferences.safeSetSetting("ToolsThemeName", chosenOne);
                             MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
                         });
                         themeGroup.add(toolStyleTheme);
@@ -214,11 +212,11 @@ public class TopMenuBar extends javax.swing.JMenu {
                         toolStyleThemeCustom.setSelected(true);
                     }
                     toolStyleThemeCustom.addActionListener((e) -> {
-                        String themeCustomPath = sharedParameters.preferences.getSetting("ToolsThemeCustomPath");
+                        String themeCustomPath = sharedParameters.preferences.safeGetStringSetting("ToolsThemeCustomPath");
                         String customPath = UIHelper.showDirectoryDialog(themeCustomPath, sharedParameters.get_mainFrame());
                         if (!customPath.isEmpty()) {
-                            sharedParameters.allSettings.saveSettings("ToolsThemeName", "custom");
-                            sharedParameters.allSettings.saveSettings("ToolsThemeCustomPath", customPath);
+                            sharedParameters.preferences.safeSetSetting("ToolsThemeName", "custom");
+                            sharedParameters.preferences.safeSetSetting("ToolsThemeCustomPath", customPath);
                         } else {
                             updateTopMenuBar();
                             //reAddTopMenuBar();
@@ -229,7 +227,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                     toolsUniqueStyleThemeMenu.add(toolStyleThemeCustom);
                     toolsUniqueStyleMenu.add(toolsUniqueStyleThemeMenu);
 
-                    String iconSize = sharedParameters.preferences.getSetting("ToolsIconSize");
+                    String iconSize = sharedParameters.preferences.safeGetStringSetting("ToolsIconSize");
                     JMenu toolsUniqueStyleIconSizeMenu = new JMenu("Icons' Size");
                     ButtonGroup iconSizeGroup = new ButtonGroup();
                     for (String definedIconSize: iconSizes) {
@@ -239,7 +237,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                         }
                         toolIconSize.addActionListener((e) -> {
                             String chosenOne = definedIconSize;
-                            sharedParameters.allSettings.saveSettings("ToolsIconSize", chosenOne);
+                            sharedParameters.preferences.safeSetSetting("ToolsIconSize", chosenOne);
                             MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
                         });
                         iconSizeGroup.add(toolIconSize);
@@ -253,16 +251,16 @@ public class TopMenuBar extends javax.swing.JMenu {
                         if (tool.toString().equalsIgnoreCase("none"))
                             continue;
                         JCheckBoxMenuItem toolStyleOption = new JCheckBoxMenuItem(tool.toString());
-                        if ((Boolean) sharedParameters.preferences.getSetting("isUnique_" + tool)) {
+                        if (sharedParameters.preferences.safeGetBooleanSetting("isUnique_" + tool)) {
                             toolStyleOption.setSelected(true);
                         }
                         toolStyleOption.addActionListener((e) -> {
-                            Boolean currentSetting = sharedParameters.preferences.getSetting("isUnique_" + tool);
+                            Boolean currentSetting = sharedParameters.preferences.safeGetBooleanSetting("isUnique_" + tool);
                             if (currentSetting) {
-                                sharedParameters.allSettings.saveSettings("isUnique_" + tool, false);
+                                sharedParameters.preferences.safeSetSetting("isUnique_" + tool, false);
                                 MainToolsTabStyleHandler.unsetToolTabStyle(sharedParameters, tool);
                             } else {
-                                sharedParameters.allSettings.saveSettings("isUnique_" + tool, true);
+                                sharedParameters.preferences.safeSetSetting("isUnique_" + tool, true);
                                 MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
                             }
                         });
@@ -272,12 +270,12 @@ public class TopMenuBar extends javax.swing.JMenu {
 
                     JCheckBoxMenuItem topMenuScrollableLayout = new JCheckBoxMenuItem("Scrollable Tool Pane");
 
-                    if ((boolean) sharedParameters.preferences.getSetting("isToolTabPaneScrollable")) {
+                    if (sharedParameters.preferences.safeGetBooleanSetting("isToolTabPaneScrollable")) {
                         topMenuScrollableLayout.setSelected(true);
                     }
 
                     topMenuScrollableLayout.addActionListener((e) -> {
-                        boolean isToolTabPaneScrollable = sharedParameters.preferences.getSetting("isToolTabPaneScrollable");
+                        boolean isToolTabPaneScrollable = sharedParameters.preferences.safeGetBooleanSetting("isToolTabPaneScrollable");
                         if (isToolTabPaneScrollable) {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
@@ -287,7 +285,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                                     }).start();
                                 }
                             });
-                            sharedParameters.allSettings.saveSettings("isToolTabPaneScrollable", false);
+                            sharedParameters.preferences.safeSetSetting("isToolTabPaneScrollable", false);
                         } else {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
@@ -297,11 +295,29 @@ public class TopMenuBar extends javax.swing.JMenu {
                                     }).start();
                                 }
                             });
-                            sharedParameters.allSettings.saveSettings("isToolTabPaneScrollable", true);
+                            sharedParameters.preferences.safeSetSetting("isToolTabPaneScrollable", true);
                         }
                     });
 
                     globalMenu.add(topMenuScrollableLayout);
+
+                    JMenu supportedCapabilitiesMenu = new JMenu("Supported Capabilities");
+
+                    JCheckBoxMenuItem pwnFoxSupportCapability = new JCheckBoxMenuItem("PwnFox Highlighter");
+                    pwnFoxSupportCapability.setToolTipText("Useful when PwnFox extension is enabled in Firefox");
+                    if (sharedParameters.preferences.safeGetBooleanSetting("pwnFoxSupportCapability")) {
+                        pwnFoxSupportCapability.setSelected(true);
+                    }
+                    pwnFoxSupportCapability.addActionListener((e) -> {
+                        if (sharedParameters.preferences.safeGetBooleanSetting("pwnFoxSupportCapability")) {
+                            sharedParameters.preferences.safeSetSetting("pwnFoxSupportCapability", false);
+                        } else {
+                            sharedParameters.preferences.safeSetSetting("pwnFoxSupportCapability", true);
+                        }
+                    });
+                    supportedCapabilitiesMenu.add(pwnFoxSupportCapability);
+
+                    globalMenu.add(supportedCapabilitiesMenu);
 
                     // Debug options
                     JMenu debugMenu = new JMenu("Debug Settings");
@@ -310,7 +326,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                     JRadioButtonMenuItem debugOptionDisabled = new JRadioButtonMenuItem(new AbstractAction("Disabled") {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            sharedParameters.allSettings.saveSettings("debugLevel", 0);
+                            sharedParameters.preferences.safeSetSetting("debugLevel", 0);
                             sharedParameters.debugLevel = 0;
                         }
                     });
@@ -323,7 +339,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                     JRadioButtonMenuItem debugOptionVerbose = new JRadioButtonMenuItem(new AbstractAction("Verbose") {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            sharedParameters.allSettings.saveSettings("debugLevel", 1);
+                            sharedParameters.preferences.safeSetSetting("debugLevel", 1);
                             sharedParameters.debugLevel = 1;
                         }
                     });
@@ -335,7 +351,7 @@ public class TopMenuBar extends javax.swing.JMenu {
                     JRadioButtonMenuItem debugOptionVeryVerbose = new JRadioButtonMenuItem(new AbstractAction("Very Verbose") {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            sharedParameters.allSettings.saveSettings("debugLevel", 2);
+                            sharedParameters.preferences.safeSetSetting("debugLevel", 2);
                             sharedParameters.debugLevel = 2;
                         }
                     });
@@ -423,15 +439,15 @@ public class TopMenuBar extends javax.swing.JMenu {
 
                     JCheckBoxMenuItem checkForUpdateOption = new JCheckBoxMenuItem("Check for Update on Start");
                     checkForUpdateOption.setToolTipText("Check is done by accessing its GitHub repository");
-                    if ((boolean) sharedParameters.preferences.getSetting("checkForUpdate")) {
+                    if (sharedParameters.preferences.safeGetBooleanSetting("checkForUpdate")) {
                         checkForUpdateOption.setSelected(true);
                     }
 
                     checkForUpdateOption.addActionListener((e) -> {
-                        if ((boolean) sharedParameters.preferences.getSetting("checkForUpdate")) {
-                            sharedParameters.allSettings.saveSettings("checkForUpdate", false);
+                        if (sharedParameters.preferences.safeGetBooleanSetting("checkForUpdate")) {
+                            sharedParameters.preferences.safeSetSetting("checkForUpdate", false);
                         } else {
-                            sharedParameters.allSettings.saveSettings("checkForUpdate", true);
+                            sharedParameters.preferences.safeSetSetting("checkForUpdate", true);
                             SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
                             sharpenerBurpExtender.checkForUpdate();
                         }
