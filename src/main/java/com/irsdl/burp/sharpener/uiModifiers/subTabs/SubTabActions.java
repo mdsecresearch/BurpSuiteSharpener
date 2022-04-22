@@ -6,9 +6,7 @@
 
 package com.irsdl.burp.sharpener.uiModifiers.subTabs;
 
-import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import com.google.common.io.Files;
-import com.irsdl.burp.generic.BurpTitleAndIcon;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
@@ -20,9 +18,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.Style;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -385,6 +380,58 @@ public class SubTabActions {
             });
             popupMenu.add(copyStyleMenu);
 
+            JMenuItem pasteStyleSearchTitleMenu = new JMenuItem("Find/Paste Style (Use RegEx in Title)");
+            if (sharedParameters.copiedTabFeaturesObjectStyle == null) {
+                pasteStyleSearchTitleMenu.setEnabled(false);
+            }
+            pasteStyleSearchTitleMenu.addActionListener(e -> {
+                if (sharedParameters.copiedTabFeaturesObjectStyle != null) {
+                    //currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
+                    String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression (case insensitive):", "Search in titles and replace their style", sharedParameters.searchedTabTitleForPasteStyle, sharedParameters.get_mainFrame());
+                    if (!titleKeyword.isEmpty()) {
+                        if (Utilities.isValidRegExPattern(titleKeyword)) {
+                            sharedParameters.searchedTabTitleForPasteStyle = titleKeyword;
+                            ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
+                            for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
+                                if (subTabContainerHandlerItem.getVisible()) {
+                                    String subTabTitle = subTabContainerHandlerItem.getTabTitle();
+                                    if (Pattern.compile(titleKeyword, Pattern.CASE_INSENSITIVE).matcher(subTabTitle).find()) {
+                                        subTabContainerHandlerItem.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle, true);
+                                    }
+                                }
+                            }
+                            sharedParameters.allSettings.subTabSettings.saveSettings(currentSubTabContainerHandler.currentToolTab);
+                            sharedParameters.printDebugMessage("Style pasted in titles which matched: " + titleKeyword);
+                        } else {
+                            UIHelper.showWarningMessage("Regular expression was invalid.", sharedParameters.get_mainFrame());
+                            sharedParameters.printlnError("invalid regex: " + titleKeyword);
+                        }
+                    }
+
+                }
+            });
+            popupMenu.add(pasteStyleSearchTitleMenu);
+
+            JMenuItem pasteStyleForAllVisibleMenu = new JMenuItem("Paste Style For All Visible Tabs");
+            if (sharedParameters.copiedTabFeaturesObjectStyle == null) {
+                pasteStyleForAllVisibleMenu.setEnabled(false);
+            }
+            pasteStyleForAllVisibleMenu.addActionListener(e -> {
+                int response = UIHelper.askConfirmMessage("Sharpener Extension: Changing all visible tabs' styles", "Are you sure you want to change all visible tab's style (you cannot undo this)?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                if(response == 0){
+                    if (sharedParameters.copiedTabFeaturesObjectStyle != null) {
+                        ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
+                        for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
+                            if (subTabContainerHandlerItem.getVisible()) {
+                                subTabContainerHandlerItem.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle, true);
+                            }
+                        }
+                        sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
+                        sharedParameters.printDebugMessage("Style pasted...");
+                    }
+                }
+            });
+            popupMenu.add(pasteStyleForAllVisibleMenu);
 
             JMenuItem defaultProfile = new JMenuItem("Reset to Default");
             defaultProfile.addActionListener(e -> {
@@ -548,38 +595,6 @@ public class SubTabActions {
             });
             customStyleMenu.add(colorMenu);
             popupMenu.add(customStyleMenu);
-
-            JMenuItem pasteStyleSearchTitleMenu = new JMenuItem("Find/Replace Style (Use RegEx in Title)");
-            if (sharedParameters.copiedTabFeaturesObjectStyle == null) {
-                pasteStyleSearchTitleMenu.setEnabled(false);
-            }
-            pasteStyleSearchTitleMenu.addActionListener(e -> {
-                if (sharedParameters.copiedTabFeaturesObjectStyle != null) {
-                    //currentSubTabContainerHandler.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle);
-                    String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression (case insensitive):", "Search in titles and replace their style", sharedParameters.searchedTabTitleForPasteStyle, sharedParameters.get_mainFrame());
-                    if (!titleKeyword.isEmpty()) {
-                        if (Utilities.isValidRegExPattern(titleKeyword)) {
-                            sharedParameters.searchedTabTitleForPasteStyle = titleKeyword;
-                            ArrayList<SubTabContainerHandler> subTabContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab);
-                            for (SubTabContainerHandler subTabContainerHandlerItem : subTabContainerHandlers) {
-                                if (subTabContainerHandlerItem.getVisible()) {
-                                    String subTabTitle = subTabContainerHandlerItem.getTabTitle();
-                                    if (Pattern.compile(titleKeyword, Pattern.CASE_INSENSITIVE).matcher(subTabTitle).find()) {
-                                        subTabContainerHandlerItem.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle, true);
-                                    }
-                                }
-                            }
-                            sharedParameters.allSettings.subTabSettings.saveSettings(currentSubTabContainerHandler.currentToolTab);
-                            sharedParameters.printDebugMessage("Style pasted in titles which matched: " + titleKeyword);
-                        } else {
-                            UIHelper.showWarningMessage("Regular expression was invalid.", sharedParameters.get_mainFrame());
-                            sharedParameters.printlnError("invalid regex: " + titleKeyword);
-                        }
-                    }
-
-                }
-            });
-            popupMenu.add(pasteStyleSearchTitleMenu);
 
             popupMenu.addSeparator();
         }
@@ -1057,12 +1072,12 @@ public class SubTabActions {
 
         if (sharedParameters.subTabSupportedTabs.contains(tool)) {
             JCheckBoxMenuItem toolSubTabPaneScrollableLayout = new JCheckBoxMenuItem("Scrollable " + tool + " Tabs");
-            if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool)) {
+            if (sharedParameters.preferences.safeGetBooleanSetting("isScrollable_" + tool)) {
                 toolSubTabPaneScrollableLayout.setSelected(true);
             }
 
             toolSubTabPaneScrollableLayout.addActionListener((e) -> {
-                if ((boolean) sharedParameters.preferences.getSetting("isScrollable_" + tool)) {
+                if (sharedParameters.preferences.safeGetBooleanSetting("isScrollable_" + tool)) {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -1071,7 +1086,7 @@ public class SubTabActions {
                             }).start();
                         }
                     });
-                    sharedParameters.allSettings.saveSettings("isScrollable_" + tool, false);
+                    sharedParameters.preferences.safeSetSetting("isScrollable_" + tool, false);
                 } else {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -1091,57 +1106,57 @@ public class SubTabActions {
                             }).start();
                         }
                     });
-                    sharedParameters.allSettings.saveSettings("isScrollable_" + tool, true);
+                    sharedParameters.preferences.safeSetSetting("isScrollable_" + tool, true);
                 }
             });
 
             popupMenu.add(toolSubTabPaneScrollableLayout);
 
             JCheckBoxMenuItem toolSubTabPaneTabMinimizeTabSize = new JCheckBoxMenuItem("Minimize " + tool + " Tabs' Size");
-            if ((boolean) sharedParameters.preferences.getSetting("minimizeSize_" + tool)) {
+            if (sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + tool)) {
                 toolSubTabPaneTabMinimizeTabSize.setSelected(true);
             }
 
             toolSubTabPaneTabMinimizeTabSize.addActionListener((e) -> {
-                if ((boolean) sharedParameters.preferences.getSetting("minimizeSize_" + tool)) {
+                if (sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + tool)) {
                     changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
-                    sharedParameters.allSettings.saveSettings("minimizeSize_" + tool, false);
+                    sharedParameters.preferences.safeSetSetting("minimizeSize_" + tool, false);
                 } else {
                     changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
-                    sharedParameters.allSettings.saveSettings("minimizeSize_" + tool, true);
+                    sharedParameters.preferences.safeSetSetting("minimizeSize_" + tool, true);
                 }
             });
             popupMenu.add(toolSubTabPaneTabMinimizeTabSize);
 
             JCheckBoxMenuItem toolSubTabPaneTabFixedPositionLayout = new JCheckBoxMenuItem("Fixed Tab Position for " + tool);
-            if ((boolean) sharedParameters.preferences.getSetting("isTabFixedPosition_" + tool)) {
+            if (sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + tool)) {
                 toolSubTabPaneTabFixedPositionLayout.setSelected(true);
             }
 
             toolSubTabPaneTabFixedPositionLayout.addActionListener((e) -> {
-                if ((boolean) sharedParameters.preferences.getSetting("isTabFixedPosition_" + tool)) {
+                if (sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + tool)) {
                     changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
-                    sharedParameters.allSettings.saveSettings("isTabFixedPosition_" + tool, false);
+                    sharedParameters.preferences.safeSetSetting("isTabFixedPosition_" + tool, false);
                 } else {
                     changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
-                    sharedParameters.allSettings.saveSettings("isTabFixedPosition_" + tool, true);
+                    sharedParameters.preferences.safeSetSetting("isTabFixedPosition_" + tool, true);
                 }
             });
             popupMenu.add(toolSubTabPaneTabFixedPositionLayout);
 
 
             JCheckBoxMenuItem toolSubTabPaneMouseWheelScroll = new JCheckBoxMenuItem("Activate Mouse Wheel: MW > Scroll, MW+Ctrl > Resize");
-            if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool)) {
+            if (sharedParameters.preferences.safeGetBooleanSetting("mouseWheelToScroll_" + tool)) {
                 toolSubTabPaneMouseWheelScroll.setSelected(true);
             }
 
             toolSubTabPaneMouseWheelScroll.addActionListener((e) -> {
-                if ((boolean) sharedParameters.preferences.getSetting("mouseWheelToScroll_" + tool)) {
+                if (sharedParameters.preferences.safeGetBooleanSetting("mouseWheelToScroll_" + tool)) {
                     SubTabActions.removeMouseWheelFromJTabbedPane(sharedParameters, tool, true);
-                    sharedParameters.allSettings.saveSettings("mouseWheelToScroll_" + tool, false);
+                    sharedParameters.preferences.safeSetSetting("mouseWheelToScroll_" + tool, false);
                 } else {
                     SubTabActions.addMouseWheelToJTabbedPane(sharedParameters, tool, false);
-                    sharedParameters.allSettings.saveSettings("mouseWheelToScroll_" + tool, true);
+                    sharedParameters.preferences.safeSetSetting("mouseWheelToScroll_" + tool, true);
                 }
             });
 
@@ -1187,8 +1202,8 @@ public class SubTabActions {
                         sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).getUI());
             }
 
-            boolean isMinimzeTabSize = (boolean) sharedParameters.preferences.getSetting("minimizeSize_" + currentSubTabContainerHandler.currentToolTab);
-            boolean isFixedTabPosition = ((boolean) sharedParameters.preferences.getSetting("isTabFixedPosition_" + currentSubTabContainerHandler.currentToolTab));
+            boolean isMinimzeTabSize = sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + currentSubTabContainerHandler.currentToolTab);
+            boolean isFixedTabPosition = (sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + currentSubTabContainerHandler.currentToolTab));
             boolean isFiltered = sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab);
 
             boolean isOriginal = true;

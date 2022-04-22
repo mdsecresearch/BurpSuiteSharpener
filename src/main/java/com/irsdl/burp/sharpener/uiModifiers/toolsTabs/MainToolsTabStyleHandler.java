@@ -21,9 +21,9 @@ public class MainToolsTabStyleHandler {
             public void run() {
                 new Thread(() -> {
                     sharedParameters.printDebugMessage("setToolTabStyle for "+toolName);
-                    String themeName = sharedParameters.preferences.getSetting("ToolsThemeName");
-                    String themeCustomPath = sharedParameters.preferences.getSetting("ToolsThemeCustomPath");
-                    String iconSizeStr = sharedParameters.preferences.getSetting("ToolsIconSize");
+                    String themeName = sharedParameters.preferences.safeGetStringSetting("ToolsThemeName");
+                    String themeCustomPath = sharedParameters.preferences.safeGetStringSetting("ToolsThemeCustomPath");
+                    String iconSizeStr = sharedParameters.preferences.safeGetStringSetting("ToolsIconSize");
                     int iconSize = Integer.parseInt(iconSizeStr, 32);
 
                     JTabbedPane tabbedPane = sharedParameters.get_rootTabbedPane();
@@ -94,12 +94,12 @@ public class MainToolsTabStyleHandler {
             public void run() {
                 new Thread(() -> {
                     sharedParameters.printDebugMessage("setToolTabStylesFromSettings");
-                    if ((boolean) sharedParameters.preferences.getSetting("isToolTabPaneScrollable")) {
+                    if (sharedParameters.preferences.safeGetBooleanSetting("isToolTabPaneScrollable")) {
                         sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
                     }
 
                     for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                        if ((boolean) sharedParameters.preferences.getSetting("isUnique_" + tool)) {
+                        if (sharedParameters.preferences.safeGetBooleanSetting("isUnique_" + tool)) {
                             MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
                         }
                     }
@@ -118,14 +118,14 @@ public class MainToolsTabStyleHandler {
             public void run() {
                 new Thread(() -> {
                     sharedParameters.printDebugMessage("setToolTabStylesFromSettings");
-                    if ((boolean) sharedParameters.preferences.getSetting("isToolTabPaneScrollable")) {
+                    if (sharedParameters.preferences.safeGetBooleanSetting("isToolTabPaneScrollable")) {
                         sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
                     }else{
                         sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
                     }
 
                     for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                        if ((boolean) sharedParameters.preferences.getSetting("isUnique_" + tool)) {
+                        if (sharedParameters.preferences.safeGetBooleanSetting("isUnique_" + tool)) {
                             MainToolsTabStyleHandler.unsetToolTabStyle(sharedParameters, tool);
                             MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
                         }
@@ -141,7 +141,7 @@ public class MainToolsTabStyleHandler {
             public void run() {
                 new Thread(() -> {
                     sharedParameters.printDebugMessage("unsetAllToolTabStyles");
-                    if ((boolean) sharedParameters.preferences.getSetting("isToolTabPaneScrollable")) {
+                    if (sharedParameters.preferences.safeGetBooleanSetting("isToolTabPaneScrollable")) {
                         sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
                     }
                     for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {

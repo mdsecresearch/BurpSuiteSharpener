@@ -50,8 +50,8 @@ public class BurpExtensionSharedParameters {
         }
 
         // initialize custom preferences - see https://github.com/CoreyD97/BurpExtenderUtilities/blob/master/src/test/java/extension/PreferencesTest.java
-        this.preferences = new Preferences(extensionName, new DefaultGsonProvider(), callbacks);
-
+        this.preferences = new ExtendedPreferences(extensionName, new DefaultGsonProvider(), callbacks);
+        this.preferences.sharedParameters = this;
         // registering and getting the isDebug setting
         try {
             preferences.registerSetting("debugLevel", Integer.TYPE, 0, Preferences.Visibility.GLOBAL);
@@ -73,7 +73,7 @@ public class BurpExtensionSharedParameters {
     public PrintWriter stdout = null;
     public PrintWriter stderr = null;
     public IBurpExtenderCallbacks callbacks = null;
-    public Preferences preferences; // to use the ability of this project: https://github.com/CoreyD97/BurpExtenderUtilities
+    public ExtendedPreferences preferences; // to use the ability of this project: https://github.com/CoreyD97/BurpExtenderUtilities
     public Boolean unloadWithoutSave = false; // this is useful if we need to exit without save in some situation
     public Boolean isBurpPro = false;
     public double burpMajorVersion = 0.0;

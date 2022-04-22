@@ -6,6 +6,7 @@
 package com.irsdl.generic;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -106,6 +107,20 @@ public class HTTPMessageHelper {
 
 
     // Splits header and body of a request or response
+    public static List<byte[]> getHeaderAndBody(byte[] fullMessage, int bodyOffset) {
+        List<byte[]> result = new ArrayList<>();
+        if(fullMessage.length >= bodyOffset){
+            result.add(Arrays.copyOfRange(fullMessage, 0, bodyOffset));
+            result.add(Arrays.copyOfRange(fullMessage, bodyOffset, fullMessage.length));
+        }else{
+            result.add(fullMessage);
+            result.add(new byte[]{});
+        }
+
+        return result;
+    }
+
+    // Splits header and body of a request or response
     public static String[] getHeaderAndBody(byte[] fullMessage, String encoding) throws UnsupportedEncodingException {
         return getHeaderAndBody(new String(fullMessage, encoding));
     }
@@ -122,12 +137,17 @@ public class HTTPMessageHelper {
     }
 
     // Splits header and body of a request or response
-    public static List<String> getHeadersList(byte[] fullMessage, String encoding) throws UnsupportedEncodingException{
-        return getHeadersList(new String(fullMessage, encoding));
+    public static List<String> getHeadersListFromFullRequest(byte[] fullMessage){
+        return getHeadersListFromFullRequest(new String(fullMessage, Charset.forName("ISO-8859-1")));
     }
 
     // Splits header and body of a request or response
-    public static List<String> getHeadersList(String fullMessage) {
+    public static List<String> getHeadersListFromHeader(byte[] headerMessage) {
+        return new ArrayList<>(Arrays.asList(new String(headerMessage, Charset.forName("ISO-8859-1")).split("\r?\n")));
+    }
+
+    // Splits header and body of a request or response
+    public static List<String> getHeadersListFromFullRequest(String fullMessage) {
         String[] result = getHeaderAndBody(fullMessage);
         return new ArrayList<>(Arrays.asList(result[0].split("\r?\n")));
     }
@@ -136,9 +156,10 @@ public class HTTPMessageHelper {
     public static String getBody(String fullMessage) {
         return getHeaderAndBody(fullMessage)[1];
     }
+
     // Add a new header to a full raw request
     public static String addSingleHeader(String fullMessage, String newSingleHeader) {
-        List<String> headers = getHeadersList(fullMessage);
+        List<String> headers = getHeadersListFromFullRequest(fullMessage);
         headers.add(newSingleHeader);
         return replaceAllHeaders(fullMessage, headers);
     }
@@ -285,7 +306,7 @@ public class HTTPMessageHelper {
     }
 
     // get the first value of a header
-    public static String getFirstHeaderValueByNameFromHeaders(List<String> headers, String headerName) {
+    public static String getFirstHeaderValueByNameFromHeaders(List<String> headers, String headerName, boolean isCaseSensitive) {
         String result = "";
         headerName = headerName.toLowerCase();
         for (String item : headers) {
@@ -418,7 +439,7 @@ public class HTTPMessageHelper {
             headerName = "Set-cookie";
         }
 
-        var cookieHeader = getFirstHeaderValueByNameFromHeaders(headers, headerName);
+        var cookieHeader = getFirstHeaderValueByNameFromHeaders(headers, headerName, false);
         result =  getFirstCookieValueByName(cookieHeader, targetCookieName, isCaseSensitive, isRequest);
 
         return result;

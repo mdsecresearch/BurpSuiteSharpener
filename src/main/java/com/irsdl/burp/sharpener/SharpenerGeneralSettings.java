@@ -34,10 +34,14 @@ public class SharpenerGeneralSettings extends StandardSettings {
     @Override
     public Collection<PreferenceObject> definePreferenceObjectCollection() {
         Collection<PreferenceObject> preferenceObjectCollection = new ArrayList<>();
-
+        PreferenceObject preferenceObject;
         try {
-            PreferenceObject preferenceObject = new PreferenceObject("checkForUpdate", boolean.class, false, Preferences.Visibility.GLOBAL);
+            preferenceObject = new PreferenceObject("checkForUpdate", boolean.class, false, Preferences.Visibility.GLOBAL);
             preferenceObjectCollection.add(preferenceObject);
+
+            preferenceObject = new PreferenceObject("pwnFoxSupportCapability", boolean.class, false, Preferences.Visibility.GLOBAL);
+            preferenceObjectCollection.add(preferenceObject);
+
         } catch (Exception e) {
             //already registered setting
             sharedParameters.printDebugMessage(e.getMessage());
@@ -65,7 +69,7 @@ public class SharpenerGeneralSettings extends StandardSettings {
         mainToolsTabSettings = new MainToolsTabSettings(sharedParameters);
         subTabSettings = new SubTabSettings(sharedParameters);
 
-        if ((boolean) sharedParameters.preferences.getSetting("checkForUpdate")) {
+        if (sharedParameters.preferences.safeGetSetting("checkForUpdate", false)) {
             SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
             sharpenerBurpExtender.checkForUpdate();
         }
