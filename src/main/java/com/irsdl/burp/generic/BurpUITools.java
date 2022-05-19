@@ -113,20 +113,18 @@ public class BurpUITools {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Thread(() -> {
-                    for (int i = 0; i < menuBar.getMenuCount(); i++) {
-                        JMenuItem item = menuBar.getMenu(i);
-                        if (item.getText().trim().equalsIgnoreCase(toolbarName.trim())) {
-                            menuBar.remove(i);
-                            // break; // we may have more than one menu so this line needs to be commented
-                        }
+                for (int i = 0; i < menuBar.getMenuCount(); i++) {
+                    JMenuItem item = menuBar.getMenu(i);
+                    if (item.getText().trim().equalsIgnoreCase(toolbarName.trim())) {
+                        menuBar.remove(i);
+                        // break; // we may have more than one menu so this line needs to be commented
                     }
+                }
 
-                    if (repaintUI) {
-                        menuBar.revalidate();
-                        menuBar.repaint();
-                    }
-                }).start();
+                if (repaintUI) {
+                    menuBar.revalidate();
+                    menuBar.repaint();
+                }
             }
         });
     }

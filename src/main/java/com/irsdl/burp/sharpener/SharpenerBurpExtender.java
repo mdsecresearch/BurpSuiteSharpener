@@ -68,9 +68,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
             public void run() {
                 dummyPanel = new JPanel(); //Will be removed shortly after it's added, doesn't need to be anything special at the moment!
                 callbacks.addSuiteTab(SharpenerBurpExtender.this);
-                new Thread(() -> {
-                    load(false);
-                }).start();
+                load(false);
             }
         });
 
@@ -197,11 +195,16 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                                 new java.util.TimerTask() {
                                     @Override
                                     public void run() {
-                                        sharedParameters.printDebugMessage("lookAndFeelPropChangeListener");
-                                        sharedParameters.defaultSubTabObject = null;
-                                        UIHelper.showWarningMessage("Due to a major UI change, the " + sharedParameters.extensionName + " extension needs to be unload. Please load it manually.", sharedParameters.get_mainFrame());
-                                        BurpUITools.switchToMainTab("Extender", sharedParameters.get_rootTabbedPane());
-                                        sharedParameters.callbacks.unloadExtension();
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                sharedParameters.printDebugMessage("lookAndFeelPropChangeListener");
+                                                sharedParameters.defaultSubTabObject = null;
+                                                UIHelper.showWarningMessage("Due to a major UI change, the " + sharedParameters.extensionName + " extension needs to be unload. Please load it manually.", sharedParameters.get_mainFrame());
+                                                BurpUITools.switchToMainTab("Extender", sharedParameters.get_rootTabbedPane());
+                                                sharedParameters.callbacks.unloadExtension();
+                                            }
+                                        });
                                     }
                                 },
                                 2000

@@ -33,33 +33,29 @@ public class BurpTitleAndIcon {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Thread(() -> {
-                    sharedParameters.get_mainFrame().setTitle(title);
-                    sharedParameters.printDebugMessage("Burp Suite title was changed to: " + title);
-                }).start();
+                sharedParameters.get_mainFrame().setTitle(title);
+                sharedParameters.printDebugMessage("Burp Suite title was changed to: " + title);
             }
         });
     }
 
     private static void setIcon(BurpExtensionSharedParameters sharedParameters, Image img) {
-        if(img!=null) {
+        if (img != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    new Thread(() -> {
-                        java.util.List<Image> iconList = new ArrayList<Image>();
-                        iconList.add(img);
+                    java.util.List<Image> iconList = new ArrayList<Image>();
+                    iconList.add(img);
                         /*
                         for (Frame frame : Frame.getFrames()) {
                             frame.setIconImages(iconList);
                         }
                         */
-                        for (Window window : Window.getWindows()) {
-                            window.setIconImages(iconList);
-                        }
-                        //sharedParameters.get_mainFrame().setIconImage(img);
-                        sharedParameters.printDebugMessage("Burp Suite icon has been updated");
-                    }).start();
+                    for (Window window : Window.getWindows()) {
+                        window.setIconImages(iconList);
+                    }
+                    //sharedParameters.get_mainFrame().setIconImage(img);
+                    sharedParameters.printDebugMessage("Burp Suite icon has been updated");
                 }
             });
         }

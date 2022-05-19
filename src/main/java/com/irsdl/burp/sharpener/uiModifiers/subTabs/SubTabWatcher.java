@@ -28,33 +28,33 @@ public class SubTabWatcher implements ContainerListener {
     private boolean _isUpdateInProgress = false;
     private ArrayList<BurpUITools.MainTabs> accessibleTabs;
     private boolean _isShortcutEnabled = true;
-    public HashMap<String,String> subTabsShortcutMappings = new HashMap<String, String>() {{
-        put("control ENTER","ShowMenu");
-        put("control shift ENTER","ShowMenu");
-        put("DOWN","ShowMenu");
-        put("control shift F","FindTabs");
-        put("F3","NextFind");
-        put("control F3","NextFind");
-        put("shift F3","PreviousFind");
-        put("control shift F3","PreviousFind");
-        put("HOME","FirstTab");
-        put("END","LastTab");
-        put("control shift HOME","FirstTab");
-        put("control shift END","LastTab");
-        put("LEFT","PreviousTab");
-        put("RIGHT","NextTab");
-        put("control shift LEFT","PreviousTab");
-        put("control shift RIGHT","NextTab");
-        put("alt LEFT","PreviouslySelectedTab");
-        put("alt RIGHT","NextlySelectedTab");
-        put("control alt LEFT","PreviouslySelectedTab");
-        put("control alt RIGHT","NextlySelectedTab");
-        put("control C","CopyTitle");
-        put("control shift C","CopyTitle");
-        put("control V","PasteTitle");
-        put("control shift V","PasteTitle");
-        put("F2","RenameTitle");
-        put("control F2","RenameTitle");
+    public HashMap<String, String> subTabsShortcutMappings = new HashMap<String, String>() {{
+        put("control ENTER", "ShowMenu");
+        put("control shift ENTER", "ShowMenu");
+        put("DOWN", "ShowMenu");
+        put("control shift F", "FindTabs");
+        put("F3", "NextFind");
+        put("control F3", "NextFind");
+        put("shift F3", "PreviousFind");
+        put("control shift F3", "PreviousFind");
+        put("HOME", "FirstTab");
+        put("END", "LastTab");
+        put("control shift HOME", "FirstTab");
+        put("control shift END", "LastTab");
+        put("LEFT", "PreviousTab");
+        put("RIGHT", "NextTab");
+        put("control shift LEFT", "PreviousTab");
+        put("control shift RIGHT", "NextTab");
+        put("alt LEFT", "PreviouslySelectedTab");
+        put("alt RIGHT", "NextlySelectedTab");
+        put("control alt LEFT", "PreviouslySelectedTab");
+        put("control alt RIGHT", "NextlySelectedTab");
+        put("control C", "CopyTitle");
+        put("control shift C", "CopyTitle");
+        put("control V", "PasteTitle");
+        put("control shift V", "PasteTitle");
+        put("F2", "RenameTitle");
+        put("control F2", "RenameTitle");
     }};
 
     public SubTabWatcher(SharpenerSharedParameters sharedParameters, Consumer<MouseEvent> mouseEventConsumer) {
@@ -122,11 +122,11 @@ public class SubTabWatcher implements ContainerListener {
         // Burp has changed something in the UI so we need this if condition to support older versions
         Component targetComponent;
 
-        if(tabComponent.getMouseListeners().length > 0){
+        if (tabComponent.getMouseListeners().length > 0) {
             targetComponent = tabComponent;
-        }else{
+        } else {
             //tabComponent.getComponentAt(0,0).addMouseListener(new SubTabClickHandler(this.mouseEventConsumer));
-            targetComponent = tabComponent.getComponentAt(0,0);
+            targetComponent = tabComponent.getComponentAt(0, 0);
         }
 
         // this is a dirty hack to keep the colours as they go black after drag and drop!
@@ -151,10 +151,15 @@ public class SubTabWatcher implements ContainerListener {
                             new TimerTask() {
                                 @Override
                                 public void run() {
-                                    //sharedParameters.allSettings.subTabSettings.updateSubTabsUI(toolName);
-                                    sharedParameters.allSettings.subTabSettings.loadSettings(toolName);
-                                    sharedParameters.allSettings.subTabSettings.saveSettings(toolName);
-                                    set_isUpdateInProgress(false);
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            //sharedParameters.allSettings.subTabSettings.updateSubTabsUI(toolName);
+                                            sharedParameters.allSettings.subTabSettings.loadSettings(toolName);
+                                            sharedParameters.allSettings.subTabSettings.saveSettings(toolName);
+                                            set_isUpdateInProgress(false);
+                                        }
+                                    });
                                 }
                             },
                             delay
@@ -171,18 +176,21 @@ public class SubTabWatcher implements ContainerListener {
 
         if (subTabbedPane != null) {
             addSubTabsListener(subTabbedPane, toolName);
-        }else{
+        } else {
             // when Burp Suite is loaded for the first time, Repeater and Intruder tabs are empty in the latest versions rather than having one tab
             // This is to address the issue of component change when the first tab is being created
             targetComponent.addComponentListener(new ComponentListener() {
                 @Override
-                public void componentResized(ComponentEvent e) {}
+                public void componentResized(ComponentEvent e) {
+                }
 
                 @Override
-                public void componentMoved(ComponentEvent e) {}
+                public void componentMoved(ComponentEvent e) {
+                }
 
                 @Override
-                public void componentShown(ComponentEvent e) {}
+                public void componentShown(ComponentEvent e) {
+                }
 
                 @Override
                 public void componentHidden(ComponentEvent e) {
@@ -190,20 +198,25 @@ public class SubTabWatcher implements ContainerListener {
                             new java.util.TimerTask() {
                                 @Override
                                 public void run() {
-                                    // This will be triggered when Burp creates items in Repeater or Intruder
-                                    BurpUITools.MainTabs toolName = BurpUITools.getMainTabsObjFromString(sharedParameters.get_rootTabbedPane().getTitleAt(sharedParameters.get_rootTabbedPane().indexOfComponent(((Component) e.getSource()).getParent())));
-                                    JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(toolName);
-                                    if (subTabbedPane != null) {
-                                        if(subTabbedPane.getPropertyChangeListeners("tabPropertyChangeListener").length==0)
-                                            subTabbedPane.addPropertyChangeListener("indexForTabComponent", tabPropertyChangeListener);
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            // This will be triggered when Burp creates items in Repeater or Intruder
+                                            BurpUITools.MainTabs toolName = BurpUITools.getMainTabsObjFromString(sharedParameters.get_rootTabbedPane().getTitleAt(sharedParameters.get_rootTabbedPane().indexOfComponent(((Component) e.getSource()).getParent())));
+                                            JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(toolName);
+                                            if (subTabbedPane != null) {
+                                                if (subTabbedPane.getPropertyChangeListeners("tabPropertyChangeListener").length == 0)
+                                                    subTabbedPane.addPropertyChangeListener("indexForTabComponent", tabPropertyChangeListener);
 
-                                        addSubTabsListener(subTabbedPane, toolName);
+                                                addSubTabsListener(subTabbedPane, toolName);
 
-                                        // as there is no other getComponentListeners by default, we can remove them all
-                                        for (ComponentListener cl : subTabbedPane.getComponentListeners()) {
-                                            subTabbedPane.removeComponentListener(cl);
+                                                // as there is no other getComponentListeners by default, we can remove them all
+                                                for (ComponentListener cl : subTabbedPane.getComponentListeners()) {
+                                                    subTabbedPane.removeComponentListener(cl);
+                                                }
+                                            }
                                         }
-                                    }
+                                    });
                                 }
                             },
                             5000 // 5 seconds delay just in case Burp is very slow on the device
@@ -219,8 +232,8 @@ public class SubTabWatcher implements ContainerListener {
         removeListenerFromTabbedPanels((JTabbedPane) e.getContainer(), e.getChild());
     }
 
-    private void addSubTabsListener(JTabbedPane subTabbedPane, BurpUITools.MainTabs toolName){
-        if(sharedParameters.allSubTabContainerHandlers.get(toolName) == null || sharedParameters.allSubTabContainerHandlers.get(toolName).size() != subTabbedPane.getTabCount()-1){
+    private void addSubTabsListener(JTabbedPane subTabbedPane, BurpUITools.MainTabs toolName) {
+        if (sharedParameters.allSubTabContainerHandlers.get(toolName) == null || sharedParameters.allSubTabContainerHandlers.get(toolName).size() != subTabbedPane.getTabCount() - 1) {
             ArrayList<SubTabContainerHandler> subTabContainerHandlers = new ArrayList<>();
             for (Component subTabComponent : subTabbedPane.getComponents()) {
                 int subTabIndex = subTabbedPane.indexOfComponent(subTabComponent);
@@ -231,7 +244,7 @@ public class SubTabWatcher implements ContainerListener {
             }
 
             // this for dotdotdot tab!
-            SubTabContainerHandler tempDotDotDotSubTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabbedPane.getTabCount()-1, true);
+            SubTabContainerHandler tempDotDotDotSubTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabbedPane.getTabCount() - 1, true);
             if (tempDotDotDotSubTabContainerHandler != null && !subTabContainerHandlers.contains(tempDotDotDotSubTabContainerHandler)) {
                 // we have a new tab
                 tempDotDotDotSubTabContainerHandler.addSubTabWatcher();
@@ -244,9 +257,9 @@ public class SubTabWatcher implements ContainerListener {
         subTabbedPane.addMouseListener(new MouseAdapterExtensionHandler(mouseEventConsumer, MouseEvent.MOUSE_RELEASED));
 
         //Defining shortcuts for search in tab titles: ctrl+shift+f , F3, shift+F3
-        if(_isShortcutEnabled) {
+        if (_isShortcutEnabled) {
             clearInputMap(subTabbedPane);
-            subTabsShortcutMappings.forEach((k,v) -> subTabbedPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+            subTabsShortcutMappings.forEach((k, v) -> subTabbedPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                     KeyStroke.getKeyStroke(k), v));
 
             subTabbedPane.getActionMap().put("ShowMenu", new AbstractAction() {
@@ -348,11 +361,11 @@ public class SubTabWatcher implements ContainerListener {
         // Burp has changed something in the UI so we need this if condition to support older versions
         JComponent targetComponent;
 
-        if(tabComponent.getMouseListeners().length > 0){
+        if (tabComponent.getMouseListeners().length > 0) {
             targetComponent = (JComponent) tabComponent;
-        }else{
+        } else {
             //tabComponent.getComponentAt(0,0).addMouseListener(new SubTabClickHandler(this.mouseEventConsumer));
-            targetComponent = (JComponent) tabComponent.getComponentAt(0,0);
+            targetComponent = (JComponent) tabComponent.getComponentAt(0, 0);
         }
 
         // as there is no other PropertyChangeListener with propertyName of "indexForTabComponent" by default, we can remove them all
@@ -378,15 +391,16 @@ public class SubTabWatcher implements ContainerListener {
         }
 
         // There is no bindings on these items so it can be cleared
-        if(_isShortcutEnabled) {
+        if (_isShortcutEnabled) {
             clearInputMap(targetComponent);
         }
     }
 
-    private void clearInputMap(JComponent jc){
-        subTabsShortcutMappings.forEach((k,v) -> jc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+    private void clearInputMap(JComponent jc) {
+        subTabsShortcutMappings.forEach((k, v) -> jc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 KeyStroke.getKeyStroke(k), "none"));
     }
+
     private synchronized void set_isUpdateInProgress(boolean _isUpdateInProgress) {
         this._isUpdateInProgress = _isUpdateInProgress;
     }

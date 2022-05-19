@@ -41,8 +41,13 @@ public class MainToolsTabWatcher implements ContainerListener {
                     new java.util.TimerTask() {
                         @Override
                         public void run() {
-                            MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
-                            setResetInProgress(false);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
+                                    setResetInProgress(false);
+                                }
+                            });
                         }
                     },
                     2000 // 2 seconds-delay to ensure all has been settled!
