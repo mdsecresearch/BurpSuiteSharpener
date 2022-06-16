@@ -66,9 +66,11 @@ public class SubTabWatcher implements ContainerListener {
         sharedParameters.printDebugMessage("addSubTabListener");
         tabbedPane.addContainerListener(this);
         accessibleTabs = new ArrayList<>();
+
         for (Component component : tabbedPane.getComponents()) {
             addListenerToSupportedTabbedPanels(tabbedPane, component);
         }
+
         checkNotLoadedSupportedTools();
     }
 
@@ -76,9 +78,11 @@ public class SubTabWatcher implements ContainerListener {
         sharedParameters.printDebugMessage("removeSubTabListener");
         tabbedPane.removeContainerListener(this);
         accessibleTabs = new ArrayList<>();
+
         for (Component component : tabbedPane.getComponents()) {
             removeListenerFromTabbedPanels(tabbedPane, component);
         }
+
         checkNotLoadedSupportedTools();
     }
 
@@ -106,6 +110,11 @@ public class SubTabWatcher implements ContainerListener {
     private void addListenerToSupportedTabbedPanels(JTabbedPane tabbedPane, Component tabComponent) {
         //Check tab titles and continue for accepted tab paths.
         int componentIndex = tabbedPane.indexOfComponent(tabComponent);
+
+        if (componentIndex == -1) {
+            componentIndex = tabbedPane.indexOfTabComponent(tabComponent);
+        }
+
         if (componentIndex == -1) {
             return;
         }
@@ -203,6 +212,10 @@ public class SubTabWatcher implements ContainerListener {
                                         for (ComponentListener cl : subTabbedPane.getComponentListeners()) {
                                             subTabbedPane.removeComponentListener(cl);
                                         }
+
+                                        sharedParameters.allSettings.subTabSettings.loadSettings(toolName);
+                                        sharedParameters.allSettings.subTabSettings.saveSettings(toolName);
+                                        set_isUpdateInProgress(false);
                                     }
                                 }
                             },
@@ -220,8 +233,14 @@ public class SubTabWatcher implements ContainerListener {
     }
 
     private void addSubTabsListener(JTabbedPane subTabbedPane, BurpUITools.MainTabs toolName){
-        if(sharedParameters.allSubTabContainerHandlers.get(toolName) == null || sharedParameters.allSubTabContainerHandlers.get(toolName).size() != subTabbedPane.getTabCount()-1){
+        if(sharedParameters.allSubTabContainerHandlers.get(toolName) == null ||
+                (sharedParameters.allSubTabContainerHandlers.get(toolName).size() != subTabbedPane.getTabCount()-1 && !sharedParameters.isTabGroupSupportedByDefault)){
             ArrayList<SubTabContainerHandler> subTabContainerHandlers = new ArrayList<>();
+            for(int subTabIndex=0; subTabIndex<subTabbedPane.getTabCount(); subTabIndex++){
+                SubTabContainerHandler subTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabIndex, false);
+                subTabContainerHandlers.add(subTabContainerHandler);
+            }
+            /*
             for (Component subTabComponent : subTabbedPane.getComponents()) {
                 int subTabIndex = subTabbedPane.indexOfComponent(subTabComponent);
                 if (subTabIndex == -1)
@@ -229,15 +248,16 @@ public class SubTabWatcher implements ContainerListener {
                 SubTabContainerHandler subTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabIndex, false);
                 subTabContainerHandlers.add(subTabContainerHandler);
             }
-
+            */
             // this for dotdotdot tab!
-            SubTabContainerHandler tempDotDotDotSubTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabbedPane.getTabCount()-1, true);
-            if (tempDotDotDotSubTabContainerHandler != null && !subTabContainerHandlers.contains(tempDotDotDotSubTabContainerHandler)) {
-                // we have a new tab
-                tempDotDotDotSubTabContainerHandler.addSubTabWatcher();
-                subTabContainerHandlers.add(tempDotDotDotSubTabContainerHandler);
+            if(!sharedParameters.isTabGroupSupportedByDefault){ // before version 2022.6
+                SubTabContainerHandler tempDotDotDotSubTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabbedPane.getTabCount()-1, true);
+                if (tempDotDotDotSubTabContainerHandler != null && !subTabContainerHandlers.contains(tempDotDotDotSubTabContainerHandler)) {
+                    // we have a new tab
+                    tempDotDotDotSubTabContainerHandler.addSubTabWatcher();
+                    subTabContainerHandlers.add(tempDotDotDotSubTabContainerHandler);
+                }
             }
-
             sharedParameters.allSubTabContainerHandlers.put(toolName, subTabContainerHandlers);
         }
 

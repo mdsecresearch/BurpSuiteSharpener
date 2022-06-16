@@ -11,10 +11,14 @@ import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObject;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
 import com.irsdl.generic.ImageHelper;
+import com.irsdl.generic.uiObjFinder.UISpecObject;
+import com.irsdl.generic.uiObjFinder.UIWalker;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -24,9 +28,10 @@ import java.util.Collections;
 public class SubTabContainerHandler {
     public JTabbedPane parentTabbedPane;
     public Container currentTabContainer;
-    public Component currentTabTextField;
-    public Component currentTabIcon;
-    public Component currentTabCloseButton;
+    public JComponent currentTabTextField;
+    public JComponent currentTabIcon;
+    public JComponent currentTabCloseButton;
+    public JComponent currentTabGroupButton;
     public ArrayList<Integer> tabIndexHistory = new ArrayList<>();
     public BurpUITools.MainTabs currentToolTab;
 
@@ -47,6 +52,10 @@ public class SubTabContainerHandler {
         this.instance = this;
         this.sharedParameters = sharedParameters;
         this.parentTabbedPane = tabbedPane;
+
+        if(tabbedPane.getTabCount() <= tabIndex)
+            return;
+
         Component currentTabTemp = tabbedPane.getTabComponentAt(tabIndex);
         if (!(currentTabTemp instanceof Container)) return; // this is not a container, so it is not useful for us
 
@@ -78,29 +87,26 @@ public class SubTabContainerHandler {
 
         currentToolTab = BurpUITools.getMainTabsObjFromString(toolTabName);
         this.currentTabContainer = (Container) currentTabTemp;
-        if(!hasIcon()){
-            this.currentTabTextField = currentTabContainer.getComponent(0);
-        }
-        else{
-            // we have an icon!
-            this.currentTabTextField = currentTabContainer.getComponent(1);
-        }
 
+        UISpecObject textFieldTabTitleUSO = new UISpecObject(JTextField.class);
+        currentTabTextField = (JComponent) UIWalker.FindUIObjectInSubComponents(currentTabContainer, 1, textFieldTabTitleUSO);
 
         if(currentTabTextField == null){
             sharedParameters.printlnError("An error has occurred when reading a specific tab. A restart might be needed.");
             return;
         }
-        if (tabIndex != tabbedPane.getTabCount() - 1){
-            if(!hasIcon()){
-                currentTabCloseButton = currentTabContainer.getComponent(1); // to get the X button
-            }
-            else{
-                // we have an icon!
-                currentTabCloseButton = currentTabContainer.getComponent(2); // to get the X button
-            }
-        }
 
+        UISpecObject closeButtonUSO = new UISpecObject(JComponent.class);
+        closeButtonUSO.set_isPartialName(true);
+        closeButtonUSO.set_isCaseSensitiveName(false);
+        closeButtonUSO.set_name("close");
+        currentTabCloseButton = (JComponent) UIWalker.FindUIObjectInSubComponents(currentTabContainer, 1, closeButtonUSO);
+
+        UISpecObject groupButtonUSO = new UISpecObject(JComponent.class);
+        groupButtonUSO.set_isPartialName(true);
+        groupButtonUSO.set_isCaseSensitiveName(false);
+        groupButtonUSO.set_name("group");
+        currentTabGroupButton = (JComponent) UIWalker.FindUIObjectInSubComponents(currentTabContainer, 1, groupButtonUSO);
 
         // to keep history of previous titles
         if (titleHistory.size() == 0)
@@ -176,6 +182,31 @@ public class SubTabContainerHandler {
                 }
             };
             this.currentTabTextField.addPropertyChangeListener(subTabPropertyChangeListener);
+            this.currentTabTextField.addComponentListener(new ComponentListener() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    // Do nothing
+                }
+
+                @Override
+                public void componentMoved(ComponentEvent e) {
+                    // Do nothing
+                }
+
+                @Override
+                public void componentShown(ComponentEvent e) {
+                    if(sharedParameters.isTabGroupSupportedByDefault){
+                        setVisibleIcon(true, false);
+                    }
+                }
+
+                @Override
+                public void componentHidden(ComponentEvent e) {
+                    if(sharedParameters.isTabGroupSupportedByDefault){
+                        setVisibleIcon(false, false);
+                    }
+                }
+            });
         } else if (this.currentTabTextField.getPropertyChangeListeners().length == 3) {
             subTabPropertyChangeListener = this.currentTabTextField.getPropertyChangeListeners()[2];
         }
@@ -234,8 +265,7 @@ public class SubTabContainerHandler {
     public boolean isValid() {
         boolean result = true;
 
-        if (parentTabbedPane == null || getTabIndex() == -1 || currentTabContainer == null || currentTabTextField == null ||
-                currentTabCloseButton == null || currentTabTextField == null ) {
+        if (parentTabbedPane == null || getTabIndex() == -1 || currentTabContainer == null || currentTabTextField == null) {
             result = false;
         }
         return result;
@@ -248,13 +278,21 @@ public class SubTabContainerHandler {
                 if (sharedParameters.supportedTools_SubTabs.get(tool) != null) {
                     JTabbedPane toolTabbedPane = sharedParameters.get_toolTabbedPane(tool);
                     if (toolTabbedPane != null) {
+                        if(toolTabbedPane.getTabCount() > 0){
+                            // we are assuming that we are lucky and the last tab has the default characteristics which is a big if from version 2022.6
+                            sharedParameters.defaultSubTabObject = new SubTabContainerHandler(sharedParameters, toolTabbedPane, toolTabbedPane.getTabCount() - 1,true);
+
+                        }
+                        /*
                         for (Component tabComponent : toolTabbedPane.getComponents()) {
                             int subTabIndex = toolTabbedPane.indexOfComponent(tabComponent);
                             if (subTabIndex == -1)
                                 continue;
+                            // we are assuming that we are lucky and the last tab has the default characteristics which is a big if from version 2022.6
                             sharedParameters.defaultSubTabObject = new SubTabContainerHandler(sharedParameters, toolTabbedPane, toolTabbedPane.getTabCount() - 1,true);
                             break;
                         }
+                        */
                     }
                 }
                 if (sharedParameters.defaultSubTabObject != null)
@@ -264,16 +302,30 @@ public class SubTabContainerHandler {
     }
 
     public Boolean isDefaultColour(Color color){
-        return Integer.toHexString(color.getRGB()).substring(2).equals("000000") || Integer.toHexString(color.getRGB()).substring(2).equals("010101")
-                || Integer.toHexString(color.getRGB()).substring(2).equals("bbbbbb") || Integer.toHexString(color.getRGB()).substring(2).equals("bcbcbc");
+        if(!sharedParameters.isDarkMode){
+            // light mode workaround
+            return Integer.toHexString(color.getRGB()).substring(2).equals("000000") || Integer.toHexString(color.getRGB()).substring(2).equals("010101");
+        }else{
+            // dark mode workaround
+            return Integer.toHexString(color.getRGB()).substring(2).equals("bbbbbb") || Integer.toHexString(color.getRGB()).substring(2).equals("bcbcbc");
+        }
     }
 
     public Boolean isSetToDefaultColour(Color color){
-        return Integer.toHexString(color.getRGB()).substring(2).equals("010101") || Integer.toHexString(color.getRGB()).substring(2).equals("bcbcbc");
+        if(!sharedParameters.isDarkMode){
+            return Integer.toHexString(color.getRGB()).substring(2).equals("010101");
+        }else{
+            return Integer.toHexString(color.getRGB()).substring(2).equals("bcbcbc");
+        }
     }
 
     public boolean isDotDotDotTab(){
-        return parentTabbedPane.getTabComponentAt(parentTabbedPane.getTabCount() - 1).equals(currentTabContainer);
+        if(sharedParameters.isTabGroupSupportedByDefault){
+            // in this version dotdotdot tab has been removed!
+            return false;
+        } else{
+            return parentTabbedPane.getTabComponentAt(parentTabbedPane.getTabCount() - 1).equals(currentTabContainer);
+        }
     }
 
     public boolean isWebSocketTab(){
@@ -293,11 +345,11 @@ public class SubTabContainerHandler {
 
             if(isDefaultColour(getColor())){
                 // this is useful when user has changed dark <-> light mode; so we can still detect a default colour!
-                if (getTabIndex() == parentTabbedPane.getTabCount() - 1 || sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle().equalsIgnoreColor(getTabFeaturesObjectStyle())) {
+                if ((getTabIndex() == parentTabbedPane.getTabCount() - 1 && !sharedParameters.isTabGroupSupportedByDefault) || sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle().equalsIgnoreColor(getTabFeaturesObjectStyle())) {
                     result = true;
                 }
             }else{
-                if (getTabIndex() == parentTabbedPane.getTabCount() - 1 || sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle().equals(getTabFeaturesObjectStyle())) {
+                if ((getTabIndex() == parentTabbedPane.getTabCount() - 1 && !sharedParameters.isTabGroupSupportedByDefault) || sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle().equals(getTabFeaturesObjectStyle())) {
                     result = true;
                 }
             }
@@ -312,7 +364,7 @@ public class SubTabContainerHandler {
             // this is because Burp does use the default colour when an item is changed - we have a workaround for that but
             // the workaround stops reset to default to change the colour as well so we need another workaround!!!
             TabFeaturesObjectStyle tfosDefault = sharedParameters.defaultSubTabObject.getTabFeaturesObjectStyle();
-            if(Integer.toHexString(tfosDefault.getColor().getRGB()).substring(2).equals("000000")){
+            if(!sharedParameters.isDarkMode){
                 // light mode workaround
                 tfosDefault.setColor(Color.decode("#010101"));
             }else{
@@ -346,7 +398,11 @@ public class SubTabContainerHandler {
 
         if (cachedTabTitles == null || !titleHistory.get(titleHistory.size() - 1).equals(getTabTitle())) {
             cachedTabTitles = new ArrayList<>();
-            for (int index = 0; index < parentTabbedPane.getTabCount() - 1; index++) {
+            int maxIndex = parentTabbedPane.getTabCount() - 1;
+            if(sharedParameters.isTabGroupSupportedByDefault)
+                maxIndex += 1;
+
+            for (int index = 0; index < maxIndex; index++) {
                 if(isCaseSensitive){
                     cachedTabTitles.add(parentTabbedPane.getTitleAt(index));
                 }else{
@@ -372,7 +428,7 @@ public class SubTabContainerHandler {
             subTabIndex = parentTabbedPane.getTabCount() - 1;
         }
 
-        if (tabIndexHistory.size() == 0 || subTabIndex != tabIndexHistory.get(tabIndexHistory.size() - 1)) {
+        if (tabIndexHistory.size() == 0 || (subTabIndex != tabIndexHistory.get(tabIndexHistory.size() - 1) && !sharedParameters.isTabGroupSupportedByDefault)) {
             tabIndexHistory.add(subTabIndex);
         }
 
@@ -431,7 +487,10 @@ public class SubTabContainerHandler {
 
     public void refreshLocalTitleCache(boolean isCaseSensitive){
         cachedTabTitles = new ArrayList<>();
-        for (int index = 0; index < parentTabbedPane.getTabCount() - 1; index++) {
+        int maxIndex = parentTabbedPane.getTabCount() - 1;
+        if(sharedParameters.isTabGroupSupportedByDefault)
+            maxIndex += 1;
+        for (int index = 0; index < maxIndex; index++) {
             if(isCaseSensitive){
                 cachedTabTitles.add(parentTabbedPane.getTitleAt(index));
             }else{
@@ -522,7 +581,7 @@ public class SubTabContainerHandler {
     }
 
     public void showCloseButton(boolean ignoreHasChanges) {
-        if (isValid() && !currentTabCloseButton.isVisible()) {
+        if (isValid() && currentTabCloseButton != null && !currentTabCloseButton.isVisible()) {
             if(!ignoreHasChanges)
                 setHasChanges(true);
             currentTabCloseButton.setVisible(true);
@@ -530,7 +589,7 @@ public class SubTabContainerHandler {
     }
 
     public void hideCloseButton(boolean ignoreHasChanges) {
-        if (isValid() && currentTabCloseButton.isVisible()) {
+        if (isValid() && currentTabCloseButton != null && currentTabCloseButton.isVisible()) {
             if(!ignoreHasChanges)
                 setHasChanges(true);
             currentTabCloseButton.setVisible(false);
@@ -571,12 +630,30 @@ public class SubTabContainerHandler {
                         err.printStackTrace(sharedParameters.stderr);
                     }
                 }
+
+                if(!isTitleVisible()){
+                    setVisibleIcon(false, true);
+                }
+            }
+        }
+    }
+
+    public void setVisibleIcon(boolean state, boolean ignoreHasChanges) {
+        if(isValid()) {
+            JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
+
+            if (tabComponent.getComponent(0) instanceof JLabel){
+                tabComponent.getComponent(0).setVisible(state);
+                if (!ignoreHasChanges) {
+                    parentTabbedPane.revalidate();
+                    parentTabbedPane.repaint();
+                }
             }
         }
     }
 
     public void removeIcon(boolean ignoreHasChanges) {
-        if(hasIcon()) {
+        if(hasIcon() && isValid()) {
             JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
             if (tabComponent.getComponent(0) instanceof JLabel){
                 // we have an icon set
@@ -591,7 +668,7 @@ public class SubTabContainerHandler {
 
     public String getIconString(){
         String _iconString = "";
-        if(hasIcon()){
+        if(hasIcon() && isValid()){
             JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
             if (tabComponent.getComponent(0) instanceof JLabel){
                 // we have an icon set
@@ -606,7 +683,7 @@ public class SubTabContainerHandler {
 
     public int getIconSize(){
         int _iconSize = 0;
-        if(hasIcon()){
+        if(hasIcon() && isValid()){
             JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
             if (tabComponent.getComponent(0) instanceof JLabel){
                 // we have an icon set
@@ -620,13 +697,13 @@ public class SubTabContainerHandler {
 
     public boolean hasIcon(){
         boolean result = false;
-
-        JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
-        if (tabComponent.getComponent(0) instanceof JLabel){
-            // we have an icon set
-            result = true;
+        if(isValid()) {
+            JComponent tabComponent = (JComponent) parentTabbedPane.getTabComponentAt(getTabIndex());
+            if (tabComponent.getComponent(0) instanceof JLabel) {
+                // we have an icon set
+                result = true;
+            }
         }
-
         return result;
     }
 
@@ -642,6 +719,10 @@ public class SubTabContainerHandler {
         if (!isValid()) {
             return true;
         }
+
+        if(currentTabCloseButton == null)
+            return false;
+
         return currentTabCloseButton.isVisible();
     }
 
@@ -652,7 +733,7 @@ public class SubTabContainerHandler {
     }
 
     public void setVisible(Boolean visible) {
-        if(visible != getVisible() && !isDotDotDotTab()){
+        if(visible != getVisible() && !isDotDotDotTab() && isValid()){
             if(!visible) {
                 originalTabColor = getColor();
                 currentTabContainer.setPreferredSize(new Dimension(0,getCurrentDimension().height));
@@ -666,6 +747,14 @@ public class SubTabContainerHandler {
             _isVisible = visible;
             setHasChanges(false);
         }
+    }
+
+    public boolean isTitleVisible(){
+        boolean result = false;
+        if(currentTabTextField != null){
+            result = currentTabTextField.isVisible();
+        }
+        return result;
     }
 
     public Dimension getCurrentDimension() {
@@ -700,6 +789,22 @@ public class SubTabContainerHandler {
                 if(temp.tabIndexHistory.size() != 0 && this.tabIndexHistory.size() !=0)
                     result = temp.tabIndexHistory.get(temp.tabIndexHistory.size() - 1).equals(this.tabIndexHistory.get(this.tabIndexHistory.size() - 1));
             }
+        }
+        return result;
+    }
+
+    public boolean isNormalTab() {
+        boolean result = false;
+        if(isValid() && currentTabCloseButton != null){
+            result = true;
+        }
+        return result;
+    }
+
+    public boolean isGroupTab() {
+        boolean result = false;
+        if(isValid() && currentTabGroupButton != null){
+            result = true;
         }
         return result;
     }

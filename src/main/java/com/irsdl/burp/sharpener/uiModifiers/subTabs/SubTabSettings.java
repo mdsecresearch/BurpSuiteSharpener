@@ -45,20 +45,20 @@ public class SubTabSettings extends StandardSettings {
             }.getType(), null, Preferences.Visibility.PROJECT);
             preferenceObjectCollection.add(preferenceObject);
 
-            PreferenceObject preferenceObject_isScrollable_Tab = new PreferenceObject("isScrollable_" + tool, Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+            PreferenceObject preferenceObject_isScrollable_Tab = new PreferenceObject("isScrollable_" + tool, Boolean.TYPE, false, Preferences.Visibility.PROJECT);
             preferenceObjectCollection.add(preferenceObject_isScrollable_Tab);
 
-            PreferenceObject preferenceObject_mouseWheelToScroll_Tab = new PreferenceObject("mouseWheelToScroll_" + tool, Boolean.TYPE, true, Preferences.Visibility.GLOBAL);
+            PreferenceObject preferenceObject_mouseWheelToScroll_Tab = new PreferenceObject("mouseWheelToScroll_" + tool, Boolean.TYPE, true, Preferences.Visibility.PROJECT);
             preferenceObjectCollection.add(preferenceObject_mouseWheelToScroll_Tab);
 
-            PreferenceObject preferenceObject_minimizeSize_Tab = new PreferenceObject("minimizeSize_" + tool, Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+            PreferenceObject preferenceObject_minimizeSize_Tab = new PreferenceObject("minimizeSize_" + tool, Boolean.TYPE, false, Preferences.Visibility.PROJECT);
             preferenceObjectCollection.add(preferenceObject_minimizeSize_Tab);
 
             PreferenceObject preferenceObject_isTabFixedPositionUI_Tab;
             if (sharedParameters.burpMajorVersion > 2022 || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion >= 3)) {
-                preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool, Boolean.TYPE, true, Preferences.Visibility.GLOBAL);
+                preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool, Boolean.TYPE, true, Preferences.Visibility.PROJECT);
             }else{
-                preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool, Boolean.TYPE, false, Preferences.Visibility.GLOBAL);
+                preferenceObject_isTabFixedPositionUI_Tab = new PreferenceObject("isTabFixedPosition_" + tool, Boolean.TYPE, false, Preferences.Visibility.PROJECT);
             }
             preferenceObjectCollection.add(preferenceObject_isTabFixedPositionUI_Tab);
         }
@@ -84,27 +84,31 @@ public class SubTabSettings extends StandardSettings {
                     @Override
                     public void run() {
                         new Thread(() -> {
-                            if (sharedParameters.preferences.safeGetBooleanSetting("isScrollable_" + tool)) {
-                                try{
-                                    // this causes error on Burp start so we need to run it with a delay
-                                    new java.util.Timer().schedule(
-                                            new java.util.TimerTask() {
-                                                @Override
-                                                public void run() {
-                                                    sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-                                                }
-                                            },
-                                            2000 // 2 seconds-delay to ensure all has been settled!
-                                    );
-                                }catch(Exception e){
-                                    sharedParameters.printDebugMessage("Error when applying the isScrollable setting, disabling the setting...");
-                                    sharedParameters.preferences.setSetting("isScrollable_" + tool,false);
+
+                            if(!sharedParameters.isSubTabScrollSupportedByDefault) {
+                                // This feature is being supported by Burp Suite 2022.6
+                                if (sharedParameters.preferences.safeGetBooleanSetting("isScrollable_" + tool)) {
+                                    try{
+                                        // this causes error on Burp start so we need to run it with a delay
+                                        new java.util.Timer().schedule(
+                                                new java.util.TimerTask() {
+                                                    @Override
+                                                    public void run() {
+                                                        sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                                                    }
+                                                },
+                                                2000 // 2 seconds-delay to ensure all has been settled!
+                                        );
+                                    }catch(Exception e){
+                                        sharedParameters.printDebugMessage("Error when applying the isScrollable setting, disabling the setting...");
+                                        sharedParameters.preferences.setSetting("isScrollable_" + tool,false);
+                                    }
                                 }
                             }
 
                             if (sharedParameters.preferences.safeGetBooleanSetting("mouseWheelToScroll_" + tool)) {
                                 try{
-                                    SubTabActions.addMouseWheelToJTabbedPane(sharedParameters, tool, false);
+                                    SubTabActions.addMouseWheelToJTabbedPane(sharedParameters, tool, sharedParameters.isTabGroupSupportedByDefault);
                                 }catch(Exception e){
                                     sharedParameters.printDebugMessage("Error when applying the Mouse Wheel setting, disabling the setting...");
                                     sharedParameters.preferences.setSetting("mouseWheelToScroll_" + tool,false);
@@ -120,8 +124,11 @@ public class SubTabSettings extends StandardSettings {
                                         sharedParameters.get_toolTabbedPane(tool).getUI());
                             }
 
-                            if(sharedParameters.get_toolTabbedPane(tool)!=null)
+                            if(sharedParameters.get_toolTabbedPane(tool)!=null && !sharedParameters.isTabGroupSupportedByDefault)
+                            {
                                 sharedParameters.get_toolTabbedPane(tool).setUI(SubTabCustomTabbedPaneUI.getUI(sharedParameters, tool));
+                                SubTabActions.changeToolTabbedPaneUI_safe(sharedParameters, tool, false);
+                            }
 
                         }).start();
                     }
@@ -200,6 +207,17 @@ public class SubTabSettings extends StandardSettings {
 
                 JTabbedPane subTabbedPane = sharedParameters.get_toolTabbedPane(tool);
                 if (subTabbedPane != null) {
+                    for(int subTabIndex=0; subTabIndex<subTabbedPane.getTabCount(); subTabIndex++){
+                        SubTabContainerHandler tempSubTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabIndex, true);
+
+                        if (!updatedSubTabContainerHandlers.contains(tempSubTabContainerHandler)) {
+                            // we have a new tab
+                            tempSubTabContainerHandler.setToDefault(true);
+                            tempSubTabContainerHandler.addSubTabWatcher();
+                            updatedSubTabContainerHandlers.add(tempSubTabContainerHandler);
+                        }
+                    }
+                    /*
                     for (Component subTabComponent : subTabbedPane.getComponents()) {
                         int subTabIndex = subTabbedPane.indexOfComponent(subTabComponent);
                         if (subTabIndex == -1)
@@ -213,12 +231,17 @@ public class SubTabSettings extends StandardSettings {
                             updatedSubTabContainerHandlers.add(tempSubTabContainerHandler);
                         }
                     }
+                    */
+
                     // this for dotdotdot tab!
-                    SubTabContainerHandler tempDotDotDotSubTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabbedPane.getTabCount()-1, true);
-                    if (tempDotDotDotSubTabContainerHandler != null && !updatedSubTabContainerHandlers.contains(tempDotDotDotSubTabContainerHandler)) {
-                        // we have a new tab
-                        tempDotDotDotSubTabContainerHandler.addSubTabWatcher();
-                        updatedSubTabContainerHandlers.add(tempDotDotDotSubTabContainerHandler);
+
+                    if(!sharedParameters.isTabGroupSupportedByDefault){
+                        SubTabContainerHandler tempDotDotDotSubTabContainerHandler = new SubTabContainerHandler(sharedParameters, subTabbedPane, subTabbedPane.getTabCount()-1, true);
+                        if (tempDotDotDotSubTabContainerHandler != null && !updatedSubTabContainerHandlers.contains(tempDotDotDotSubTabContainerHandler)) {
+                            // we have a new tab
+                            tempDotDotDotSubTabContainerHandler.addSubTabWatcher();
+                            updatedSubTabContainerHandlers.add(tempDotDotDotSubTabContainerHandler);
+                        }
                     }
                 }
 
@@ -233,9 +256,12 @@ public class SubTabSettings extends StandardSettings {
     public synchronized void unsetSubTabsStyle() {
         sharedParameters.printDebugMessage("unsetSubTabsStyle");
         for (BurpUITools.MainTabs tool : sharedParameters.subTabSupportedTabs) {
-            if (sharedParameters.preferences.safeGetBooleanSetting("isScrollable_" + tool)) {
-                sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+            if(!sharedParameters.isSubTabScrollSupportedByDefault){
+                if (sharedParameters.preferences.safeGetBooleanSetting("isScrollable_" + tool)) {
+                    sharedParameters.get_toolTabbedPane(tool).setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                }
             }
+
 
             if (sharedParameters.preferences.safeGetBooleanSetting("mouseWheelToScroll_" + tool)) {
                 SubTabActions.removeMouseWheelFromJTabbedPane(sharedParameters,tool, true);
@@ -256,7 +282,6 @@ public class SubTabSettings extends StandardSettings {
 
                 // Step2 of filter and Fixed Tab Position removal
                 if(sharedParameters.originalSubTabbedPaneUI.get(tool) != null) {
-                    //sharedParameters.get_toolTabbedPane(tool).setUI(sharedParameters.get_toolTabbedPane(tool).getUI()); // replaced by updateUI()
                     sharedParameters.get_toolTabbedPane(tool).updateUI();
                     sharedParameters.get_toolTabbedPane(tool).revalidate();
                     sharedParameters.get_toolTabbedPane(tool).repaint();
