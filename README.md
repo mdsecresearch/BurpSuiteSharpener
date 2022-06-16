@@ -23,8 +23,8 @@ This extension should add a number of UI and functional features to Burp Suite t
 * Scrollable main tool tabs
 * Scrollable Repeater and Intruder tabs
 * Taking screenshot of repeater or intruder tabs
-* Filtering using title names or custom styles
-* Searching only in filtered items
+* Filtering using title names or custom styles (disabled in version 2022.6 for compatibility reasons)
+* Searching only in filtered items (disabled in version 2022.6 for compatibility reasons)
 * Trimming long titles into 100 characters
 * Show previously chosen titles for a tab
 * Fixing tab positions in Repeater and Intruder when there are multiple rows
@@ -36,7 +36,7 @@ This extension should add a number of UI and functional features to Burp Suite t
 As PortSwigger has a plan to update Burp Suite UI in a near future, some features in this extension may become redundant or unreliable.
 While we use this extension ourselves we can see potential errors from time to time, as an open source project, it relies on the community feedback for improvements and to fix the issues. Please report any errors in [issues](https://github.com/mdsecresearch/BurpSuiteSharpener/issues).
 
-This extension has been tested against the latest pro version which was 2022.3.5 at the time of writing this document. It should however be also compatible with the community edition.
+This extension has been tested against the latest pro version which was 2022.6 at the time of writing this document. It should however be also compatible with the community edition.
 
 # Suggesting New Features
 The plan is to add simple but effective missing features to this single extension to make tester's life easier as a must-have companion when using Burp Suite (so we cannot Burp without it!).
