@@ -17,6 +17,8 @@ public class UISpecObject {
     private Boolean _isShowing = null;
     private String _frameTitle = null;
     private String _name = null;
+    private boolean _isPartialName = false;
+    private boolean _isCaseSensitiveName = true;
     private Integer _minWidth = null;
     private Integer _maxWidth = null;
     private Integer _minHeight = null;
@@ -25,76 +27,92 @@ public class UISpecObject {
     private Integer _minJComponentCount = null;
     private Integer _maxJComponentCount = null;
 
-    public UISpecObject(){
+    public UISpecObject() {
     }
 
-    public UISpecObject(Class type){
+    public UISpecObject(Class type) {
         set_objectType(type);
     }
 
-    public boolean isCompatible(Component component){
-        if(component == null){
+    public boolean isCompatible(Component component) {
+        if (component == null) {
             return false;
         }
 
-        if(get_minJComponentCount()!=null || get_maxJComponentCount()!=null){
+        if (get_minJComponentCount() != null || get_maxJComponentCount() != null) {
             set_isJComponent(true);
         }
 
-        if(get_isJComponent() && !(component instanceof  JComponent)){
+        if (get_isJComponent() && !(component instanceof JComponent)) {
             return false;
         }
 
-        if(get_frameTitle()!=null && !(component instanceof JFrame)){
+        if (get_frameTitle() != null && !(component instanceof JFrame)) {
             return false;
-        }else if(get_frameTitle()!=null && component instanceof JFrame && !((JFrame) component).getTitle().equals(get_frameTitle())){
-            return false;
-        }
-
-        if(get_objectType()!=null && !((Class<?>) get_objectType()).isAssignableFrom(component.getClass())){
+        } else if (get_frameTitle() != null && component instanceof JFrame && !((JFrame) component).getTitle().equals(get_frameTitle())) {
             return false;
         }
 
-        if(get_parentObjectType()!=null && !((Class<?>) get_parentObjectType()).isAssignableFrom(component.getParent().getClass())){
+        if (get_objectType() != null && !((Class<?>) get_objectType()).isAssignableFrom(component.getClass())) {
             return false;
         }
 
-        if(is_isShowing()!=null && component.isShowing() != is_isShowing()){
+        if (get_parentObjectType() != null && !((Class<?>) get_parentObjectType()).isAssignableFrom(component.getParent().getClass())) {
             return false;
         }
 
-        if(get_name()!=null && !component.getName().equals(get_name())){
+        if (is_isShowing() != null && component.isShowing() != is_isShowing()) {
             return false;
         }
 
-        if(get_minWidth()!=null && component.getWidth() < get_minWidth()){
+        if (get_name() != null) {
+            String componentName = component.getName();
+
+            if(componentName == null)
+                return false;
+
+            if(!get_isCaseSensitiveName()){
+                componentName = componentName.toLowerCase();
+            }
+
+            if(!get_isPartialName()){
+                if(!componentName.equals(get_name())){
+                    return false;
+                }
+            }else{
+                if(!componentName.contains(get_name())){
+                    return false;
+                }
+            }
+        }
+
+        if (get_minWidth() != null && component.getWidth() < get_minWidth()) {
             return false;
         }
 
-        if(get_minHeight()!=null && component.getHeight() < get_minHeight()){
+        if (get_minHeight() != null && component.getHeight() < get_minHeight()) {
             return false;
         }
 
-        if(get_maxWidth()!=null && component.getWidth() > get_maxWidth()){
+        if (get_maxWidth() != null && component.getWidth() > get_maxWidth()) {
             return false;
         }
 
-        if(get_maxHeight()!=null && component.getHeight() > get_maxHeight()){
+        if (get_maxHeight() != null && component.getHeight() > get_maxHeight()) {
             return false;
         }
 
-        if(get_backgroundColor()!=null && !component.getBackground().equals(get_backgroundColor())){
+        if (get_backgroundColor() != null && !component.getBackground().equals(get_backgroundColor())) {
             return false;
         }
 
-        if(get_minJComponentCount()!=null && ((JComponent) component).getComponentCount() < get_minJComponentCount()){
+        if (get_minJComponentCount() != null && ((JComponent) component).getComponentCount() < get_minJComponentCount()) {
             return false;
         }
 
-        if(get_maxJComponentCount()!=null && ((JComponent) component).getComponentCount() > get_maxJComponentCount()){
+        if (get_maxJComponentCount() != null && ((JComponent) component).getComponentCount() > get_maxJComponentCount()) {
             return false;
         }
-
 
         return true;
     }
@@ -145,6 +163,22 @@ public class UISpecObject {
 
     public void set_name(String _name) {
         this._name = _name;
+    }
+
+    public boolean get_isPartialName() {
+        return _isPartialName;
+    }
+
+    public void set_isPartialName(boolean _isPartialName) {
+        this._isPartialName = _isPartialName;
+    }
+
+    public boolean get_isCaseSensitiveName() {
+        return _isCaseSensitiveName;
+    }
+
+    public void set_isCaseSensitiveName(boolean _isCaseSensitiveName) {
+        this._isCaseSensitiveName = _isCaseSensitiveName;
     }
 
     public Integer get_minWidth() {

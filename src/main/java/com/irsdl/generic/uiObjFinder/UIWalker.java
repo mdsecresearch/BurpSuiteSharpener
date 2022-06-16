@@ -10,38 +10,95 @@ import javax.swing.*;
 import java.awt.*;
 
 public class UIWalker {
-    public static Component FindUIObjectInComponents(Component rootUIObject, int maxDepth, UISpecObject uiSpecObject){
-        Component foundObject = null;
+    public static JComponent GetCurrentJComponent(Component rootUIObject){
         JComponent rootUIJComponent = null;
         if(rootUIObject instanceof JComponent){
             rootUIJComponent = (JComponent) rootUIObject;
         }else if(rootUIObject.getComponentAt(0,0) instanceof JComponent){
             rootUIJComponent = (JComponent) rootUIObject.getComponentAt(0,0);
         }
+        return rootUIJComponent;
+    }
+    public static Component FindUIObjectInSubComponents(Component rootUIObject, int maxDepth, UISpecObject uiSpecObject){
+        Component foundObject = null;
+        JComponent rootUIJComponent = GetCurrentJComponent(rootUIObject);
 
         if(rootUIJComponent!=null){
             if(uiSpecObject.isCompatible(rootUIJComponent)){
                 foundObject = rootUIJComponent;
             }else {
-                foundObject = FindUIObjectInComponents(rootUIJComponent, maxDepth, 0, uiSpecObject);
+                foundObject = FindUIObjectInSubComponents(rootUIJComponent, maxDepth, 0, uiSpecObject);
             }
         }
 
         return foundObject;
     }
 
-    private static Component FindUIObjectInComponents(JComponent rootUIJComponent, int maxDepth, int currentDepth, UISpecObject uiSpecObject){
+    private static Component FindUIObjectInSubComponents(JComponent rootUIJComponent, int maxDepth, int currentDepth, UISpecObject uiSpecObject){
         Component foundObject = null;
-        for(Component component:rootUIJComponent.getComponents()){
-            if(uiSpecObject.isCompatible(component)){
-                foundObject = component;
+        for(Component subComponent:rootUIJComponent.getComponents()){
+            if(uiSpecObject.isCompatible(subComponent)){
+                foundObject = subComponent;
                 break;
-            }else if(currentDepth < maxDepth && component instanceof JComponent){
-                foundObject = FindUIObjectInComponents((JComponent) component, maxDepth, currentDepth+1, uiSpecObject);
+            }else if(currentDepth < maxDepth && subComponent instanceof JComponent){
+                foundObject = FindUIObjectInSubComponents((JComponent) subComponent, maxDepth, currentDepth+1, uiSpecObject);
                 if(foundObject!=null)
                     break;
             }
         }
         return foundObject;
     }
+
+    public static Component FindUIObjectInParentComponents(Component rootUIObject, int maxDepth, UISpecObject uiSpecObject){
+        Component foundObject = null;
+        JComponent rootUIJComponent = GetCurrentJComponent(rootUIObject);
+
+        if(rootUIJComponent!=null){
+            if(uiSpecObject.isCompatible(rootUIJComponent)){
+                foundObject = rootUIJComponent;
+            }else {
+                foundObject = FindUIObjectInParentComponents(rootUIJComponent, maxDepth, 0, uiSpecObject);
+            }
+        }
+
+        return foundObject;
+    }
+
+    private static Component FindUIObjectInParentComponents(JComponent rootUIJComponent, int maxDepth, int currentDepth, UISpecObject uiSpecObject){
+        Component foundObject = null;
+        if(rootUIJComponent.getParent() instanceof JComponent){
+            JComponent parentComponent = (JComponent) rootUIJComponent.getParent();
+            if(uiSpecObject.isCompatible(parentComponent)){
+                foundObject = parentComponent;
+            }else if(currentDepth < maxDepth && parentComponent instanceof JComponent){
+                foundObject = FindUIObjectInParentComponents(parentComponent, maxDepth, currentDepth+1, uiSpecObject);
+            }
+        }
+        return foundObject;
+    }
+
+    public static Component FindUIObjectInNeighbourComponents(Component rootUIObject, UISpecObject uiSpecObject){
+        Component foundObject = null;
+        JComponent rootUIJComponent = GetCurrentJComponent(rootUIObject);
+
+        if(rootUIJComponent!=null){
+            if(uiSpecObject.isCompatible(rootUIJComponent)){
+                foundObject = rootUIJComponent;
+            }else {
+                foundObject = FindUIObjectInNeighbourComponents(rootUIJComponent, uiSpecObject);
+            }
+        }
+
+        return foundObject;
+    }
+
+    private static Component FindUIObjectInNeighbourComponents(JComponent rootUIJComponent, UISpecObject uiSpecObject){
+        Component foundObject = null;
+        if(rootUIJComponent.getParent() instanceof JComponent){
+            JComponent parentComponent = (JComponent) rootUIJComponent.getParent();
+            foundObject = FindUIObjectInSubComponents(rootUIJComponent, 1, uiSpecObject);
+        }
+        return foundObject;
+    }
+
 }

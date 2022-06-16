@@ -34,6 +34,8 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
     public String searchedTabTitleForJumpToTab = "";
     public String titleFilterRegEx = "";
     public boolean isTitleFilterNegative = false;
+    public Boolean isTabGroupSupportedByDefault = false;
+    public Boolean isSubTabScrollSupportedByDefault = false;
     public HashMap<BurpUITools.MainTabs, Integer> filterOperationMode = new HashMap<>();
     public HashMap<BurpUITools.MainTabs, LinkedList<Integer>> subTabPreviouslySelectedIndexHistory = new HashMap<>();
     public HashMap<BurpUITools.MainTabs, LinkedList<Integer>> subTabNextlySelectedIndexHistory = new HashMap<>();
@@ -42,6 +44,12 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
 
     public SharpenerSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, IBurpExtender burpExtenderObj, IBurpExtenderCallbacks callbacks) {
         super(version, extensionName, extensionURL, extensionIssueTracker, burpExtenderObj, callbacks);
+
+        if(burpMajorVersion >= 2022 && burpMinorVersion >= 6){
+            this.isTabGroupSupportedByDefault = true;
+            this.isSubTabScrollSupportedByDefault = true;
+        }
+
         subTabSupportedTabs.add(BurpUITools.MainTabs.Repeater);
         subTabSupportedTabs.add(BurpUITools.MainTabs.Intruder);
 
@@ -126,7 +134,7 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
                                 uiSpecObject.set_isJComponent(true);
                                 uiSpecObject.set_isShowing(true);
                                 uiSpecObject.set_minJComponentCount(1);
-                                Component tempComponent = com.irsdl.generic.uiObjFinder.UIWalker.FindUIObjectInComponents(window.getComponents()[0], 6, uiSpecObject);
+                                Component tempComponent = com.irsdl.generic.uiObjFinder.UIWalker.FindUIObjectInSubComponents(window.getComponents()[0], 6, uiSpecObject);
                                 if(tempComponent!=null){
                                     subTabbedPane = (JTabbedPane) tempComponent;
                                     break;

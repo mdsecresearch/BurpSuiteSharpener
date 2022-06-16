@@ -19,6 +19,39 @@ import java.util.Date;
 import java.util.HashMap;
 
 public class BurpExtensionSharedParameters {
+    public String version = "0.0"; // we need to keep this a double number to make sure check for update can work
+    public String extensionName = "MyExtension";
+    public String extensionURL = "https://github.com/user/proj";
+    public String extensionIssueTracker = "https://github.com/user/proj/issues";
+    public Integer debugLevel = null;
+    public IBurpExtender burpExtender;
+    public Class extensionClass = null; // this is useful when trying to load a resource such as an image
+    public PrintWriter stdout = null;
+    public PrintWriter stderr = null;
+    public IBurpExtenderCallbacks callbacks = null;
+    public ExtendedPreferences preferences; // to use the ability of this project: https://github.com/CoreyD97/BurpExtenderUtilities
+    public Boolean unloadWithoutSave = false; // this is useful if we need to exit without save in some situation
+    public Boolean isBurpPro = false;
+    public double burpMajorVersion = 0.0;
+    public double burpMinorVersion = 0.0;
+
+    // these are the parameters which are used per extension but needs to be shared - like registers
+    public boolean addedIconListener = false;
+
+    public boolean isDarkMode = false; // Sometimes extensions need to see whether Burp uses dark or light mode
+
+    public Boolean isScopeChangeDecisionOngoing = false; // this is useful to not ask the scope question more than once at the time
+
+    // params with custom getter or setter - the `setUIParametersFromExtensionTab` method should be used to set them
+    private JFrame _mainFrame = null; // This is Burp Suite's main jFrame
+    private JMenuBar _mainMenuBar = null; // This is Burp Suite's main menu bar
+    private JTabbedPane _rootTabbedPane = null; // this is where Burp Suite main tools' tabs are
+    private JPanel _extensionJPanel = null; // panel that extension adds to burp using callbacks.addSuiteTab(BurpExtender.this);
+    private String _originalBurpTitle = ""; // Burp Suite's original frame title
+    private Image _originalBurpIcon = null; // Burp Suite's original frame icon
+    private Boolean _isUILoaded = false; // Burp Suite's original frame icon
+
+
     public BurpExtensionSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, IBurpExtender burpExtenderObj, IBurpExtenderCallbacks callbacks) {
         this.version = version;
         this.extensionName = extensionName;
@@ -61,39 +94,6 @@ public class BurpExtensionSharedParameters {
         }
         debugLevel = preferences.getSetting("debugLevel");
     }
-
-
-    public String version = "0.0"; // we need to keep this a double number to make sure check for update can work
-    public String extensionName = "MyExtension";
-    public String extensionURL = "https://github.com/user/proj";
-    public String extensionIssueTracker = "https://github.com/user/proj/issues";
-    public Integer debugLevel = null;
-    public IBurpExtender burpExtender;
-    public Class extensionClass = null; // this is useful when trying to load a resource such as an image
-    public PrintWriter stdout = null;
-    public PrintWriter stderr = null;
-    public IBurpExtenderCallbacks callbacks = null;
-    public ExtendedPreferences preferences; // to use the ability of this project: https://github.com/CoreyD97/BurpExtenderUtilities
-    public Boolean unloadWithoutSave = false; // this is useful if we need to exit without save in some situation
-    public Boolean isBurpPro = false;
-    public double burpMajorVersion = 0.0;
-    public double burpMinorVersion = 0.0;
-
-    // these are the parameters which are used per extension but needs to be shared - like registers
-    public boolean addedIconListener = false;
-
-    public boolean isDarkMode = false; // Sometimes extensions need to see whether Burp uses dark or light mode
-
-    public Boolean isScopeChangeDecisionOngoing = false; // this is useful to not ask the scope question more than once at the time
-
-    // params with custom getter or setter - the `setUIParametersFromExtensionTab` method should be used to set them
-    private JFrame _mainFrame = null; // This is Burp Suite's main jFrame
-    private JMenuBar _mainMenuBar = null; // This is Burp Suite's main menu bar
-    private JTabbedPane _rootTabbedPane = null; // this is where Burp Suite main tools' tabs are
-    private JPanel _extensionJPanel = null; // panel that extension adds to burp using callbacks.addSuiteTab(BurpExtender.this);
-    private String _originalBurpTitle = ""; // Burp Suite's original frame title
-    private Image _originalBurpIcon = null; // Burp Suite's original frame icon
-    private Boolean _isUILoaded = false; // Burp Suite's original frame icon
 
     public void setUIParametersFromExtensionTab(JPanel extensionJPanel, int waitSeconds) {
         boolean foundUI = false;

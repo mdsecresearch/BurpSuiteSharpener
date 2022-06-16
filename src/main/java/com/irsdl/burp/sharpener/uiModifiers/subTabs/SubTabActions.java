@@ -11,6 +11,8 @@ import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
 import com.irsdl.generic.*;
+import com.irsdl.generic.uiObjFinder.UISpecObject;
+import com.irsdl.generic.uiObjFinder.UIWalker;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -35,26 +37,18 @@ import java.util.regex.Pattern;
 
 public class SubTabActions {
     public static void tabClicked(final MouseEvent event, SharpenerSharedParameters sharedParameters) {
-        SubTabContainerHandler subTabContainerHandler = null;
-        if (event.getComponent() instanceof JTabbedPane) {
-                /*
-                // this was useful when we did not know which tab has been selected but in Burp Suite a tab will be selected upon a click so we can find the index that way
-                int tabIndex = tabbedPane.getUI().tabForCoordinate(tabbedPane, event.getX(), event.getY());
-                if (tabIndex < 0 || tabIndex > tabbedPane.getTabCount() - 1) return;
-                */
+        SubTabContainerHandler subTabContainerHandler = getSubTabContainerHandlerFromEvent(sharedParameters, event);
 
-            subTabContainerHandler = getSubTabContainerHandlerFromEvent(sharedParameters, event);
+        if (subTabContainerHandler == null)
+            sharedParameters.printlnError("Object has not been loaded yet, try in a few seconds.");
 
-            if (subTabContainerHandler == null)
-                sharedParameters.printlnError("Object has not been loaded yet, try in a few seconds.");
+        subTabContainerHandler.currentTabContainer.requestFocus();
 
-            if (subTabContainerHandler == null || (!subTabContainerHandler.isValid() && !subTabContainerHandler.isDotDotDotTab()))
-                return;
-
-            jumpToTabIndex(sharedParameters, subTabContainerHandler, subTabContainerHandler.getTabIndex());
-        }
+        if (subTabContainerHandler == null || (!subTabContainerHandler.isValid() && !subTabContainerHandler.isDotDotDotTab()))
+            return;
 
         if (SwingUtilities.isMiddleMouseButton(event) || event.isAltDown() || ((event.getModifiersEx() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK)) {
+            jumpToTabIndex(sharedParameters, subTabContainerHandler, subTabContainerHandler.getTabIndex());
             boolean isCTRL_Key = (event.getModifiersEx() & ActionEvent.CTRL_MASK) == ActionEvent.CTRL_MASK || event.isControlDown();
             // Middle key is like the Alt key!
             //boolean isALT_Key = (event.getModifiers() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK;
@@ -135,7 +129,11 @@ public class SubTabActions {
 
                     if (e.getWheelRotation() > 0) {
                         //scrolled down
-                        if (currentSelection < tabbedPane.getTabCount() - 2) {
+                        int maxIndex = tabbedPane.getTabCount() - 2;
+                        if(sharedParameters.isTabGroupSupportedByDefault)
+                            maxIndex += 1;
+
+                        if (currentSelection < maxIndex) {
                             components[1] = (JComponent) tabbedPane.getComponentAt(currentSelection + 1);
                             tabComponents[1] = (JComponent) tabbedPane.getTabComponentAt(currentSelection + 1);
 
@@ -292,12 +290,18 @@ public class SubTabActions {
                     int oldIndex = tabbedPane.getSelectedIndex();
                     int newIndex = oldIndex + units;
                     int chosenOne = newIndex;
+                    int maxIndex = tabbedPane.getTabCount() - offset;
+
                     if (newIndex < 0)
                         chosenOne = 0;
-                    else if (newIndex >= tabbedPane.getTabCount() - offset)
-                        chosenOne = tabbedPane.getTabCount() - 1 - offset;
+                    else if (newIndex >= maxIndex)
+                        chosenOne = maxIndex - 1;
 
-                    while (!tabbedPane.isEnabledAt(chosenOne)) {
+                    SubTabContainerHandler chosenOneSubTabContainerHandler = getSubTabContainerHandlerFromSharedParameters(sharedParameters, tabbedPane, chosenOne);
+
+
+                    while (chosenOneSubTabContainerHandler == null || !tabbedPane.isEnabledAt(chosenOne) || !chosenOneSubTabContainerHandler.isValid()
+                            || chosenOneSubTabContainerHandler.isGroupTab() || !chosenOneSubTabContainerHandler.isTitleVisible()) {
                         if (units > 0) {
                             //scroll down
                             chosenOne++;
@@ -306,10 +310,13 @@ public class SubTabActions {
                             chosenOne--;
                         }
 
-                        if (chosenOne < 0 || chosenOne >= tabbedPane.getTabCount() - offset) {
+                        int maxIndex2 = tabbedPane.getTabCount() - offset;
+
+                        if (chosenOne < 0 || chosenOne >= maxIndex2) {
                             chosenOne = oldIndex;
                             break;
                         }
+                        chosenOneSubTabContainerHandler = getSubTabContainerHandlerFromSharedParameters(sharedParameters, tabbedPane, chosenOne);
                     }
                     jumpToTabIndex(sharedParameters, subTabContainerHandler, chosenOne);
                 }
@@ -330,6 +337,9 @@ public class SubTabActions {
     }
 
     private static void setNotificationMenuMessage(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, JMenuItem notificationMenuItem, String message) {
+        if(currentSubTabContainerHandler == null)
+            return;
+
         if (sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab)) {
 
             if (!currentSubTabContainerHandler.getVisible()) {
@@ -341,12 +351,17 @@ public class SubTabActions {
             }
 
         } else {
-            message = "Filter: OFF | " + message;
+            if(!sharedParameters.isSubTabScrollSupportedByDefault) { // hidden from version 2022.6
+                message = "Filter: OFF | " + message;
+            }
         }
         notificationMenuItem.setText(message);
     }
 
     private static JPopupMenu createPopupMenu(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
+        if(currentSubTabContainerHandler == null)
+            return null;
+
         JPopupMenu popupMenu = new JPopupMenu();
 
         JMenuItem notificationMenuItem = new JMenuItem();
@@ -466,13 +481,15 @@ public class SubTabActions {
             popupMenu.add(profileMenu);
 
             JMenu customStyleMenu = new JMenu("Custom Style");
-            JCheckBoxMenuItem closeButtonMenuItem = new JCheckBoxMenuItem("Remove Close Button");
-            closeButtonMenuItem.addActionListener(e -> {
-                currentSubTabContainerHandler.setVisibleCloseButton(!closeButtonMenuItem.isSelected(), true);
-                sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
-            });
-            closeButtonMenuItem.setSelected(!currentSubTabContainerHandler.getVisibleCloseButton());
-            customStyleMenu.add(closeButtonMenuItem);
+            if(!sharedParameters.isTabGroupSupportedByDefault){ // This does not work in version 2022.6 for unknown reasons
+                JCheckBoxMenuItem closeButtonMenuItem = new JCheckBoxMenuItem("Remove Close Button");
+                closeButtonMenuItem.addActionListener(e -> {
+                    currentSubTabContainerHandler.setVisibleCloseButton(!closeButtonMenuItem.isSelected(), true);
+                    sharedParameters.allSettings.subTabSettings.prepareAndSaveSettings(currentSubTabContainerHandler);
+                });
+                closeButtonMenuItem.setSelected(!currentSubTabContainerHandler.getVisibleCloseButton());
+                customStyleMenu.add(closeButtonMenuItem);
+            }
 
             JMenu fontNameMenu = new JScrollMenu("Font Name");
             String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
@@ -658,138 +675,141 @@ public class SubTabActions {
 
         popupMenu.add(searchAndJumpMenu);
 
-        JMenu filterTitleMenu = new JMenu("Filter Titles (Click > Use RegEx)");
+        if(!sharedParameters.isSubTabScrollSupportedByDefault) { // hidden from version 2022.6
+            JMenu filterTitleMenu = new JMenu("Filter Titles (Click > Use RegEx)");
 
-        JMenuItem removeFilterTitle = new JMenuItem("Show All");
-        if (!sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab)) {
-            removeFilterTitle.setEnabled(false);
-        }
-        removeFilterTitle.addActionListener(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
+            JMenuItem removeFilterTitle = new JMenuItem("Show All");
+            if (!sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab)) {
+                removeFilterTitle.setEnabled(false);
             }
-        });
-        filterTitleMenu.add(removeFilterTitle);
+            removeFilterTitle.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
+                }
+            });
+            filterTitleMenu.add(removeFilterTitle);
 
-        JMenuItem toggleCurrentTabVisibilityFilterTitle = new JMenuItem("Toggle Current Tab Visibility");
-        toggleCurrentTabVisibilityFilterTitle.addActionListener(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleCurrentTabVisibility(sharedParameters, currentSubTabContainerHandler);
-            }
-        });
-        filterTitleMenu.add(toggleCurrentTabVisibilityFilterTitle);
+            JMenuItem toggleCurrentTabVisibilityFilterTitle = new JMenuItem("Toggle Current Tab Visibility");
+            toggleCurrentTabVisibilityFilterTitle.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    toggleCurrentTabVisibility(sharedParameters, currentSubTabContainerHandler);
+                }
+            });
+            filterTitleMenu.add(toggleCurrentTabVisibilityFilterTitle);
 
-        filterTitleMenu.addSeparator();
+            filterTitleMenu.addSeparator();
 
-        JMenuItem defineFilterTitleRegEx = new JMenuItem("Define RegEx (case insensitive)");
-        defineFilterTitleRegEx.addActionListener(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression:", "Filter Titles", sharedParameters.titleFilterRegEx, sharedParameters.get_mainFrame());
-                if (!titleKeyword.isEmpty()) {
-                    if (Utilities.isValidRegExPattern(titleKeyword)) {
-                        showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
-                        sharedParameters.titleFilterRegEx = titleKeyword;
-                        sharedParameters.filterOperationMode.put(currentSubTabContainerHandler.currentToolTab, 0);
-                        setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
-                    } else {
-                        UIHelper.showWarningMessage("Regular expression was invalid.", sharedParameters.get_mainFrame());
-                        sharedParameters.printlnError("invalid regex: " + titleKeyword);
+            JMenuItem defineFilterTitleRegEx = new JMenuItem("Define RegEx (case insensitive)");
+            defineFilterTitleRegEx.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression:", "Filter Titles", sharedParameters.titleFilterRegEx, sharedParameters.get_mainFrame());
+                    if (!titleKeyword.isEmpty()) {
+                        if (Utilities.isValidRegExPattern(titleKeyword)) {
+                            showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
+                            sharedParameters.titleFilterRegEx = titleKeyword;
+                            sharedParameters.filterOperationMode.put(currentSubTabContainerHandler.currentToolTab, 0);
+                            setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
+                        } else {
+                            UIHelper.showWarningMessage("Regular expression was invalid.", sharedParameters.get_mainFrame());
+                            sharedParameters.printlnError("invalid regex: " + titleKeyword);
+                        }
                     }
+
                 }
+            });
+            filterTitleMenu.add(defineFilterTitleRegEx);
 
-            }
-        });
-        filterTitleMenu.add(defineFilterTitleRegEx);
-
-        JMenuItem numericalFilterTitle = new JMenuItem("Numerical Titles");
-        numericalFilterTitle.addActionListener(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
-                sharedParameters.titleFilterRegEx = "^\\s*\\d+\\s*(\\(#\\d+\\)\\s*)?$";
-                sharedParameters.filterOperationMode.put(currentSubTabContainerHandler.currentToolTab, 0);
-                setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
-            }
-        });
-        filterTitleMenu.add(numericalFilterTitle);
-
-        JMenuItem customStylesFilterTitle = new JMenuItem("Custom Styles");
-        customStylesFilterTitle.addActionListener(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
-                sharedParameters.titleFilterRegEx = "";
-                sharedParameters.filterOperationMode.put(currentSubTabContainerHandler.currentToolTab, 1);
-                setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
-            }
-        });
-        filterTitleMenu.add(customStylesFilterTitle);
-
-        JMenuItem customStylesOrCustomNamesFilterTitle = new JMenuItem("Custom Styles or Not Numerical Titles");
-        customStylesOrCustomNamesFilterTitle.addActionListener(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
-                sharedParameters.titleFilterRegEx = "^\\s*\\d+\\s*(\\(#\\d+\\)\\s*)?$";
-                sharedParameters.filterOperationMode.put(currentSubTabContainerHandler.currentToolTab, 2);
-                setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
-            }
-        });
-        filterTitleMenu.add(customStylesOrCustomNamesFilterTitle);
-
-        JMenuItem webScoketFilterTitle = new JMenuItem("Websocket Tabs");
-        webScoketFilterTitle.addActionListener(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
-                sharedParameters.titleFilterRegEx = "";
-                sharedParameters.filterOperationMode.put(currentSubTabContainerHandler.currentToolTab, 3);
-                setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
-            }
-        });
-        filterTitleMenu.add(webScoketFilterTitle);
-
-        filterTitleMenu.addSeparator();
-
-
-        JCheckBoxMenuItem filterTitleMenuNegativeSearch = new JCheckBoxMenuItem("Use Negative Logic");
-        filterTitleMenuNegativeSearch.setState(sharedParameters.isTitleFilterNegative);
-
-        filterTitleMenuNegativeSearch.addActionListener(e -> {
-            sharedParameters.isTitleFilterNegative = !sharedParameters.isTitleFilterNegative;
-            //if(sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab)){
-            showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
-            setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
-            //}
-        });
-
-        filterTitleMenu.add(filterTitleMenuNegativeSearch);
-
-        if (sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab)) {
-            filterTitleMenu.setText("Filter Titles (Click > Use RegEx, Right-Click > Show All)");
-            filterTitleMenu.addMouseListener(new MouseAdapterExtensionHandler(mouseEvent -> {
-                if (SwingUtilities.isRightMouseButton(mouseEvent)) {
-                    removeFilterTitle.doClick();
-                    popupMenu.setVisible(false);
-                } else {
-                    defineFilterTitleRegEx.doClick();
-                    popupMenu.setVisible(false);
+            JMenuItem numericalFilterTitle = new JMenuItem("Numerical Titles");
+            numericalFilterTitle.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
+                    sharedParameters.titleFilterRegEx = "^\\s*\\d+\\s*(\\(#\\d+\\)\\s*)?$";
+                    sharedParameters.filterOperationMode.put(currentSubTabContainerHandler.currentToolTab, 0);
+                    setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
                 }
-            }, MouseEvent.MOUSE_CLICKED));
-        } else {
-            filterTitleMenu.addMouseListener(new MouseAdapterExtensionHandler(mouseEvent -> {
-                if (!SwingUtilities.isRightMouseButton(mouseEvent)) {
-                    defineFilterTitleRegEx.doClick();
-                    popupMenu.setVisible(false);
+            });
+            filterTitleMenu.add(numericalFilterTitle);
+
+            JMenuItem customStylesFilterTitle = new JMenuItem("Custom Styles");
+            customStylesFilterTitle.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
+                    sharedParameters.titleFilterRegEx = "";
+                    sharedParameters.filterOperationMode.put(currentSubTabContainerHandler.currentToolTab, 1);
+                    setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
                 }
-            }, MouseEvent.MOUSE_CLICKED));
+            });
+            filterTitleMenu.add(customStylesFilterTitle);
+
+            JMenuItem customStylesOrCustomNamesFilterTitle = new JMenuItem("Custom Styles or Not Numerical Titles");
+            customStylesOrCustomNamesFilterTitle.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
+                    sharedParameters.titleFilterRegEx = "^\\s*\\d+\\s*(\\(#\\d+\\)\\s*)?$";
+                    sharedParameters.filterOperationMode.put(currentSubTabContainerHandler.currentToolTab, 2);
+                    setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
+                }
+            });
+            filterTitleMenu.add(customStylesOrCustomNamesFilterTitle);
+
+            JMenuItem webScoketFilterTitle = new JMenuItem("Websocket Tabs");
+            webScoketFilterTitle.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
+                    sharedParameters.titleFilterRegEx = "";
+                    sharedParameters.filterOperationMode.put(currentSubTabContainerHandler.currentToolTab, 3);
+                    setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
+                }
+            });
+            filterTitleMenu.add(webScoketFilterTitle);
+
+            filterTitleMenu.addSeparator();
+
+
+            JCheckBoxMenuItem filterTitleMenuNegativeSearch = new JCheckBoxMenuItem("Use Negative Logic");
+            filterTitleMenuNegativeSearch.setState(sharedParameters.isTitleFilterNegative);
+
+            filterTitleMenuNegativeSearch.addActionListener(e -> {
+                sharedParameters.isTitleFilterNegative = !sharedParameters.isTitleFilterNegative;
+                //if(sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab)){
+                showAllTabTitles(sharedParameters, currentSubTabContainerHandler);
+                setTabTitleFilter(sharedParameters, currentSubTabContainerHandler);
+                //}
+            });
+
+            filterTitleMenu.add(filterTitleMenuNegativeSearch);
+
+            if (sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab)) {
+                filterTitleMenu.setText("Filter Titles (Click > Use RegEx, Right-Click > Show All)");
+                filterTitleMenu.addMouseListener(new MouseAdapterExtensionHandler(mouseEvent -> {
+                    if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+                        removeFilterTitle.doClick();
+                        popupMenu.setVisible(false);
+                    } else {
+                        defineFilterTitleRegEx.doClick();
+                        popupMenu.setVisible(false);
+                    }
+                }, MouseEvent.MOUSE_CLICKED));
+            } else {
+                filterTitleMenu.addMouseListener(new MouseAdapterExtensionHandler(mouseEvent -> {
+                    if (!SwingUtilities.isRightMouseButton(mouseEvent)) {
+                        defineFilterTitleRegEx.doClick();
+                        popupMenu.setVisible(false);
+                    }
+                }, MouseEvent.MOUSE_CLICKED));
+            }
+
+
+            popupMenu.add(filterTitleMenu);
+
         }
-
-
-        popupMenu.add(filterTitleMenu);
 
         JMenuItem copyTitleMenu = new JMenuItem("Copy Title [Ctrl+C]");
         copyTitleMenu.addActionListener(e -> {copyTitle(sharedParameters,currentSubTabContainerHandler);});
@@ -1033,117 +1053,121 @@ public class SubTabActions {
         tabScreenshotMenu.add(saveScreenshotToFileMenu);
         popupMenu.add(tabScreenshotMenu);
 
-        JMenuItem jumpToAddTabMenu = new JMenuItem("Add an Empty New Tab");
+        if(!sharedParameters.isTabGroupSupportedByDefault) {
+            JMenuItem jumpToAddTabMenu = new JMenuItem("Add an Empty New Tab");
 
-        jumpToAddTabMenu.addActionListener(actionEvent -> {
+            jumpToAddTabMenu.addActionListener(actionEvent -> {
 
-            Container dotdotdotTabContainer = (Container) currentSubTabContainerHandler.parentTabbedPane.getTabComponentAt(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 1);
+                Container dotdotdotTabContainer = (Container) currentSubTabContainerHandler.parentTabbedPane.getTabComponentAt(currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 1);
 
-            // this is a hack to get the Y location of the ... tab!
-            int x = dotdotdotTabContainer.getLocationOnScreen().x + dotdotdotTabContainer.getWidth() / 2;
-            int burp_x = dotdotdotTabContainer.getParent().getLocationOnScreen().x + dotdotdotTabContainer.getParent().getWidth() - dotdotdotTabContainer.getWidth() / 2;
-            if (x > burp_x) {
-                x = burp_x;
-            }
+                // this is a hack to get the Y location of the ... tab!
+                int x = dotdotdotTabContainer.getLocationOnScreen().x + dotdotdotTabContainer.getWidth() / 2;
+                int burp_x = dotdotdotTabContainer.getParent().getLocationOnScreen().x + dotdotdotTabContainer.getParent().getWidth() - dotdotdotTabContainer.getWidth() / 2;
+                if (x > burp_x) {
+                    x = burp_x;
+                }
 
-            int y = dotdotdotTabContainer.getLocationOnScreen().y + dotdotdotTabContainer.getHeight() / 2;
-            int burp_y = dotdotdotTabContainer.getParent().getLocationOnScreen().y + dotdotdotTabContainer.getParent().getHeight() - dotdotdotTabContainer.getHeight() / 2;
-            if (y > burp_y || y < burp_y - dotdotdotTabContainer.getHeight()) {
-                y = burp_y;
-            }
+                int y = dotdotdotTabContainer.getLocationOnScreen().y + dotdotdotTabContainer.getHeight() / 2;
+                int burp_y = dotdotdotTabContainer.getParent().getLocationOnScreen().y + dotdotdotTabContainer.getParent().getHeight() - dotdotdotTabContainer.getHeight() / 2;
+                if (y > burp_y || y < burp_y - dotdotdotTabContainer.getHeight()) {
+                    y = burp_y;
+                }
 
-            try {
-                Robot robot = new Robot();
-                robot.mouseMove(x, y);
-            } catch (Exception errRobot) {
-                sharedParameters.printlnError("Could not change mouse location: " + errRobot.getMessage());
-            }
+                try {
+                    Robot robot = new Robot();
+                    robot.mouseMove(x, y);
+                } catch (Exception errRobot) {
+                    sharedParameters.printlnError("Could not change mouse location: " + errRobot.getMessage());
+                }
 
-            jumpToPreviosulySelectedTab(sharedParameters, currentSubTabContainerHandler, notificationMenuItem);
+                jumpToPreviosulySelectedTab(sharedParameters, currentSubTabContainerHandler, notificationMenuItem);
 
-            jumpToTabIndex(sharedParameters, currentSubTabContainerHandler, currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 1);
-        });
+                jumpToTabIndex(sharedParameters, currentSubTabContainerHandler, currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 1);
+            });
 
-        popupMenu.add(jumpToAddTabMenu);
+            popupMenu.add(jumpToAddTabMenu);
+        }
 
         popupMenu.addSeparator();
 
         BurpUITools.MainTabs tool = currentSubTabContainerHandler.currentToolTab;
 
         if (sharedParameters.subTabSupportedTabs.contains(tool)) {
-            JCheckBoxMenuItem toolSubTabPaneScrollableLayout = new JCheckBoxMenuItem("Scrollable " + tool + " Tabs");
-            if (sharedParameters.preferences.safeGetBooleanSetting("isScrollable_" + tool)) {
-                toolSubTabPaneScrollableLayout.setSelected(true);
-            }
-
-            toolSubTabPaneScrollableLayout.addActionListener((e) -> {
+            if(!sharedParameters.isSubTabScrollSupportedByDefault){ // hidden from version 2022.6
+                JCheckBoxMenuItem toolSubTabPaneScrollableLayout = new JCheckBoxMenuItem("Scrollable " + tool + " Tabs");
                 if (sharedParameters.preferences.safeGetBooleanSetting("isScrollable_" + tool)) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            new Thread(() -> {
-                                currentSubTabContainerHandler.parentTabbedPane.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
-                            }).start();
-                        }
-                    });
-                    sharedParameters.preferences.safeSetSetting("isScrollable_" + tool, false);
-                } else {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            new Thread(() -> {
-                                currentSubTabContainerHandler.parentTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-                                new java.util.Timer().schedule(
-                                        new java.util.TimerTask() {
-                                            @Override
-                                            public void run() {
-                                                jumpToTabIndex(sharedParameters, currentSubTabContainerHandler, 0);
-                                                jumpToTabIndex(sharedParameters, currentSubTabContainerHandler, currentSubTabContainerHandler.getTabIndex());
-                                            }
-                                        },
-                                        1000
-                                );
-                            }).start();
-                        }
-                    });
-                    sharedParameters.preferences.safeSetSetting("isScrollable_" + tool, true);
+                    toolSubTabPaneScrollableLayout.setSelected(true);
                 }
-            });
 
-            popupMenu.add(toolSubTabPaneScrollableLayout);
+                toolSubTabPaneScrollableLayout.addActionListener((e) -> {
+                    if (sharedParameters.preferences.safeGetBooleanSetting("isScrollable_" + tool)) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                new Thread(() -> {
+                                    currentSubTabContainerHandler.parentTabbedPane.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                                }).start();
+                            }
+                        });
+                        sharedParameters.preferences.safeSetSetting("isScrollable_" + tool, false);
+                    } else {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                new Thread(() -> {
+                                    currentSubTabContainerHandler.parentTabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                                    new java.util.Timer().schedule(
+                                            new java.util.TimerTask() {
+                                                @Override
+                                                public void run() {
+                                                    jumpToTabIndex(sharedParameters, currentSubTabContainerHandler, 0);
+                                                    jumpToTabIndex(sharedParameters, currentSubTabContainerHandler, currentSubTabContainerHandler.getTabIndex());
+                                                }
+                                            },
+                                            1000
+                                    );
+                                }).start();
+                            }
+                        });
+                        sharedParameters.preferences.safeSetSetting("isScrollable_" + tool, true);
+                    }
+                });
 
-            JCheckBoxMenuItem toolSubTabPaneTabMinimizeTabSize = new JCheckBoxMenuItem("Minimize " + tool + " Tabs' Size");
-            if (sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + tool)) {
-                toolSubTabPaneTabMinimizeTabSize.setSelected(true);
-            }
+                popupMenu.add(toolSubTabPaneScrollableLayout);
 
-            toolSubTabPaneTabMinimizeTabSize.addActionListener((e) -> {
+                JCheckBoxMenuItem toolSubTabPaneTabMinimizeTabSize = new JCheckBoxMenuItem("Minimize " + tool + " Tabs' Size");
                 if (sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + tool)) {
-                    changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
-                    sharedParameters.preferences.safeSetSetting("minimizeSize_" + tool, false);
-                } else {
-                    changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
-                    sharedParameters.preferences.safeSetSetting("minimizeSize_" + tool, true);
+                    toolSubTabPaneTabMinimizeTabSize.setSelected(true);
                 }
-            });
-            popupMenu.add(toolSubTabPaneTabMinimizeTabSize);
 
-            JCheckBoxMenuItem toolSubTabPaneTabFixedPositionLayout = new JCheckBoxMenuItem("Fixed Tab Position for " + tool);
-            if (sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + tool)) {
-                toolSubTabPaneTabFixedPositionLayout.setSelected(true);
-            }
+                toolSubTabPaneTabMinimizeTabSize.addActionListener((e) -> {
+                    if (sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + tool)) {
+                        changeToolTabbedPaneUI_safe(sharedParameters, currentSubTabContainerHandler, false);
+                        sharedParameters.preferences.safeSetSetting("minimizeSize_" + tool, false);
+                    } else {
+                        changeToolTabbedPaneUI_safe(sharedParameters, currentSubTabContainerHandler, false);
+                        sharedParameters.preferences.safeSetSetting("minimizeSize_" + tool, true);
+                    }
+                });
+                popupMenu.add(toolSubTabPaneTabMinimizeTabSize);
 
-            toolSubTabPaneTabFixedPositionLayout.addActionListener((e) -> {
+                JCheckBoxMenuItem toolSubTabPaneTabFixedPositionLayout = new JCheckBoxMenuItem("Fixed Tab Position for " + tool);
                 if (sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + tool)) {
-                    changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
-                    sharedParameters.preferences.safeSetSetting("isTabFixedPosition_" + tool, false);
-                } else {
-                    changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
-                    sharedParameters.preferences.safeSetSetting("isTabFixedPosition_" + tool, true);
+                    toolSubTabPaneTabFixedPositionLayout.setSelected(true);
                 }
-            });
-            popupMenu.add(toolSubTabPaneTabFixedPositionLayout);
 
+                toolSubTabPaneTabFixedPositionLayout.addActionListener((e) -> {
+                    if (sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + tool)) {
+                        changeToolTabbedPaneUI_safe(sharedParameters, currentSubTabContainerHandler, false);
+                        sharedParameters.preferences.safeSetSetting("isTabFixedPosition_" + tool, false);
+                    } else {
+                        changeToolTabbedPaneUI_safe(sharedParameters, currentSubTabContainerHandler, false);
+                        sharedParameters.preferences.safeSetSetting("isTabFixedPosition_" + tool, true);
+                    }
+                });
+                popupMenu.add(toolSubTabPaneTabFixedPositionLayout);
+
+            }
 
             JCheckBoxMenuItem toolSubTabPaneMouseWheelScroll = new JCheckBoxMenuItem("Activate Mouse Wheel: MW > Scroll, MW+Ctrl > Resize");
             if (sharedParameters.preferences.safeGetBooleanSetting("mouseWheelToScroll_" + tool)) {
@@ -1155,7 +1179,7 @@ public class SubTabActions {
                     SubTabActions.removeMouseWheelFromJTabbedPane(sharedParameters, tool, true);
                     sharedParameters.preferences.safeSetSetting("mouseWheelToScroll_" + tool, false);
                 } else {
-                    SubTabActions.addMouseWheelToJTabbedPane(sharedParameters, tool, false);
+                    SubTabActions.addMouseWheelToJTabbedPane(sharedParameters, tool, sharedParameters.isTabGroupSupportedByDefault);
                     sharedParameters.preferences.safeSetSetting("mouseWheelToScroll_" + tool, true);
                 }
             });
@@ -1171,6 +1195,9 @@ public class SubTabActions {
     }
 
     private static JMenuItem predefiniedStyleMenu(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, String text, String fontName, int fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, String colorCode, String iconString) {
+        if(currentSubTabContainerHandler == null)
+            return null;
+
         JMenuItem profile = new JMenuItem(text);
         int style = profile.getFont().getStyle();
 
@@ -1191,20 +1218,20 @@ public class SubTabActions {
         return profile;
     }
 
-    private static boolean changeToolTabbedPaneUI(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, boolean shouldOriginalBeSet, int counter) {
+    public static boolean changeToolTabbedPaneUI_safe(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean shouldOriginalBeSet, int counter) {
         boolean result = true;
         try {
             // should have already been loaded but just in case something has changed
             // hopefully it has not been tainted already!
-            if (sharedParameters.originalSubTabbedPaneUI.get(currentSubTabContainerHandler.currentToolTab) == null &&
-                    sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab) != null) {
-                sharedParameters.originalSubTabbedPaneUI.put(currentSubTabContainerHandler.currentToolTab,
-                        sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).getUI());
+            if (sharedParameters.originalSubTabbedPaneUI.get(currentToolTab) == null &&
+                    sharedParameters.get_toolTabbedPane(currentToolTab) != null) {
+                sharedParameters.originalSubTabbedPaneUI.put(currentToolTab,
+                        sharedParameters.get_toolTabbedPane(currentToolTab).getUI());
             }
 
-            boolean isMinimzeTabSize = sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + currentSubTabContainerHandler.currentToolTab);
-            boolean isFixedTabPosition = (sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + currentSubTabContainerHandler.currentToolTab));
-            boolean isFiltered = sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab);
+            boolean isMinimzeTabSize = sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + currentToolTab);
+            boolean isFixedTabPosition = (sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + currentToolTab));
+            boolean isFiltered = sharedParameters.isFiltered(currentToolTab);
 
             boolean isOriginal = true;
 
@@ -1215,19 +1242,19 @@ public class SubTabActions {
                 isOriginal = false;
             }
 
-            if (isOriginal) {
-                sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).updateUI();
+            if (isOriginal || sharedParameters.isTabGroupSupportedByDefault) {
+                sharedParameters.get_toolTabbedPane(currentToolTab).updateUI();
             } else {
-                sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).setUI(SubTabCustomTabbedPaneUI.getUI(sharedParameters, currentSubTabContainerHandler.currentToolTab));
+                sharedParameters.get_toolTabbedPane(currentToolTab).setUI(SubTabCustomTabbedPaneUI.getUI(sharedParameters, currentToolTab));
             }
 
-            sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).revalidate();
-            sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).repaint();
+            sharedParameters.get_toolTabbedPane(currentToolTab).revalidate();
+            sharedParameters.get_toolTabbedPane(currentToolTab).repaint();
             new java.util.Timer().schedule(
                     new java.util.TimerTask() {
                         @Override
                         public void run() {
-                            sharedParameters.allSettings.subTabSettings.updateSubTabsUI(currentSubTabContainerHandler.currentToolTab);
+                            sharedParameters.allSettings.subTabSettings.updateSubTabsUI(currentToolTab);
                         }
                     },
                     3000 // 3 seconds-delay to ensure all has been settled!
@@ -1241,8 +1268,7 @@ public class SubTabActions {
     }
 
 
-
-    private static void changeToolTabbedPaneUI(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, boolean shouldOriginalBeSet) {
+    public static void changeToolTabbedPaneUI_safe(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean shouldOriginalBeSet) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -1259,7 +1285,33 @@ public class SubTabActions {
                                 e.printStackTrace();
                             }
                         }
-                        isSuccessful = changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, shouldOriginalBeSet, counter);
+                        isSuccessful = changeToolTabbedPaneUI_safe(sharedParameters, currentToolTab, shouldOriginalBeSet, counter);
+                        counter++;
+                    }
+
+                }).start();
+            }
+        });
+    }
+
+    public static void changeToolTabbedPaneUI_safe(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, boolean shouldOriginalBeSet) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new Thread(() -> {
+                    // sometimes we have errors when using SetUI - we use this error catching and delay mechanism to hopefully overcome this!
+                    int counter = 0;
+                    boolean isSuccessful = false;
+                    while(counter < 3 && !isSuccessful){
+                        sharedParameters.printDebugMessage("Try number " + counter + " to update the UI");
+                        if(!isSuccessful) {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        isSuccessful = changeToolTabbedPaneUI_safe(sharedParameters, currentSubTabContainerHandler.currentToolTab, shouldOriginalBeSet, counter);
                         counter++;
                     }
 
@@ -1269,6 +1321,9 @@ public class SubTabActions {
     }
 
     public static void setTabTitleFilter(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
+        if(currentSubTabContainerHandler == null)
+            return;
+
         // filterOperationMode -->
         //operationMode=0 -> use RegEx
         //operationMode=1 -> Custom style only
@@ -1335,29 +1390,38 @@ public class SubTabActions {
     }
 
     private static void changingTabbedPaneUiToHideTabs(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler){
+        if(currentSubTabContainerHandler == null)
+            return;
+
         if (sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab)) {
             sharedParameters.printDebugMessage("Changing UI so it can hide tabs");
             if(sharedParameters.originalSubTabbedPaneUI.get(currentSubTabContainerHandler.currentToolTab) == null)
                 sharedParameters.originalSubTabbedPaneUI.put(currentSubTabContainerHandler.currentToolTab,
                         sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).getUI());
 
-            changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, false);
+            changeToolTabbedPaneUI_safe(sharedParameters, currentSubTabContainerHandler, false);
         } else {
-            changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, true);
+            changeToolTabbedPaneUI_safe(sharedParameters, currentSubTabContainerHandler, true);
             sharedParameters.printDebugMessage("Removing the filter");
         }
     }
 
     public static void showAllTabTitles(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
+        if(currentSubTabContainerHandler == null)
+            return;
+
         if(sharedParameters.isFiltered(currentSubTabContainerHandler.currentToolTab)){
             for (SubTabContainerHandler subTabContainerHandlerItem : sharedParameters.allSubTabContainerHandlers.get(currentSubTabContainerHandler.currentToolTab)) {
                 subTabContainerHandlerItem.setVisible(true);
             }
-            changeToolTabbedPaneUI(sharedParameters, currentSubTabContainerHandler, true);
+            changeToolTabbedPaneUI_safe(sharedParameters, currentSubTabContainerHandler, true);
         }
     }
 
     public static void toggleCurrentTabVisibility(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
+        if(currentSubTabContainerHandler == null)
+            return;
+
         currentSubTabContainerHandler.setVisible(!currentSubTabContainerHandler.getVisible());
 
         sharedParameters.get_toolTabbedPane(currentSubTabContainerHandler.currentToolTab).revalidate();
@@ -1378,13 +1442,12 @@ public class SubTabActions {
 
     public static SubTabContainerHandler getSubTabContainerHandlerFromEvent(SharpenerSharedParameters sharedParameters, AWTEvent event){
         SubTabContainerHandler subTabContainerHandler = null;
-        if (event.getSource() instanceof JTabbedPane) {
-            JTabbedPane tabbedPane = (JTabbedPane) event.getSource();
-
-            // works with version 2022.1.1 - not tested in the previous versions!
-            int currentSelection = tabbedPane.getSelectedIndex();
-
-            subTabContainerHandler =  getSubTabContainerHandlerFromSharedParameters(sharedParameters, tabbedPane, currentSelection);
+        if(event.getSource() instanceof Component){
+            JTabbedPane tabbedPane = (JTabbedPane)  UIWalker.FindUIObjectInParentComponents((Component) event.getSource(), 4, new UISpecObject(JTabbedPane.class));
+            if(tabbedPane != null){
+                int currentSelection = tabbedPane.getSelectedIndex();
+                subTabContainerHandler =  getSubTabContainerHandlerFromSharedParameters(sharedParameters, tabbedPane, currentSelection);
+            }
         }
         return subTabContainerHandler;
     }
@@ -1412,6 +1475,9 @@ public class SubTabActions {
     }
 
     public static void showPopupMenu(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, AWTEvent event){
+        if(currentSubTabContainerHandler == null)
+            return;
+
         // creating popup menu
         JPopupMenu popupMenu = createPopupMenu(sharedParameters, currentSubTabContainerHandler);
         //popupMenu.show(tabbedPane, event.getX(), event.getY());
@@ -1522,7 +1588,15 @@ public class SubTabActions {
     }
 
     public static void jumpToLastTab(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
-        jumpToTabIndex(sharedParameters,currentSubTabContainerHandler,currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2);
+        if(currentSubTabContainerHandler == null)
+            return;
+
+        int maxIndex = currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2;
+
+        if(sharedParameters.isTabGroupSupportedByDefault)
+            maxIndex += 1;
+
+        jumpToTabIndex(sharedParameters,currentSubTabContainerHandler,maxIndex);
         sharedParameters.printDebugMessage("Jump to last tab");
     }
 
@@ -1531,14 +1605,26 @@ public class SubTabActions {
     }
 
     public static void jumpToPreviousTab(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, JMenuItem notificationMenuItem) {
+        if(currentSubTabContainerHandler == null)
+            return;
         if (currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() > 0) {
             int chosenOne = currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() -1;
-            while(!currentSubTabContainerHandler.parentTabbedPane.isEnabledAt(chosenOne)){
+
+            SubTabContainerHandler chosenOneSubTabContainerHandler = getSubTabContainerHandlerFromSharedParameters(sharedParameters, currentSubTabContainerHandler.parentTabbedPane, chosenOne);
+
+            while(chosenOneSubTabContainerHandler == null || !currentSubTabContainerHandler.parentTabbedPane.isEnabledAt(chosenOne)
+                        || !chosenOneSubTabContainerHandler.isValid() || chosenOneSubTabContainerHandler.isGroupTab()
+                        || !chosenOneSubTabContainerHandler.isTitleVisible()){
                 chosenOne--;
-                if (chosenOne < 0 || chosenOne >= currentSubTabContainerHandler.parentTabbedPane.getTabCount()){
+                int maxIndex = currentSubTabContainerHandler.parentTabbedPane.getTabCount();
+                if(sharedParameters.isTabGroupSupportedByDefault)
+                    maxIndex += 1;
+
+                if (chosenOne < 0 || chosenOne >= maxIndex){
                     chosenOne = currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex();
                     break;
                 }
+                chosenOneSubTabContainerHandler = getSubTabContainerHandlerFromSharedParameters(sharedParameters, currentSubTabContainerHandler.parentTabbedPane, chosenOne);
             }
             jumpToTabIndex(sharedParameters,currentSubTabContainerHandler,chosenOne);
             // This is because when we use mouse action, the menu won't be closed
@@ -1554,14 +1640,29 @@ public class SubTabActions {
     }
 
     public static void jumpToNextTab(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, JMenuItem notificationMenuItem) {
-        if (currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() < currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2) {
+        if(currentSubTabContainerHandler == null)
+            return;
+        int maxIndex = currentSubTabContainerHandler.parentTabbedPane.getTabCount() - 2;
+
+        if(sharedParameters.isTabGroupSupportedByDefault)
+            maxIndex += 1;
+
+        if (currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() < maxIndex) {
             int chosenOne = currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex() + 1;
-            while(!currentSubTabContainerHandler.parentTabbedPane.isEnabledAt(chosenOne)){
+            SubTabContainerHandler chosenOneSubTabContainerHandler = getSubTabContainerHandlerFromSharedParameters(sharedParameters, currentSubTabContainerHandler.parentTabbedPane, chosenOne);
+
+            while(chosenOneSubTabContainerHandler == null || !currentSubTabContainerHandler.parentTabbedPane.isEnabledAt(chosenOne)
+                    || !chosenOneSubTabContainerHandler.isValid() || chosenOneSubTabContainerHandler.isGroupTab()
+                    || !chosenOneSubTabContainerHandler.isTitleVisible()){
                 chosenOne++;
-                if (chosenOne < 0 || chosenOne >= currentSubTabContainerHandler.parentTabbedPane.getTabCount()){
+                int maxIndex2 = currentSubTabContainerHandler.parentTabbedPane.getTabCount();
+                if(sharedParameters.isTabGroupSupportedByDefault)
+                    maxIndex2 += 1;
+                if (chosenOne < 0 || chosenOne >= maxIndex2){
                     chosenOne = currentSubTabContainerHandler.parentTabbedPane.getSelectedIndex();
                     break;
                 }
+                chosenOneSubTabContainerHandler = getSubTabContainerHandlerFromSharedParameters(sharedParameters, currentSubTabContainerHandler.parentTabbedPane, chosenOne);
             }
 
             jumpToTabIndex(sharedParameters,currentSubTabContainerHandler,chosenOne);
@@ -1578,6 +1679,8 @@ public class SubTabActions {
     }
 
     public static void jumpToPreviosulySelectedTab(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, JMenuItem notificationMenuItem) {
+        if(currentSubTabContainerHandler == null)
+            return;
 
         Integer previouslySelectedIndex = null;
         Integer currentSelectedIndex = sharedParameters.subTabPreviouslySelectedIndexHistory.get(currentSubTabContainerHandler.currentToolTab).pollLast();
@@ -1605,6 +1708,9 @@ public class SubTabActions {
     }
 
     public static void jumpToNextlySelectedTab(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, JMenuItem notificationMenuItem) {
+        if(currentSubTabContainerHandler == null)
+            return;
+
         Integer nextlySelectedIndex;
         nextlySelectedIndex = sharedParameters.subTabNextlySelectedIndexHistory.get(currentSubTabContainerHandler.currentToolTab).pollLast();
 
@@ -1623,6 +1729,9 @@ public class SubTabActions {
     }
 
     public static void jumpToTabIndex(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler, int indexNumber, boolean cleanNextlySelectedTabs, boolean ignoreNextlySelectedTabs){
+        if(currentSubTabContainerHandler == null)
+            return;
+
         if(currentSubTabContainerHandler.parentTabbedPane.getTabComponentAt(indexNumber) != null){
             if(cleanNextlySelectedTabs){
                 sharedParameters.subTabNextlySelectedIndexHistory.get(currentSubTabContainerHandler.currentToolTab).clear();
@@ -1639,7 +1748,7 @@ public class SubTabActions {
 
             if((sharedParameters.subTabPreviouslySelectedIndexHistory.get(currentSubTabContainerHandler.currentToolTab).size() <=0 ||
                     (sharedParameters.subTabPreviouslySelectedIndexHistory.get(currentSubTabContainerHandler.currentToolTab).getLast() != indexNumber) &&
-                            currentSubTabContainerHandler.parentTabbedPane.getTabCount()-1 != indexNumber)){
+                            (currentSubTabContainerHandler.parentTabbedPane.getTabCount()-1 != indexNumber) && !sharedParameters.isTabGroupSupportedByDefault)){
                 sharedParameters.subTabPreviouslySelectedIndexHistory.get(currentSubTabContainerHandler.currentToolTab).add(indexNumber);
             }
             currentSubTabContainerHandler.parentTabbedPane.setSelectedIndex(indexNumber);
@@ -1651,6 +1760,9 @@ public class SubTabActions {
     }
 
     public static void copyTitle(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
+        if(currentSubTabContainerHandler == null)
+            return;
+
         String tabTitle = currentSubTabContainerHandler.getTabTitle();
         // copying to clipboard as well
         Toolkit.getDefaultToolkit()
@@ -1668,6 +1780,9 @@ public class SubTabActions {
 
     public static void pasteTitle(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
         try {
+            if(currentSubTabContainerHandler == null)
+                return;
+
             String clipboardText = (String) Toolkit.getDefaultToolkit()
                     .getSystemClipboard().getData(DataFlavor.stringFlavor);
             sharedParameters.lastClipboardText = clipboardText.trim().replaceAll("(?<=[^\\s])\\s+\\(#\\d+\\)\\s*$", "");
@@ -1687,6 +1802,9 @@ public class SubTabActions {
     }
 
     public static void renameTitle(SharpenerSharedParameters sharedParameters, SubTabContainerHandler currentSubTabContainerHandler) {
+        if(currentSubTabContainerHandler == null)
+            return;
+
         String newTitle = UIHelper.showPlainInputMessage("Edit the Title", "Rename Title", currentSubTabContainerHandler.getTabTitle(), sharedParameters.get_mainFrame());
         if (!newTitle.isEmpty() && !newTitle.equals(currentSubTabContainerHandler.getTabTitle())) {
             currentSubTabContainerHandler.setTabTitle(newTitle, true);
