@@ -42,7 +42,7 @@ public abstract class StandardSettings {
             } catch (Exception e) {
                 //already registered setting
                 sharedParameters.printDebugMessage(e.getMessage());
-                if(sharedParameters.debugLevel > 1)
+                if (sharedParameters.debugLevel > 1)
                     e.printStackTrace(sharedParameters.stderr);
             }
         }
@@ -58,7 +58,7 @@ public abstract class StandardSettings {
                 sharedParameters.preferences.safeSetSetting(preferenceObject.settingName, null);
             } catch (Exception e) {
                 sharedParameters.printDebugMessage(e.getMessage());
-                if(sharedParameters.debugLevel > 1)
+                if (sharedParameters.debugLevel > 1)
                     e.printStackTrace(sharedParameters.stderr);
             }
         }

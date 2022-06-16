@@ -32,10 +32,10 @@ public class TabFeaturesObjectStyle implements Serializable {
         setColor(colorCode);
     }
 
-    public String get_IconResourceString(){
-        if(iconResourceString == null)
+    public String get_IconResourceString() {
+        if (iconResourceString == null)
             iconResourceString = "";
-        return iconResourceString.replaceAll(":","").replaceAll("\\\\", "/").replaceAll("/+","/").replaceAll("\\.\\s*+/","./").replaceAll("/\\s*\\.+","/.");
+        return iconResourceString.replaceAll(":", "").replaceAll("\\\\", "/").replaceAll("/+", "/").replaceAll("\\.\\s*+/", "./").replaceAll("/\\s*\\.+", "/.");
     }
 
     public Color getColor() {

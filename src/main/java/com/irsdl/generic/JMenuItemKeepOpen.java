@@ -17,10 +17,10 @@ public class JMenuItemKeepOpen extends JMenuItem {
 
     @Override
     protected void processMouseEvent(MouseEvent evt) {
-        if (evt.getID() == MouseEvent.MOUSE_RELEASED  && contains(evt.getPoint())) {
+        if (evt.getID() == MouseEvent.MOUSE_RELEASED && contains(evt.getPoint())) {
             doClick();
             setArmed(true);
-        } else{
+        } else {
             super.processMouseEvent(evt);
         }
     }

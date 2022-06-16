@@ -22,9 +22,9 @@ public class ImageHelper {
             return null;
 
         int height = (int) (Math.floor((image.getHeight() * width) / (double) image.getWidth()));
-        if(image.getWidth() > width){
+        if (image.getWidth() > width) {
             return image.getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
-        }else{
+        } else {
             return image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         }
     }
@@ -91,8 +91,7 @@ public class ImageHelper {
     // code below from exampledepot.com
     //This method writes a image to the system clipboard.
     //otherwise it returns null.
-    public static void setClipboard(Image image)
-    {
+    public static void setClipboard(Image image) {
         ImageSelection imgSel = new ImageSelection(image);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(imgSel, null);
     }

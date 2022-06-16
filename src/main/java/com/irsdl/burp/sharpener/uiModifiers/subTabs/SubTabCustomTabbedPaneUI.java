@@ -9,10 +9,11 @@ package com.irsdl.burp.sharpener.uiModifiers.subTabs;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
+
 import java.awt.*;
 
 public class SubTabCustomTabbedPaneUI {
-    public static FlatTabbedPaneUI getUI(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab){
+    public static FlatTabbedPaneUI getUI(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab) {
         boolean isMinimzeTabSize = sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + currentToolTab);
         boolean isFixedTabPosition = sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + currentToolTab);
         boolean isFiltered = sharedParameters.isFiltered(currentToolTab);
@@ -20,11 +21,11 @@ public class SubTabCustomTabbedPaneUI {
     }
 
     public static FlatTabbedPaneUI getUI(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab,
-                                         boolean isFiltered, boolean isMinimzeTabSize, boolean isFixedTabPosition){
+                                         boolean isFiltered, boolean isMinimzeTabSize, boolean isFixedTabPosition) {
         return new FlatTabbedPaneUI() {
             @Override
             protected int calculateTabWidth(int tabPlacement, int tabIndex, FontMetrics metrics) {
-                if(isFiltered){
+                if (isFiltered) {
                     if (sharedParameters.allSubTabContainerHandlers.get(currentToolTab).stream()
                             .filter(s -> !s.getVisible() && s.getTabIndex() == tabIndex).toArray().length > 0) {
                         return 0;
@@ -35,8 +36,8 @@ public class SubTabCustomTabbedPaneUI {
 
             @Override
             protected int calculateTabHeight(int tabPlacement, int tabIndex, int fontHeight) {
-                if(isMinimzeTabSize || this.tabInsets == null){
-                    this.tabInsets = new Insets(1,1,1,1);
+                if (isMinimzeTabSize || this.tabInsets == null) {
+                    this.tabInsets = new Insets(1, 1, 1, 1);
                 }
                 return super.calculateTabHeight(tabPlacement, tabIndex, fontHeight);
             }

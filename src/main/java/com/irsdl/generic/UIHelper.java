@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class UIHelper {
 
     // Show a message to the user
-    public static void showMessage(final String strMsg,final String strTitle, Component parentcmp) {
+    public static void showMessage(final String strMsg, final String strTitle, Component parentcmp) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -50,9 +50,9 @@ public class UIHelper {
         String[] output = new String[strMessages.length];
         java.util.List<Object> strMessagesObjectList = new ArrayList<Object>();
 
-        for(int i=0;i<strMessages.length;i++){
+        for (int i = 0; i < strMessages.length; i++) {
             String defaultValue = "";
-            if(defaultValues.length > i)
+            if (defaultValues.length > i)
                 defaultValue = defaultValues[i];
             strMessagesObjectList.add(strMessages[i]);
             strMessagesObjectList.add(new JTextField(defaultValue));
@@ -60,8 +60,8 @@ public class UIHelper {
 
         int option = JOptionPane.showConfirmDialog(parentcmp, strMessagesObjectList.toArray(), strTitle, JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
-            for(int i=0;i<strMessages.length;i++){
-                output[i] = ((JTextField) strMessagesObjectList.get(i*2+1)).getText();
+            for (int i = 0; i < strMessages.length; i++) {
+                output[i] = ((JTextField) strMessagesObjectList.get(i * 2 + 1)).getText();
             }
         }
 
@@ -127,9 +127,9 @@ public class UIHelper {
         }
 
         int returnVal;
-        if(isSave){
+        if (isSave) {
             returnVal = _fileChooser.showSaveDialog(parentcmp);
-        }else{
+        } else {
             returnVal = _fileChooser.showOpenDialog(parentcmp);
         }
 

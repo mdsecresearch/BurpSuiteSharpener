@@ -45,7 +45,7 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
     public SharpenerSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, IBurpExtender burpExtenderObj, IBurpExtenderCallbacks callbacks) {
         super(version, extensionName, extensionURL, extensionIssueTracker, burpExtenderObj, callbacks);
 
-        if(burpMajorVersion >= 2022 && burpMinorVersion >= 6){
+        if (burpMajorVersion >= 2022 && burpMinorVersion >= 6) {
             this.isTabGroupSupportedByDefault = true;
             this.isSubTabScrollSupportedByDefault = true;
         }
@@ -53,7 +53,7 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
         subTabSupportedTabs.add(BurpUITools.MainTabs.Repeater);
         subTabSupportedTabs.add(BurpUITools.MainTabs.Intruder);
 
-        for(BurpUITools.MainTabs supportedTabs: subTabSupportedTabs){
+        for (BurpUITools.MainTabs supportedTabs : subTabSupportedTabs) {
             supportedTools_SubTabs.put(supportedTabs, new HashMap<>());
             filterOperationMode.put(supportedTabs, 0);
             subTabPreviouslySelectedIndexHistory.put(supportedTabs, new LinkedList<>());
@@ -63,16 +63,16 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
         this.printlnOutput("Sharpener has been loaded successfully");
     }
 
-    public boolean isFiltered(BurpUITools.MainTabs toolTabName){
-        if(getHiddenSubTabsCount(toolTabName) > 0){
+    public boolean isFiltered(BurpUITools.MainTabs toolTabName) {
+        if (getHiddenSubTabsCount(toolTabName) > 0) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 
-    public int getHiddenSubTabsCount(BurpUITools.MainTabs toolTabName){
-        if(allSubTabContainerHandlers.get(toolTabName) == null)
+    public int getHiddenSubTabsCount(BurpUITools.MainTabs toolTabName) {
+        if (allSubTabContainerHandlers.get(toolTabName) == null)
             return -1;
         else
             return allSubTabContainerHandlers.get(toolTabName).stream().filter(s -> s.isValid() && !s.getVisible()).toArray().length;
@@ -87,17 +87,17 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
         JTabbedPane _rootTabbedPane = get_rootTabbedPane();
 
 
-        if(useCache && cachedJTabbedPaneTools.get(toolTabName) != null){
+        if (useCache && cachedJTabbedPaneTools.get(toolTabName) != null) {
             subTabbedPane = cachedJTabbedPaneTools.get(toolTabName);
-            try{
+            try {
                 Component dummy = subTabbedPane.getSelectedComponent();
-            }catch(Exception e){
+            } catch (Exception e) {
                 // could not access the object
                 subTabbedPane = null;
             }
         }
 
-        if(_rootTabbedPane != null && subTabbedPane==null){
+        if (_rootTabbedPane != null && subTabbedPane == null) {
             for (Component tabComponent : _rootTabbedPane.getComponents()) {
 
                 //Check tab titles and continue for accepted tab paths.
@@ -111,10 +111,10 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
                     // we have our tool tab, now we need to find its right component
                     try {
                         subTabbedPane = (JTabbedPane) tabComponent;
-                    }catch(Exception e1){
-                        try{
-                            subTabbedPane = (JTabbedPane) tabComponent.getComponentAt(0,0);
-                        }catch(Exception e2){
+                    } catch (Exception e1) {
+                        try {
+                            subTabbedPane = (JTabbedPane) tabComponent.getComponentAt(0, 0);
+                        } catch (Exception e2) {
                             printDebugMessage("The " + componentTitle + " tool seems to be empty or different. Cannot find the tabs.");
                         }
                     }
@@ -122,20 +122,20 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
                 }
             }
 
-            if(subTabbedPane == null){
+            if (subTabbedPane == null) {
                 // it could not find the tool, this can happen when a tool has been detached so we need to look for it!
                 for (Window window : Window.getWindows()) {
-                    if(window.isShowing()){
-                        if(window instanceof JFrame){
+                    if (window.isShowing()) {
+                        if (window instanceof JFrame) {
                             String title = ((JFrame) window).getTitle();
                             // "Repeater" becomes "Burp Repeater" when it is detached
-                            if(title.equalsIgnoreCase("Burp " + toolTabName.toString())){
+                            if (title.equalsIgnoreCase("Burp " + toolTabName.toString())) {
                                 com.irsdl.generic.uiObjFinder.UISpecObject uiSpecObject = new UISpecObject(JTabbedPane.class);
                                 uiSpecObject.set_isJComponent(true);
                                 uiSpecObject.set_isShowing(true);
                                 uiSpecObject.set_minJComponentCount(1);
                                 Component tempComponent = com.irsdl.generic.uiObjFinder.UIWalker.FindUIObjectInSubComponents(window.getComponents()[0], 6, uiSpecObject);
-                                if(tempComponent!=null){
+                                if (tempComponent != null) {
                                     subTabbedPane = (JTabbedPane) tempComponent;
                                     break;
                                 }
@@ -146,10 +146,10 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
             }
         }
 
-        if(subTabbedPane != null){
-            if(cachedJTabbedPaneTools.get(toolTabName) != null){
+        if (subTabbedPane != null) {
+            if (cachedJTabbedPaneTools.get(toolTabName) != null) {
                 cachedJTabbedPaneTools.replace(toolTabName, subTabbedPane);
-            }else{
+            } else {
                 cachedJTabbedPaneTools.put(toolTabName, subTabbedPane);
             }
         }

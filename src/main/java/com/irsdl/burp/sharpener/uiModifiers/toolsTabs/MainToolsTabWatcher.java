@@ -33,16 +33,22 @@ public class MainToolsTabWatcher implements ContainerListener {
         sharedParameters.printDebugMessage("removeMainTabListener");
         tabbedPane.removeContainerListener(this);
     }
+
     @Override
     public void componentAdded(ContainerEvent e) {
-        if(e.getSource() instanceof JTabbedPane && !isResetInProgress){
+        if (e.getSource() instanceof JTabbedPane && !isResetInProgress) {
             setResetInProgress(true);
             new java.util.Timer().schedule(
                     new java.util.TimerTask() {
                         @Override
                         public void run() {
-                            MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
-                            setResetInProgress(false);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
+                                    setResetInProgress(false);
+                                }
+                            });
                         }
                     },
                     2000 // 2 seconds-delay to ensure all has been settled!
@@ -59,7 +65,6 @@ public class MainToolsTabWatcher implements ContainerListener {
     public synchronized void setResetInProgress(boolean resetInProgress) {
         isResetInProgress = resetInProgress;
     }
-
 
 
 }
