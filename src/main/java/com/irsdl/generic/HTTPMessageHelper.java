@@ -109,10 +109,10 @@ public class HTTPMessageHelper {
     // Splits header and body of a request or response
     public static List<byte[]> getHeaderAndBody(byte[] fullMessage, int bodyOffset) {
         List<byte[]> result = new ArrayList<>();
-        if(fullMessage.length >= bodyOffset){
+        if (fullMessage.length >= bodyOffset) {
             result.add(Arrays.copyOfRange(fullMessage, 0, bodyOffset));
             result.add(Arrays.copyOfRange(fullMessage, bodyOffset, fullMessage.length));
-        }else{
+        } else {
             result.add(fullMessage);
             result.add(new byte[]{});
         }
@@ -137,7 +137,7 @@ public class HTTPMessageHelper {
     }
 
     // Splits header and body of a request or response
-    public static List<String> getHeadersListFromFullRequest(byte[] fullMessage){
+    public static List<String> getHeadersListFromFullRequest(byte[] fullMessage) {
         return getHeadersListFromFullRequest(new String(fullMessage, Charset.forName("ISO-8859-1")));
     }
 
@@ -176,7 +176,6 @@ public class HTTPMessageHelper {
     }
 
 
-
     public static List<List<String>> getQueryString(String fullMessage) {
         return getQueryString(fullMessage, "", "");
     }
@@ -198,7 +197,7 @@ public class HTTPMessageHelper {
         // we assume that we are dealing with an standard HTTP message in which there is a space after the last parameter value
         String QS = "";
 
-        Pattern pattern = Pattern.compile(Encoding.unicodeEscape(delimiter_QS, true, false)  + "([^ \\s]+)");
+        Pattern pattern = Pattern.compile(Encoding.unicodeEscape(delimiter_QS, true, false) + "([^ \\s]+)");
         Matcher matcher = pattern.matcher(firstline);
         if (matcher.find()) {
             QS = matcher.group(1);
@@ -335,7 +334,7 @@ public class HTTPMessageHelper {
                     // Header name is different so we keep it!
                     result.add(item);
                 }
-            }else{
+            } else {
                 result.add(item);
             }
         }
@@ -345,30 +344,30 @@ public class HTTPMessageHelper {
     // get values of a cookie even when it is duplicated
     public static ArrayList<String> getAllCookieValuesByName(String cookieHeaderValue, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
         ArrayList<String> result = new ArrayList<String>();
-        if(!isCaseSensitive){
+        if (!isCaseSensitive) {
             targetCookieName = targetCookieName.toLowerCase();
         }
 
         var cookieNameValues = cookieHeaderValue.split(";");
 
-        if(!isRequest){
+        if (!isRequest) {
             cookieNameValues = new String[]{cookieNameValues[0]};
         }
 
         for (var cookieNameValue : cookieNameValues) {
             cookieNameValue = cookieNameValue.trim();
-            var cookieNameValueArray = cookieNameValue.split("=",2);
+            var cookieNameValueArray = cookieNameValue.split("=", 2);
             var cookieName = cookieNameValueArray[0].trim();
             var cookieValue = "";
-            if(cookieNameValueArray.length == 2){
+            if (cookieNameValueArray.length == 2) {
                 cookieValue = cookieNameValueArray[1].trim();
             }
 
-            if(!isCaseSensitive){
+            if (!isCaseSensitive) {
                 cookieName = cookieName.toLowerCase();
             }
 
-            if(targetCookieName.equals(cookieName)){
+            if (targetCookieName.equals(cookieName)) {
                 // we have a match
                 result.add(cookieValue);
             }
@@ -380,30 +379,30 @@ public class HTTPMessageHelper {
     public static String getFirstCookieValueByName(String cookieHeaderValue, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
         String result = "";
 
-        if(!isCaseSensitive){
+        if (!isCaseSensitive) {
             targetCookieName = targetCookieName.toLowerCase();
         }
 
         var cookieNameValues = cookieHeaderValue.split(";");
 
-        if(!isRequest){
+        if (!isRequest) {
             cookieNameValues = new String[]{cookieNameValues[0]};
         }
 
         for (var cookieNameValue : cookieNameValues) {
             cookieNameValue = cookieNameValue.trim();
-            var cookieNameValueArray = cookieNameValue.split("=",2);
+            var cookieNameValueArray = cookieNameValue.split("=", 2);
             var cookieName = cookieNameValueArray[0].trim();
             var cookieValue = "";
-            if(cookieNameValueArray.length == 2){
+            if (cookieNameValueArray.length == 2) {
                 cookieValue = cookieNameValueArray[1].trim();
             }
 
-            if(!isCaseSensitive){
+            if (!isCaseSensitive) {
                 cookieName = cookieName.toLowerCase();
             }
 
-            if(targetCookieName.equals(cookieName)){
+            if (targetCookieName.equals(cookieName)) {
                 // we have a match
                 result = cookieValue;
                 break;
@@ -416,14 +415,14 @@ public class HTTPMessageHelper {
     public static ArrayList<String> getAllCookieValuesByNameFromHeaders(List<String> headers, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
         ArrayList<String> result = new ArrayList<String>();
         String headerName = "Cookie";
-        if(!isRequest){
+        if (!isRequest) {
             headerName = "Set-cookie";
         }
 
         var allCookieHeaders = getAllHeaderValuesByName(headers, headerName);
-        for(var cookieHeader : allCookieHeaders){
+        for (var cookieHeader : allCookieHeaders) {
             var currentResults = getAllCookieValuesByName(cookieHeader, targetCookieName, isCaseSensitive, isRequest);
-            if(currentResults.size() > 0){
+            if (currentResults.size() > 0) {
                 result.addAll(currentResults);
             }
         }
@@ -435,12 +434,12 @@ public class HTTPMessageHelper {
     public static String getFirstCookieValueByNameFromHeaders(List<String> headers, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
         String result = "";
         String headerName = "Cookie";
-        if(!isRequest){
+        if (!isRequest) {
             headerName = "Set-cookie";
         }
 
         var cookieHeader = getFirstHeaderValueByNameFromHeaders(headers, headerName, false);
-        result =  getFirstCookieValueByName(cookieHeader, targetCookieName, isCaseSensitive, isRequest);
+        result = getFirstCookieValueByName(cookieHeader, targetCookieName, isCaseSensitive, isRequest);
 
         return result;
     }
@@ -473,23 +472,23 @@ public class HTTPMessageHelper {
         List<String> result = new ArrayList<String>();
 
         String headerName = "cookie";
-        if(!isRequest){
+        if (!isRequest) {
             headerName = "set-cookie";
         }
 
         var currentCookieHeaders = getAllHeaderValuesByName(headers, headerName);
         var currentCookiesWithName = getAllCookieValuesByNameFromHeaders(headers, targetCookieName, isCaseSensitive, isRequest);
 
-        if(currentCookieHeaders.size() <= 0 || (!isRequest && currentCookiesWithName.size() <=0)) {
+        if (currentCookieHeaders.size() <= 0 || (!isRequest && currentCookiesWithName.size() <= 0)) {
             result.addAll(headers);
             result.add(headerName + ": " + targetCookieName + "=" + newCookieValue + ";");
-        }else{
-            if(currentCookiesWithName.size() <= 0){
+        } else {
+            if (currentCookiesWithName.size() <= 0) {
                 // this is a request but has a cookie header
-                result = removeHeadersByName(headers,headerName);
+                result = removeHeadersByName(headers, headerName);
                 var newCookieStr = replaceOrAddCookieValuesInCookieString(currentCookieHeaders.get(0), targetCookieName, newCookieValue, isCaseSensitive);
                 result.add(headerName + ": " + newCookieStr);
-            }else{
+            } else {
                 // this is a request or response - we have at least a match...
                 int counter = 0;
                 boolean matchFound = false;
@@ -502,7 +501,7 @@ public class HTTPMessageHelper {
                         if (headerNameForComp.equals(headerName)) {
                             // We have a cookie header, now we need to see whether it has the targetedCookie inside it
                             var cookieHeaderValue = headerItem[1].trim();
-                            if(getAllCookieValuesByName(cookieHeaderValue,targetCookieName,isCaseSensitive, isRequest).size() > 0){
+                            if (getAllCookieValuesByName(cookieHeaderValue, targetCookieName, isCaseSensitive, isRequest).size() > 0) {
                                 // this is the cookie we are after
                                 headerItem[1] = replaceOrAddCookieValuesInCookieString(cookieHeaderValue, targetCookieName, newCookieValue, isCaseSensitive);
                             }
@@ -525,7 +524,7 @@ public class HTTPMessageHelper {
         String result = "";
 
         String headerName = "Cookie";
-        if(!isRequest){
+        if (!isRequest) {
             headerName = "Set-Cookie";
         }
 
@@ -574,7 +573,7 @@ public class HTTPMessageHelper {
             counter++;
         }
 
-        if(!matchFound){
+        if (!matchFound) {
             result.add(headerName + ": " + newHeaderValue);
         }
 

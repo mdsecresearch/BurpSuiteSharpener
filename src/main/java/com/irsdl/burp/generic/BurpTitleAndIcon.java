@@ -33,61 +33,59 @@ public class BurpTitleAndIcon {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Thread(() -> {
-                    sharedParameters.get_mainFrame().setTitle(title);
-                    sharedParameters.printDebugMessage("Burp Suite title was changed to: " + title);
-                }).start();
+                sharedParameters.get_mainFrame().setTitle(title);
+                sharedParameters.printDebugMessage("Burp Suite title was changed to: " + title);
             }
         });
     }
 
     private static void setIcon(BurpExtensionSharedParameters sharedParameters, Image img) {
-        if(img!=null) {
+        if (img != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    new Thread(() -> {
-                        java.util.List<Image> iconList = new ArrayList<Image>();
-                        iconList.add(img);
+
+                    java.util.List<Image> iconList = new ArrayList<Image>();
+                    iconList.add(img);
                         /*
                         for (Frame frame : Frame.getFrames()) {
                             frame.setIconImages(iconList);
                         }
                         */
-                        for (Window window : Window.getWindows()) {
-                            window.setIconImages(iconList);
-                        }
-                        //sharedParameters.get_mainFrame().setIconImage(img);
-                        sharedParameters.printDebugMessage("Burp Suite icon has been updated");
-                    }).start();
+                    for (Window window : Window.getWindows()) {
+                        window.setIconImages(iconList);
+                    }
+                    //sharedParameters.get_mainFrame().setIconImage(img);
+                    sharedParameters.printDebugMessage("Burp Suite icon has been updated");
+
                 }
             });
         }
     }
 
-    private static void removeMainFrameWindowFocusListener(BurpExtensionSharedParameters sharedParameters){
-        if(sharedParameters.addedIconListener){
+    private static void removeMainFrameWindowFocusListener(BurpExtensionSharedParameters sharedParameters) {
+        if (sharedParameters.addedIconListener) {
             sharedParameters.addedIconListener = false;
             int listenerCount = sharedParameters.get_mainFrame().getWindowFocusListeners().length;
-            if(listenerCount > 0){
+            if (listenerCount > 0) {
                 // We assume that the last one is ours!
-                sharedParameters.get_mainFrame().removeWindowFocusListener(sharedParameters.get_mainFrame().getWindowFocusListeners()[listenerCount-1]);
+                sharedParameters.get_mainFrame().removeWindowFocusListener(sharedParameters.get_mainFrame().getWindowFocusListeners()[listenerCount - 1]);
             }
         }
     }
 
     public static void setIcon(BurpExtensionSharedParameters sharedParameters, String imgPath, int iconSize, boolean isResource) {
         Image loadedImg;
-        if(isResource){
+        if (isResource) {
             loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, imgPath), iconSize);
-        }else{
+        } else {
             loadedImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(imgPath), iconSize);
         }
 
         if (loadedImg != null) {
             setIcon(sharedParameters, loadedImg);
 
-            if(sharedParameters.addedIconListener = true){
+            if (sharedParameters.addedIconListener = true) {
                 removeMainFrameWindowFocusListener(sharedParameters);
             }
 

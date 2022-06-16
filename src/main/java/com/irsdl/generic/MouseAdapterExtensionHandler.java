@@ -20,7 +20,7 @@ public class MouseAdapterExtensionHandler extends MouseAdapter {
         this(consumer, MouseEvent.MOUSE_CLICKED);
     }
 
-    public MouseAdapterExtensionHandler(Consumer<MouseEvent> consumer,int mouseEventTrigger) {
+    public MouseAdapterExtensionHandler(Consumer<MouseEvent> consumer, int mouseEventTrigger) {
         this.mouseEventConsumer = consumer;
         this.mouseEventTrigger = mouseEventTrigger;
 
@@ -28,14 +28,14 @@ public class MouseAdapterExtensionHandler extends MouseAdapter {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if(mouseEventTrigger==MouseEvent.MOUSE_CLICKED){
+        if (mouseEventTrigger == MouseEvent.MOUSE_CLICKED) {
             this.mouseEventConsumer.accept(e);
         }
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if(mouseEventTrigger==MouseEvent.MOUSE_PRESSED){
+        if (mouseEventTrigger == MouseEvent.MOUSE_PRESSED) {
             this.mouseEventConsumer.accept(e);
         }
     }
@@ -44,35 +44,35 @@ public class MouseAdapterExtensionHandler extends MouseAdapter {
     public void mouseReleased(MouseEvent e) {
         // we can use mousePressed or mouseReleased instead of mouseClicked to detect a click when tabs were wrapped
         // mouseReleased has been used to show the menu in the right place when tabs were wrapped
-        if(mouseEventTrigger==MouseEvent.MOUSE_RELEASED){
+        if (mouseEventTrigger == MouseEvent.MOUSE_RELEASED) {
             this.mouseEventConsumer.accept(e);
         }
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        if(mouseEventTrigger==MouseEvent.MOUSE_ENTERED){
+        if (mouseEventTrigger == MouseEvent.MOUSE_ENTERED) {
             this.mouseEventConsumer.accept(e);
         }
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        if(mouseEventTrigger==MouseEvent.MOUSE_EXITED){
+        if (mouseEventTrigger == MouseEvent.MOUSE_EXITED) {
             this.mouseEventConsumer.accept(e);
         }
     }
 
     @Override
-    public void mouseDragged(MouseEvent e){
-        if(mouseEventTrigger==MouseEvent.MOUSE_DRAGGED){
+    public void mouseDragged(MouseEvent e) {
+        if (mouseEventTrigger == MouseEvent.MOUSE_DRAGGED) {
             this.mouseEventConsumer.accept(e);
         }
     }
 
     @Override
-    public void mouseMoved(MouseEvent e){
-        if(mouseEventTrigger==MouseEvent.MOUSE_MOVED){
+    public void mouseMoved(MouseEvent e) {
+        if (mouseEventTrigger == MouseEvent.MOUSE_MOVED) {
             this.mouseEventConsumer.accept(e);
         }
     }

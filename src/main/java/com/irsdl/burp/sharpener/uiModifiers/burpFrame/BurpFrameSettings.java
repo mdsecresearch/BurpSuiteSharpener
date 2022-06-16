@@ -70,7 +70,7 @@ public class BurpFrameSettings extends StandardSettings {
         if (!newIconPath.isBlank()) {
             sharedParameters.preferences.setSetting("LastBurpIconCustomPath", newIconPath);
             BurpTitleAndIcon.setIcon(sharedParameters, newIconPath, 48, false);
-        }else if(!newIconResourcePath.isBlank()){
+        } else if (!newIconResourcePath.isBlank()) {
             BurpTitleAndIcon.setIcon(sharedParameters, newIconResourcePath, 48, true);
         }
     }

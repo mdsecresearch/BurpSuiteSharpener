@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 
 public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener, IProxyListener {
     //public static MainExtensionClass instance;
-    private String version = "1.5";
+    private String version = "1.7";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
@@ -68,9 +68,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
             public void run() {
                 dummyPanel = new JPanel(); //Will be removed shortly after it's added, doesn't need to be anything special at the moment!
                 callbacks.addSuiteTab(SharpenerBurpExtender.this);
-                new Thread(() -> {
-                    load(false);
-                }).start();
+                load(false);
             }
         });
 
@@ -117,17 +115,17 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                     public void scopeChanged() {
                         try {
                             URL burpExtenderUtilitiesURL = new URL("https://project-extension-preference-store-do-not-delete:65535/");
-                            if(!sharedParameters.callbacks.isInScope(burpExtenderUtilitiesURL) && !sharedParameters.isScopeChangeDecisionOngoing){
+                            if (!sharedParameters.callbacks.isInScope(burpExtenderUtilitiesURL) && !sharedParameters.isScopeChangeDecisionOngoing) {
                                 sharedParameters.isScopeChangeDecisionOngoing = true;
                                 int scopeDecision = UIHelper.askConfirmMessage("Scope Removal Confirmation",
                                         sharedParameters.extensionName + " settings cannot be saved. Do you want to add it back to the scope?",
                                         new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
 
-                                if(scopeDecision == 0) {
+                                if (scopeDecision == 0) {
                                     // There is a bug in Burp Suite which shows UI error if we do not switch to another tab at this point!
-                                    if(!BurpUITools.switchToMainTab("Dashboard",sharedParameters.get_rootTabbedPane()))
-                                        if(!BurpUITools.switchToMainTab("Proxy",sharedParameters.get_rootTabbedPane()))
-                                            BurpUITools.switchToMainTab("User options",sharedParameters.get_rootTabbedPane());
+                                    if (!BurpUITools.switchToMainTab("Dashboard", sharedParameters.get_rootTabbedPane()))
+                                        if (!BurpUITools.switchToMainTab("Proxy", sharedParameters.get_rootTabbedPane()))
+                                            BurpUITools.switchToMainTab("User options", sharedParameters.get_rootTabbedPane());
 
                                     new java.util.Timer().schedule(
                                             new java.util.TimerTask() {
@@ -138,7 +136,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                                             },
                                             2000
                                     );
-                                    UIHelper.showWarningMessage("Please wait for 5 seconds before clicking on the Target tab to prevent a Burp Suite internal bug when updating the scope!",sharedParameters.get_rootTabbedPane());
+                                    UIHelper.showWarningMessage("Please wait for 5 seconds before clicking on the Target tab to prevent a Burp Suite internal bug when updating the scope!", sharedParameters.get_rootTabbedPane());
                                 }
 
                                 new java.util.Timer().schedule(
@@ -197,11 +195,16 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                                 new java.util.TimerTask() {
                                     @Override
                                     public void run() {
-                                        sharedParameters.printDebugMessage("lookAndFeelPropChangeListener");
-                                        sharedParameters.defaultSubTabObject = null;
-                                        UIHelper.showWarningMessage("Due to a major UI change, the " + sharedParameters.extensionName + " extension needs to be unload. Please load it manually.", sharedParameters.get_mainFrame());
-                                        BurpUITools.switchToMainTab("Extender", sharedParameters.get_rootTabbedPane());
-                                        sharedParameters.callbacks.unloadExtension();
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                sharedParameters.printDebugMessage("lookAndFeelPropChangeListener");
+                                                sharedParameters.defaultSubTabObject = null;
+                                                UIHelper.showWarningMessage("Due to a major UI change, the " + sharedParameters.extensionName + " extension needs to be unload. Please load it manually.", sharedParameters.get_mainFrame());
+                                                BurpUITools.switchToMainTab("Extender", sharedParameters.get_rootTabbedPane());
+                                                sharedParameters.callbacks.unloadExtension();
+                                            }
+                                        });
                                     }
                                 },
                                 2000
@@ -241,52 +244,52 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
         }
 
         if (sharedParameters.get_isUILoaded() && !anotherExist) {
-            try{
+            try {
 
 
-            sharedParameters.printDebugMessage("removePropertyChangeListener: lookAndFeelPropChangeListener");
-            UIManager.removePropertyChangeListener(lookAndFeelPropChangeListener);
+                sharedParameters.printDebugMessage("removePropertyChangeListener: lookAndFeelPropChangeListener");
+                UIManager.removePropertyChangeListener(lookAndFeelPropChangeListener);
 
-            // remove listener for main tools' tabs
-            if (mainToolsTabWatcher != null && sharedParameters.get_isUILoaded()) {
-                mainToolsTabWatcher.removeTabListener(sharedParameters.get_rootTabbedPane());
-            }
+                // remove listener for main tools' tabs
+                if (mainToolsTabWatcher != null && sharedParameters.get_isUILoaded()) {
+                    mainToolsTabWatcher.removeTabListener(sharedParameters.get_rootTabbedPane());
+                }
 
-            sharedParameters.printDebugMessage("removing tab listener on tabs in Repeater and Intruder");
-            // remove tab listener on tabs in Repeater and Intruder
-            if (subTabWatcher != null && sharedParameters.get_isUILoaded()) {
-                subTabWatcher.removeTabListener(sharedParameters.get_rootTabbedPane());
-            }
+                sharedParameters.printDebugMessage("removing tab listener on tabs in Repeater and Intruder");
+                // remove tab listener on tabs in Repeater and Intruder
+                if (subTabWatcher != null && sharedParameters.get_isUILoaded()) {
+                    subTabWatcher.removeTabListener(sharedParameters.get_rootTabbedPane());
+                }
 
-            sharedParameters.printDebugMessage("undo the Burp main tool tabs");
-            // undo the Burp main tool tabs
-            MainToolsTabStyleHandler.unsetAllToolTabStyles(sharedParameters);
+                sharedParameters.printDebugMessage("undo the Burp main tool tabs");
+                // undo the Burp main tool tabs
+                MainToolsTabStyleHandler.unsetAllToolTabStyles(sharedParameters);
 
-            sharedParameters.printDebugMessage("undo subtabs styles");
+                sharedParameters.printDebugMessage("undo subtabs styles");
 
-            // undo subtabs styles
-            sharedParameters.allSettings.subTabSettings.unsetSubTabsStyle();
+                // undo subtabs styles
+                sharedParameters.allSettings.subTabSettings.unsetSubTabsStyle();
 
-            sharedParameters.printDebugMessage("reset Burp title and icon");
-            // reset Burp title and icon
-            BurpTitleAndIcon.resetTitle(sharedParameters);
-            BurpTitleAndIcon.resetIcon(sharedParameters);
+                sharedParameters.printDebugMessage("reset Burp title and icon");
+                // reset Burp title and icon
+                BurpTitleAndIcon.resetTitle(sharedParameters);
+                BurpTitleAndIcon.resetIcon(sharedParameters);
 
-            sharedParameters.printDebugMessage("removing toolbar menu");
-            // removing toolbar menu
-            if (topMenuBar != null)
-                topMenuBar.removeTopMenuBar();
-            }catch (Exception e){
-                sharedParameters.printlnError("An error has occurred when unloading the "+sharedParameters.extensionName+" extension.");
+                sharedParameters.printDebugMessage("removing toolbar menu");
+                // removing toolbar menu
+                if (topMenuBar != null)
+                    topMenuBar.removeTopMenuBar();
+            } catch (Exception e) {
+                sharedParameters.printlnError("An error has occurred when unloading the " + sharedParameters.extensionName + " extension.");
                 sharedParameters.printDebugMessage(e.getMessage());
                 e.printStackTrace(sharedParameters.stderr);
                 sharedParameters.printlnError("Top menu will be removed! If that does not work, use the Unload option of the top menu");
                 if (topMenuBar != null)
                     topMenuBar.removeTopMenuBar();
                 UIHelper.showWarningMessage(sharedParameters.extensionName + " extension has been closed with an error.\r\n" +
-                        "You may need to restart Burp Suite.\r\n" +
-                        "Please consider looking at the error and reporting it to the GitHub repository:\r\n" +
-                        sharedParameters.extensionURL
+                                "You may need to restart Burp Suite.\r\n" +
+                                "Please consider looking at the error and reporting it to the GitHub repository:\r\n" +
+                                sharedParameters.extensionURL
                         , topMenuBar);
             }
 
@@ -376,14 +379,14 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
         if (messageInfo != null) {
             boolean pwnFoxSupportCapability = sharedParameters.preferences.safeGetSetting("pwnFoxSupportCapability", false);
 
-            if(pwnFoxSupportCapability){
+            if (pwnFoxSupportCapability) {
                 // From https://github.com/yeswehack/PwnFox/pull/8/commits/27bdb409ec7727f021f739abf50bbb9eb6c26e85
                 var requestInfo = sharedParameters.callbacks.getHelpers().analyzeRequest(messageInfo);
                 var body = messageInfo.getRequest();
                 var bodyAndHeader = HTTPMessageHelper.getHeaderAndBody(body, requestInfo.getBodyOffset());
                 var headerList = HTTPMessageHelper.getHeadersListFromHeader(bodyAndHeader.get(0));
                 var pwnFoxColor = HTTPMessageHelper.getFirstHeaderValueByNameFromHeaders(headerList, "X-PwnFox-Color", false);
-                if(!pwnFoxColor.isEmpty()){
+                if (!pwnFoxColor.isEmpty()) {
                     var cleanHeaders = HTTPMessageHelper.removeHeadersByName(headerList, "X-PwnFox-Color");
                     messageInfo.setHighlight(pwnFoxColor);
                     messageInfo.setRequest(sharedParameters.callbacks.getHelpers().buildHttpMessage(cleanHeaders, bodyAndHeader.get(1)));

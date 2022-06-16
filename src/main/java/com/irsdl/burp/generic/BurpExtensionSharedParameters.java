@@ -19,50 +19,6 @@ import java.util.Date;
 import java.util.HashMap;
 
 public class BurpExtensionSharedParameters {
-    public BurpExtensionSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, IBurpExtender burpExtenderObj, IBurpExtenderCallbacks callbacks) {
-        this.version = version;
-        this.extensionName = extensionName;
-        this.extensionURL = extensionURL;
-        this.extensionIssueTracker = extensionIssueTracker;
-        this.extensionClass = burpExtenderObj.getClass();
-        this.callbacks = callbacks;
-        this.burpExtender = burpExtenderObj;
-
-        // obtain our output stream
-        this.stdout = new PrintWriter(callbacks.getStdout(), true);
-        this.stderr = new PrintWriter(callbacks.getStderr(), true);
-
-        // getting Burp Suite version
-        try{
-            if(callbacks.getBurpVersion()[0].contains("Professional"))
-                this.isBurpPro = true;
-
-            if(callbacks.getBurpVersion().length > 1){
-                this.burpMajorVersion = Double.parseDouble(callbacks.getBurpVersion()[1]);
-            }
-
-            if(callbacks.getBurpVersion().length > 2){
-                this.burpMinorVersion = Double.parseDouble(callbacks.getBurpVersion()[2]);
-            }
-
-        }catch(Exception e){
-            printlnError(e.getMessage());
-        }
-
-        // initialize custom preferences - see https://github.com/CoreyD97/BurpExtenderUtilities/blob/master/src/test/java/extension/PreferencesTest.java
-        this.preferences = new ExtendedPreferences(extensionName, new DefaultGsonProvider(), callbacks);
-        this.preferences.sharedParameters = this;
-        // registering and getting the isDebug setting
-        try {
-            preferences.registerSetting("debugLevel", Integer.TYPE, 0, Preferences.Visibility.GLOBAL);
-        } catch (Exception e) {
-            // already registered!
-            printlnError(e.getMessage());
-        }
-        debugLevel = preferences.getSetting("debugLevel");
-    }
-
-
     public String version = "0.0"; // we need to keep this a double number to make sure check for update can work
     public String extensionName = "MyExtension";
     public String extensionURL = "https://github.com/user/proj";
@@ -95,6 +51,50 @@ public class BurpExtensionSharedParameters {
     private Image _originalBurpIcon = null; // Burp Suite's original frame icon
     private Boolean _isUILoaded = false; // Burp Suite's original frame icon
 
+
+    public BurpExtensionSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, IBurpExtender burpExtenderObj, IBurpExtenderCallbacks callbacks) {
+        this.version = version;
+        this.extensionName = extensionName;
+        this.extensionURL = extensionURL;
+        this.extensionIssueTracker = extensionIssueTracker;
+        this.extensionClass = burpExtenderObj.getClass();
+        this.callbacks = callbacks;
+        this.burpExtender = burpExtenderObj;
+
+        // obtain our output stream
+        this.stdout = new PrintWriter(callbacks.getStdout(), true);
+        this.stderr = new PrintWriter(callbacks.getStderr(), true);
+
+        // getting Burp Suite version
+        try {
+            if (callbacks.getBurpVersion()[0].contains("Professional"))
+                this.isBurpPro = true;
+
+            if (callbacks.getBurpVersion().length > 1) {
+                this.burpMajorVersion = Double.parseDouble(callbacks.getBurpVersion()[1]);
+            }
+
+            if (callbacks.getBurpVersion().length > 2) {
+                this.burpMinorVersion = Double.parseDouble(callbacks.getBurpVersion()[2]);
+            }
+
+        } catch (Exception e) {
+            printlnError(e.getMessage());
+        }
+
+        // initialize custom preferences - see https://github.com/CoreyD97/BurpExtenderUtilities/blob/master/src/test/java/extension/PreferencesTest.java
+        this.preferences = new ExtendedPreferences(extensionName, new DefaultGsonProvider(), callbacks);
+        this.preferences.sharedParameters = this;
+        // registering and getting the isDebug setting
+        try {
+            preferences.registerSetting("debugLevel", Integer.TYPE, 0, Preferences.Visibility.GLOBAL);
+        } catch (Exception e) {
+            // already registered!
+            printlnError(e.getMessage());
+        }
+        debugLevel = preferences.getSetting("debugLevel");
+    }
+
     public void setUIParametersFromExtensionTab(JPanel extensionJPanel, int waitSeconds) {
         boolean foundUI = false;
         int attemptsRemaining = waitSeconds * 10;
@@ -108,7 +108,7 @@ public class BurpExtensionSharedParameters {
                 if (get_rootTabbedPane() != null) {
                     isDarkMode = BurpUITools.isDarkMode(get_rootTabbedPane());
                     foundUI = true;
-                }else
+                } else
                     throw new Exception("no ui");
 
                 printDebugMessage("UI parameters have been loaded successfully");
@@ -139,10 +139,10 @@ public class BurpExtensionSharedParameters {
         if (debugLevel > 0) {
             String strDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
             String fullMessage = "\r\nDEBUG->\r\n\t";
-            if(!note.isBlank())
-                fullMessage +="Note: " + note + " - Timestamp: " + strDate + "\r\n\tMessage: " + message;
+            if (!note.isBlank())
+                fullMessage += "Note: " + note + " - Timestamp: " + strDate + "\r\n\tMessage: " + message;
             else
-                fullMessage +="Timestamp: " + strDate + "\r\n\tMessage: " + message;
+                fullMessage += "Timestamp: " + strDate + "\r\n\tMessage: " + message;
             System.out.println(fullMessage);
             if (!alreadyPrinted) {
                 this.stdout.println(fullMessage);
@@ -154,8 +154,8 @@ public class BurpExtensionSharedParameters {
         if (debugLevel > 0) {
             StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
             String methods = "";
-            if(debugLevel > 1){
-                methods +="\t\t";
+            if (debugLevel > 1) {
+                methods += "\t\t";
                 // very verbose
                 for (int i = 2; i < stackTraceElements.length; i++) {
                     methods += stackTraceElements[i] + " <- ";
