@@ -23,7 +23,7 @@ public class ExtendedPreferences extends Preferences {
         while (!isSaved && tryTimes < 10) {
             tryTimes++;
 
-            if(sharedParameters != null){
+            if (sharedParameters != null) {
                 sharedParameters.printDebugMessage("Try number: " + tryTimes);
                 sharedParameters.printDebugMessage("Trying to save " + settingName);
             }
@@ -33,12 +33,12 @@ public class ExtendedPreferences extends Preferences {
 
                 if (getSetting(settingName).equals(value)) {
                     isSaved = true;
-                    if(sharedParameters != null) {
+                    if (sharedParameters != null) {
                         sharedParameters.printDebugMessage("This was saved successfully: " + settingName);
                     }
                 }
             } catch (Exception e) {
-                if(sharedParameters != null) {
+                if (sharedParameters != null) {
                     sharedParameters.printDebugMessage("Save error: " + e.getMessage());
                     if (sharedParameters.debugLevel > 1)
                         e.printStackTrace(sharedParameters.stderr);
@@ -52,15 +52,15 @@ public class ExtendedPreferences extends Preferences {
         var result = defaultValue;
 
         try {
-            if(sharedParameters != null) {
+            if (sharedParameters != null) {
                 sharedParameters.printDebugMessage("Trying to get value of " + settingName + " from settings");
             }
 
             result = getSetting(settingName);
         } catch (Exception e) {
-            if(sharedParameters != null){
+            if (sharedParameters != null) {
                 sharedParameters.printDebugMessage("Get error: " + e.getMessage());
-                if(sharedParameters.debugLevel > 1)
+                if (sharedParameters.debugLevel > 1)
                     e.printStackTrace(sharedParameters.stderr);
             }
         }

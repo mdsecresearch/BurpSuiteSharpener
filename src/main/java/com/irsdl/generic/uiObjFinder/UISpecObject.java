@@ -68,19 +68,19 @@ public class UISpecObject {
         if (get_name() != null) {
             String componentName = component.getName();
 
-            if(componentName == null)
+            if (componentName == null)
                 return false;
 
-            if(!get_isCaseSensitiveName()){
+            if (!get_isCaseSensitiveName()) {
                 componentName = componentName.toLowerCase();
             }
 
-            if(!get_isPartialName()){
-                if(!componentName.equals(get_name())){
+            if (!get_isPartialName()) {
+                if (!componentName.equals(get_name())) {
                     return false;
                 }
-            }else{
-                if(!componentName.contains(get_name())){
+            } else {
+                if (!componentName.contains(get_name())) {
                     return false;
                 }
             }

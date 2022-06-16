@@ -66,19 +66,19 @@ public class BurpExtensionSharedParameters {
         this.stderr = new PrintWriter(callbacks.getStderr(), true);
 
         // getting Burp Suite version
-        try{
-            if(callbacks.getBurpVersion()[0].contains("Professional"))
+        try {
+            if (callbacks.getBurpVersion()[0].contains("Professional"))
                 this.isBurpPro = true;
 
-            if(callbacks.getBurpVersion().length > 1){
+            if (callbacks.getBurpVersion().length > 1) {
                 this.burpMajorVersion = Double.parseDouble(callbacks.getBurpVersion()[1]);
             }
 
-            if(callbacks.getBurpVersion().length > 2){
+            if (callbacks.getBurpVersion().length > 2) {
                 this.burpMinorVersion = Double.parseDouble(callbacks.getBurpVersion()[2]);
             }
 
-        }catch(Exception e){
+        } catch (Exception e) {
             printlnError(e.getMessage());
         }
 
@@ -108,7 +108,7 @@ public class BurpExtensionSharedParameters {
                 if (get_rootTabbedPane() != null) {
                     isDarkMode = BurpUITools.isDarkMode(get_rootTabbedPane());
                     foundUI = true;
-                }else
+                } else
                     throw new Exception("no ui");
 
                 printDebugMessage("UI parameters have been loaded successfully");
@@ -139,10 +139,10 @@ public class BurpExtensionSharedParameters {
         if (debugLevel > 0) {
             String strDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
             String fullMessage = "\r\nDEBUG->\r\n\t";
-            if(!note.isBlank())
-                fullMessage +="Note: " + note + " - Timestamp: " + strDate + "\r\n\tMessage: " + message;
+            if (!note.isBlank())
+                fullMessage += "Note: " + note + " - Timestamp: " + strDate + "\r\n\tMessage: " + message;
             else
-                fullMessage +="Timestamp: " + strDate + "\r\n\tMessage: " + message;
+                fullMessage += "Timestamp: " + strDate + "\r\n\tMessage: " + message;
             System.out.println(fullMessage);
             if (!alreadyPrinted) {
                 this.stdout.println(fullMessage);
@@ -154,8 +154,8 @@ public class BurpExtensionSharedParameters {
         if (debugLevel > 0) {
             StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
             String methods = "";
-            if(debugLevel > 1){
-                methods +="\t\t";
+            if (debugLevel > 1) {
+                methods += "\t\t";
                 // very verbose
                 for (int i = 2; i < stackTraceElements.length; i++) {
                     methods += stackTraceElements[i] + " <- ";

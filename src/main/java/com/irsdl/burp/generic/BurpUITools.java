@@ -58,9 +58,9 @@ public class BurpUITools {
         return result;
     }
 
-    public static boolean isDarkMode(Component component){
+    public static boolean isDarkMode(Component component) {
         boolean result = false;
-        if(component.getBackground().getBlue() < 128){
+        if (component.getBackground().getBlue() < 128) {
             result = true;
         }
         return result;
@@ -113,20 +113,20 @@ public class BurpUITools {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Thread(() -> {
-                    for (int i = 0; i < menuBar.getMenuCount(); i++) {
-                        JMenuItem item = menuBar.getMenu(i);
-                        if (item.getText().trim().equalsIgnoreCase(toolbarName.trim())) {
-                            menuBar.remove(i);
-                            // break; // we may have more than one menu so this line needs to be commented
-                        }
-                    }
 
-                    if (repaintUI) {
-                        menuBar.revalidate();
-                        menuBar.repaint();
+                for (int i = 0; i < menuBar.getMenuCount(); i++) {
+                    JMenuItem item = menuBar.getMenu(i);
+                    if (item.getText().trim().equalsIgnoreCase(toolbarName.trim())) {
+                        menuBar.remove(i);
+                        // break; // we may have more than one menu so this line needs to be commented
                     }
-                }).start();
+                }
+
+                if (repaintUI) {
+                    menuBar.revalidate();
+                    menuBar.repaint();
+                }
+
             }
         });
     }

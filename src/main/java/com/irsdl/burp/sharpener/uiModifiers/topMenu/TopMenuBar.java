@@ -30,15 +30,15 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
 import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class TopMenuBar extends javax.swing.JMenu {
     private JMenu topMenuForExtension;
     private final SharpenerSharedParameters sharedParameters;
     private final String[] themeNames = {"none", "halloween", "game", "hacker", "gradient", "mobster", "office"};
-    private final String[] iconSizes = {"48", "32", "24", "20", "16", "14", "12", "10" , "8", "6"};
+    private final String[] iconSizes = {"48", "32", "24", "20", "16", "14", "12", "10", "8", "6"};
     private final Boolean isPrefsRegistered = false;
 
     public TopMenuBar(SharpenerSharedParameters sharedParameters) {
@@ -52,478 +52,476 @@ public class TopMenuBar extends javax.swing.JMenu {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Thread(() -> {
-                    removeAll();
+                removeAll();
 
-                    // Project menu
-                    JMenu projectMenu = new JMenu("Project Settings");
+                // Project menu
+                JMenu projectMenu = new JMenu("Project Settings");
 
-                    // Change title button
-                    JMenuItem changeTitle = new JMenuItem(new AbstractAction("Change Title") {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            String newTitle = UIHelper.showPlainInputMessage("Change Burp Suite Title String To:", "Change Burp Suite Title", sharedParameters.get_mainFrame().getTitle(), sharedParameters.get_mainFrame());
-                            if (newTitle != null && !newTitle.trim().isEmpty()) {
-                                if (!sharedParameters.get_mainFrame().getTitle().equals(newTitle)) {
-                                    BurpTitleAndIcon.setTitle(sharedParameters, newTitle);
-                                    sharedParameters.preferences.safeSetSetting("BurpTitle", newTitle);
-                                }
+                // Change title button
+                JMenuItem changeTitle = new JMenuItem(new AbstractAction("Change Title") {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        String newTitle = UIHelper.showPlainInputMessage("Change Burp Suite Title String To:", "Change Burp Suite Title", sharedParameters.get_mainFrame().getTitle(), sharedParameters.get_mainFrame());
+                        if (newTitle != null && !newTitle.trim().isEmpty()) {
+                            if (!sharedParameters.get_mainFrame().getTitle().equals(newTitle)) {
+                                BurpTitleAndIcon.setTitle(sharedParameters, newTitle);
+                                sharedParameters.preferences.safeSetSetting("BurpTitle", newTitle);
                             }
                         }
-                    });
-                    projectMenu.add(changeTitle);
-
-                    // Change title button
-                    String burpResourceIconName = sharedParameters.preferences.safeGetStringSetting("BurpResourceIconName");
-                    Resource[] resourceIcons = new Resource[]{};
-
-                    try {
-                        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(sharedParameters.extensionClass.getClassLoader());
-                        resourceIcons = resolver.getResources("classpath:icons/*.*");
-
-                    } catch (IOException e) {
-                        sharedParameters.printDebugMessage("No icon was found in resources");
                     }
+                });
+                projectMenu.add(changeTitle);
 
-                    JMenu changeBurpIcon = new JMenu("Change Burp Suite Icon");
+                // Change title button
+                String burpResourceIconName = sharedParameters.preferences.safeGetStringSetting("BurpResourceIconName");
+                Resource[] resourceIcons = new Resource[]{};
 
-                    ButtonGroup burpIconGroup = new ButtonGroup();
-                    for(Resource resourceIcon: resourceIcons){
-                        String resourcePath = "/icons/"+resourceIcon.getFilename();
-                        JRadioButtonMenuItem burpIconImage = new JRadioButtonMenuItem(resourceIcon.getFilename().replaceAll("\\..*$",""));
-                        burpIconImage.setIcon(new ImageIcon(ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, resourcePath), 16)));
-                        if (resourceIcon.getFilename().equalsIgnoreCase(burpResourceIconName)) {
-                            burpIconImage.setSelected(true);
-                        }
-                        burpIconImage.addActionListener((e) -> {
-                            BurpTitleAndIcon.setIcon(sharedParameters, resourcePath, 48, true);
-                            sharedParameters.preferences.safeSetSetting("BurpResourceIconName", resourcePath);
-                            sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", "");
-                        });
-                        burpIconGroup.add(burpIconImage);
-                        changeBurpIcon.add(burpIconImage);
-                    }
+                try {
+                    PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(sharedParameters.extensionClass.getClassLoader());
+                    resourceIcons = resolver.getResources("classpath:icons/*.*");
 
-                    JRadioButtonMenuItem burpIconImage = new JRadioButtonMenuItem("Custom");
-                    if(!((String) sharedParameters.preferences.safeGetStringSetting("BurpIconCustomPath")).isBlank()){
+                } catch (IOException e) {
+                    sharedParameters.printDebugMessage("No icon was found in resources");
+                }
+
+                JMenu changeBurpIcon = new JMenu("Change Burp Suite Icon");
+
+                ButtonGroup burpIconGroup = new ButtonGroup();
+                for (Resource resourceIcon : resourceIcons) {
+                    String resourcePath = "/icons/" + resourceIcon.getFilename();
+                    JRadioButtonMenuItem burpIconImage = new JRadioButtonMenuItem(resourceIcon.getFilename().replaceAll("\\..*$", ""));
+                    burpIconImage.setIcon(new ImageIcon(ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, resourcePath), 16)));
+                    if (resourceIcon.getFilename().equalsIgnoreCase(burpResourceIconName)) {
                         burpIconImage.setSelected(true);
                     }
-
-                    burpIconImage.addActionListener(new AbstractAction() {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            String lastIconPath = sharedParameters.preferences.safeGetStringSetting("LastBurpIconCustomPath");
-                            FileFilter imageFilter = new FileNameExtensionFilter("Image files", ImageIO.getReaderFileSuffixes());
-                            String newIconPath = UIHelper.showFileDialog(lastIconPath, imageFilter, sharedParameters.get_mainFrame());
-                            if (newIconPath != null && !newIconPath.trim().isEmpty()) {
-                                BurpTitleAndIcon.setIcon(sharedParameters, newIconPath, 48, false);
-                                sharedParameters.preferences.safeSetSetting("BurpResourceIconName", "");
-                                sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", newIconPath);
-                                sharedParameters.preferences.safeSetSetting("LastBurpIconCustomPath", newIconPath);
-                            }
-                        }
+                    burpIconImage.addActionListener((e) -> {
+                        BurpTitleAndIcon.setIcon(sharedParameters, resourcePath, 48, true);
+                        sharedParameters.preferences.safeSetSetting("BurpResourceIconName", resourcePath);
+                        sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", "");
                     });
                     burpIconGroup.add(burpIconImage);
                     changeBurpIcon.add(burpIconImage);
+                }
 
-                    projectMenu.add(changeBurpIcon);
+                JRadioButtonMenuItem burpIconImage = new JRadioButtonMenuItem("Custom");
+                if (!((String) sharedParameters.preferences.safeGetStringSetting("BurpIconCustomPath")).isBlank()) {
+                    burpIconImage.setSelected(true);
+                }
 
-
-                    // Reset title button
-                    JMenuItem resetTitle = new JMenuItem(new AbstractAction("Reset Burp Suite Title") {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Title", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
-                            if (response == 0) {
-                                BurpTitleAndIcon.resetTitle(sharedParameters);
-                                sharedParameters.preferences.safeSetSetting("BurpTitle", "");
-                            }
+                burpIconImage.addActionListener(new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        String lastIconPath = sharedParameters.preferences.safeGetStringSetting("LastBurpIconCustomPath");
+                        FileFilter imageFilter = new FileNameExtensionFilter("Image files", ImageIO.getReaderFileSuffixes());
+                        String newIconPath = UIHelper.showFileDialog(lastIconPath, imageFilter, sharedParameters.get_mainFrame());
+                        if (newIconPath != null && !newIconPath.trim().isEmpty()) {
+                            BurpTitleAndIcon.setIcon(sharedParameters, newIconPath, 48, false);
+                            sharedParameters.preferences.safeSetSetting("BurpResourceIconName", "");
+                            sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", newIconPath);
+                            sharedParameters.preferences.safeSetSetting("LastBurpIconCustomPath", newIconPath);
                         }
-                    });
-                    projectMenu.add(resetTitle);
-
-                    // Reset icon button
-                    JMenuItem resetIcon = new JMenuItem(new AbstractAction("Reset Burp Suite Icon") {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Icon", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
-                            if (response == 0) {
-                                BurpTitleAndIcon.resetIcon(sharedParameters);
-                                sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", "");
-                            }
-                        }
-                    });
-                    projectMenu.add(resetIcon);
-                    add(projectMenu);
-
-                    // Global menu
-                    JMenu globalMenu = new JMenu("Global Settings");
-
-                    // Style menu
-                    JMenu toolsUniqueStyleMenu = new JMenu("Burp-Tools' Unique Style");
-                    JMenuItem enableAll = new JMenuItem(new AbstractAction("Enable All") {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                                sharedParameters.preferences.safeSetSetting("isUnique_" + tool, true);
-                                MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
-                            }
-                            updateTopMenuBar();
-                            //reAddTopMenuBar();
-                        }
-                    });
-                    toolsUniqueStyleMenu.add(enableAll);
-                    JMenuItem disableAll = new JMenuItem(new AbstractAction("Disable All") {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                                sharedParameters.preferences.safeSetSetting("isUnique_" + tool, false);
-                                MainToolsTabStyleHandler.unsetToolTabStyle(sharedParameters, tool);
-                            }
-                            updateTopMenuBar();
-                            //reAddTopMenuBar();
-                        }
-                    });
-                    toolsUniqueStyleMenu.add(disableAll);
-
-                    toolsUniqueStyleMenu.addSeparator();
-
-                    String themeName = sharedParameters.preferences.safeGetStringSetting("ToolsThemeName");
-                    JMenu toolsUniqueStyleThemeMenu = new JMenu("Icons' Theme");
-                    ButtonGroup themeGroup = new ButtonGroup();
-                    for (String definedThemeName : themeNames) {
-                        JRadioButtonMenuItem toolStyleTheme = new JRadioButtonMenuItem(definedThemeName);
-                        if (themeName.equalsIgnoreCase(definedThemeName) || (themeName.isEmpty() && definedThemeName.equalsIgnoreCase("none"))) {
-                            toolStyleTheme.setSelected(true);
-                        }
-                        toolStyleTheme.addActionListener((e) -> {
-                            String chosenOne = definedThemeName;
-                            if (chosenOne.equalsIgnoreCase("none"))
-                                chosenOne = "";
-                            sharedParameters.preferences.safeSetSetting("ToolsThemeName", chosenOne);
-                            MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
-                        });
-                        themeGroup.add(toolStyleTheme);
-                        toolsUniqueStyleThemeMenu.add(toolStyleTheme);
                     }
+                });
+                burpIconGroup.add(burpIconImage);
+                changeBurpIcon.add(burpIconImage);
 
-                    JRadioButtonMenuItem toolStyleThemeCustom = new JRadioButtonMenuItem("custom directory");
-                    if (themeName.equalsIgnoreCase("custom")) {
-                        toolStyleThemeCustom.setSelected(true);
-                    }
-                    toolStyleThemeCustom.addActionListener((e) -> {
-                        String themeCustomPath = sharedParameters.preferences.safeGetStringSetting("ToolsThemeCustomPath");
-                        String customPath = UIHelper.showDirectoryDialog(themeCustomPath, sharedParameters.get_mainFrame());
-                        if (!customPath.isEmpty()) {
-                            sharedParameters.preferences.safeSetSetting("ToolsThemeName", "custom");
-                            sharedParameters.preferences.safeSetSetting("ToolsThemeCustomPath", customPath);
-                        } else {
-                            updateTopMenuBar();
-                            //reAddTopMenuBar();
+                projectMenu.add(changeBurpIcon);
+
+
+                // Reset title button
+                JMenuItem resetTitle = new JMenuItem(new AbstractAction("Reset Burp Suite Title") {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Title", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                        if (response == 0) {
+                            BurpTitleAndIcon.resetTitle(sharedParameters);
+                            sharedParameters.preferences.safeSetSetting("BurpTitle", "");
                         }
+                    }
+                });
+                projectMenu.add(resetTitle);
+
+                // Reset icon button
+                JMenuItem resetIcon = new JMenuItem(new AbstractAction("Reset Burp Suite Icon") {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Icon", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                        if (response == 0) {
+                            BurpTitleAndIcon.resetIcon(sharedParameters);
+                            sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", "");
+                        }
+                    }
+                });
+                projectMenu.add(resetIcon);
+                add(projectMenu);
+
+                // Global menu
+                JMenu globalMenu = new JMenu("Global Settings");
+
+                // Style menu
+                JMenu toolsUniqueStyleMenu = new JMenu("Burp-Tools' Unique Style");
+                JMenuItem enableAll = new JMenuItem(new AbstractAction("Enable All") {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
+                            sharedParameters.preferences.safeSetSetting("isUnique_" + tool, true);
+                            MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
+                        }
+                        updateTopMenuBar();
+                        //reAddTopMenuBar();
+                    }
+                });
+                toolsUniqueStyleMenu.add(enableAll);
+                JMenuItem disableAll = new JMenuItem(new AbstractAction("Disable All") {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
+                            sharedParameters.preferences.safeSetSetting("isUnique_" + tool, false);
+                            MainToolsTabStyleHandler.unsetToolTabStyle(sharedParameters, tool);
+                        }
+                        updateTopMenuBar();
+                        //reAddTopMenuBar();
+                    }
+                });
+                toolsUniqueStyleMenu.add(disableAll);
+
+                toolsUniqueStyleMenu.addSeparator();
+
+                String themeName = sharedParameters.preferences.safeGetStringSetting("ToolsThemeName");
+                JMenu toolsUniqueStyleThemeMenu = new JMenu("Icons' Theme");
+                ButtonGroup themeGroup = new ButtonGroup();
+                for (String definedThemeName : themeNames) {
+                    JRadioButtonMenuItem toolStyleTheme = new JRadioButtonMenuItem(definedThemeName);
+                    if (themeName.equalsIgnoreCase(definedThemeName) || (themeName.isEmpty() && definedThemeName.equalsIgnoreCase("none"))) {
+                        toolStyleTheme.setSelected(true);
+                    }
+                    toolStyleTheme.addActionListener((e) -> {
+                        String chosenOne = definedThemeName;
+                        if (chosenOne.equalsIgnoreCase("none"))
+                            chosenOne = "";
+                        sharedParameters.preferences.safeSetSetting("ToolsThemeName", chosenOne);
                         MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
                     });
-                    themeGroup.add(toolStyleThemeCustom);
-                    toolsUniqueStyleThemeMenu.add(toolStyleThemeCustom);
-                    toolsUniqueStyleMenu.add(toolsUniqueStyleThemeMenu);
+                    themeGroup.add(toolStyleTheme);
+                    toolsUniqueStyleThemeMenu.add(toolStyleTheme);
+                }
 
-                    String iconSize = sharedParameters.preferences.safeGetStringSetting("ToolsIconSize");
-                    JMenu toolsUniqueStyleIconSizeMenu = new JMenu("Icons' Size");
-                    ButtonGroup iconSizeGroup = new ButtonGroup();
-                    for (String definedIconSize: iconSizes) {
-                        JRadioButtonMenuItem toolIconSize = new JRadioButtonMenuItem(definedIconSize);
-                        if (iconSize.equals(definedIconSize)) {
-                            toolIconSize.setSelected(true);
-                        }
-                        toolIconSize.addActionListener((e) -> {
-                            String chosenOne = definedIconSize;
-                            sharedParameters.preferences.safeSetSetting("ToolsIconSize", chosenOne);
-                            MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
-                        });
-                        iconSizeGroup.add(toolIconSize);
-                        toolsUniqueStyleIconSizeMenu.add(toolIconSize);
+                JRadioButtonMenuItem toolStyleThemeCustom = new JRadioButtonMenuItem("custom directory");
+                if (themeName.equalsIgnoreCase("custom")) {
+                    toolStyleThemeCustom.setSelected(true);
+                }
+                toolStyleThemeCustom.addActionListener((e) -> {
+                    String themeCustomPath = sharedParameters.preferences.safeGetStringSetting("ToolsThemeCustomPath");
+                    String customPath = UIHelper.showDirectoryDialog(themeCustomPath, sharedParameters.get_mainFrame());
+                    if (!customPath.isEmpty()) {
+                        sharedParameters.preferences.safeSetSetting("ToolsThemeName", "custom");
+                        sharedParameters.preferences.safeSetSetting("ToolsThemeCustomPath", customPath);
+                    } else {
+                        updateTopMenuBar();
+                        //reAddTopMenuBar();
                     }
-                    toolsUniqueStyleMenu.add(toolsUniqueStyleIconSizeMenu);
+                    MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
+                });
+                themeGroup.add(toolStyleThemeCustom);
+                toolsUniqueStyleThemeMenu.add(toolStyleThemeCustom);
+                toolsUniqueStyleMenu.add(toolsUniqueStyleThemeMenu);
 
-                    toolsUniqueStyleMenu.addSeparator();
-
-                    for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
-                        if (tool.toString().equalsIgnoreCase("none"))
-                            continue;
-                        JCheckBoxMenuItem toolStyleOption = new JCheckBoxMenuItem(tool.toString());
-                        if (sharedParameters.preferences.safeGetBooleanSetting("isUnique_" + tool)) {
-                            toolStyleOption.setSelected(true);
-                        }
-                        toolStyleOption.addActionListener((e) -> {
-                            Boolean currentSetting = sharedParameters.preferences.safeGetBooleanSetting("isUnique_" + tool);
-                            if (currentSetting) {
-                                sharedParameters.preferences.safeSetSetting("isUnique_" + tool, false);
-                                MainToolsTabStyleHandler.unsetToolTabStyle(sharedParameters, tool);
-                            } else {
-                                sharedParameters.preferences.safeSetSetting("isUnique_" + tool, true);
-                                MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
-                            }
-                        });
-                        toolsUniqueStyleMenu.add(toolStyleOption);
+                String iconSize = sharedParameters.preferences.safeGetStringSetting("ToolsIconSize");
+                JMenu toolsUniqueStyleIconSizeMenu = new JMenu("Icons' Size");
+                ButtonGroup iconSizeGroup = new ButtonGroup();
+                for (String definedIconSize : iconSizes) {
+                    JRadioButtonMenuItem toolIconSize = new JRadioButtonMenuItem(definedIconSize);
+                    if (iconSize.equals(definedIconSize)) {
+                        toolIconSize.setSelected(true);
                     }
-                    globalMenu.add(toolsUniqueStyleMenu);
+                    toolIconSize.addActionListener((e) -> {
+                        String chosenOne = definedIconSize;
+                        sharedParameters.preferences.safeSetSetting("ToolsIconSize", chosenOne);
+                        MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
+                    });
+                    iconSizeGroup.add(toolIconSize);
+                    toolsUniqueStyleIconSizeMenu.add(toolIconSize);
+                }
+                toolsUniqueStyleMenu.add(toolsUniqueStyleIconSizeMenu);
 
-                    JCheckBoxMenuItem topMenuScrollableLayout = new JCheckBoxMenuItem("Scrollable Tool Pane");
+                toolsUniqueStyleMenu.addSeparator();
 
-                    if (sharedParameters.preferences.safeGetBooleanSetting("isToolTabPaneScrollable")) {
-                        topMenuScrollableLayout.setSelected(true);
+                for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
+                    if (tool.toString().equalsIgnoreCase("none"))
+                        continue;
+                    JCheckBoxMenuItem toolStyleOption = new JCheckBoxMenuItem(tool.toString());
+                    if (sharedParameters.preferences.safeGetBooleanSetting("isUnique_" + tool)) {
+                        toolStyleOption.setSelected(true);
                     }
-
-                    topMenuScrollableLayout.addActionListener((e) -> {
-                        boolean isToolTabPaneScrollable = sharedParameters.preferences.safeGetBooleanSetting("isToolTabPaneScrollable");
-                        if (isToolTabPaneScrollable) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    new Thread(() -> {
-                                        sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
-                                    }).start();
-                                }
-                            });
-                            sharedParameters.preferences.safeSetSetting("isToolTabPaneScrollable", false);
+                    toolStyleOption.addActionListener((e) -> {
+                        Boolean currentSetting = sharedParameters.preferences.safeGetBooleanSetting("isUnique_" + tool);
+                        if (currentSetting) {
+                            sharedParameters.preferences.safeSetSetting("isUnique_" + tool, false);
+                            MainToolsTabStyleHandler.unsetToolTabStyle(sharedParameters, tool);
                         } else {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    new Thread(() -> {
-                                        sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-                                    }).start();
-                                }
-                            });
-                            sharedParameters.preferences.safeSetSetting("isToolTabPaneScrollable", true);
+                            sharedParameters.preferences.safeSetSetting("isUnique_" + tool, true);
+                            MainToolsTabStyleHandler.setToolTabStyle(sharedParameters, tool);
                         }
                     });
+                    toolsUniqueStyleMenu.add(toolStyleOption);
+                }
+                globalMenu.add(toolsUniqueStyleMenu);
 
-                    globalMenu.add(topMenuScrollableLayout);
+                JCheckBoxMenuItem topMenuScrollableLayout = new JCheckBoxMenuItem("Scrollable Tool Pane");
 
-                    JMenu supportedCapabilitiesMenu = new JMenu("Supported Capabilities");
+                if (sharedParameters.preferences.safeGetBooleanSetting("isToolTabPaneScrollable")) {
+                    topMenuScrollableLayout.setSelected(true);
+                }
 
-                    JCheckBoxMenuItem pwnFoxSupportCapability = new JCheckBoxMenuItem("PwnFox Highlighter");
-                    pwnFoxSupportCapability.setToolTipText("Useful when PwnFox extension is enabled in Firefox");
+                topMenuScrollableLayout.addActionListener((e) -> {
+                    boolean isToolTabPaneScrollable = sharedParameters.preferences.safeGetBooleanSetting("isToolTabPaneScrollable");
+                    if (isToolTabPaneScrollable) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                            }
+                        });
+                        sharedParameters.preferences.safeSetSetting("isToolTabPaneScrollable", false);
+                    } else {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                sharedParameters.get_rootTabbedPane().setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+                            }
+                        });
+                        sharedParameters.preferences.safeSetSetting("isToolTabPaneScrollable", true);
+                    }
+                });
+
+                globalMenu.add(topMenuScrollableLayout);
+
+                JMenu supportedCapabilitiesMenu = new JMenu("Supported Capabilities");
+
+                JCheckBoxMenuItem pwnFoxSupportCapability = new JCheckBoxMenuItem("PwnFox Highlighter");
+                pwnFoxSupportCapability.setToolTipText("Useful when PwnFox extension is enabled in Firefox");
+                if (sharedParameters.preferences.safeGetBooleanSetting("pwnFoxSupportCapability")) {
+                    pwnFoxSupportCapability.setSelected(true);
+                }
+                pwnFoxSupportCapability.addActionListener((e) -> {
                     if (sharedParameters.preferences.safeGetBooleanSetting("pwnFoxSupportCapability")) {
-                        pwnFoxSupportCapability.setSelected(true);
+                        sharedParameters.preferences.safeSetSetting("pwnFoxSupportCapability", false);
+                    } else {
+                        sharedParameters.preferences.safeSetSetting("pwnFoxSupportCapability", true);
                     }
-                    pwnFoxSupportCapability.addActionListener((e) -> {
-                        if (sharedParameters.preferences.safeGetBooleanSetting("pwnFoxSupportCapability")) {
-                            sharedParameters.preferences.safeSetSetting("pwnFoxSupportCapability", false);
-                        } else {
-                            sharedParameters.preferences.safeSetSetting("pwnFoxSupportCapability", true);
-                        }
-                    });
-                    supportedCapabilitiesMenu.add(pwnFoxSupportCapability);
+                });
+                supportedCapabilitiesMenu.add(pwnFoxSupportCapability);
 
-                    globalMenu.add(supportedCapabilitiesMenu);
+                globalMenu.add(supportedCapabilitiesMenu);
 
-                    // Debug options
-                    JMenu debugMenu = new JMenu("Debug Settings");
-                    ButtonGroup debugButtonGroup = new ButtonGroup();
+                // Debug options
+                JMenu debugMenu = new JMenu("Debug Settings");
+                ButtonGroup debugButtonGroup = new ButtonGroup();
 
-                    JRadioButtonMenuItem debugOptionDisabled = new JRadioButtonMenuItem(new AbstractAction("Disabled") {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            sharedParameters.preferences.safeSetSetting("debugLevel", 0);
-                            sharedParameters.debugLevel = 0;
-                        }
-                    });
-                    if(sharedParameters.debugLevel == 0)
-                        debugOptionDisabled.setSelected(true);
+                JRadioButtonMenuItem debugOptionDisabled = new JRadioButtonMenuItem(new AbstractAction("Disabled") {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        sharedParameters.preferences.safeSetSetting("debugLevel", 0);
+                        sharedParameters.debugLevel = 0;
+                    }
+                });
+                if (sharedParameters.debugLevel == 0)
+                    debugOptionDisabled.setSelected(true);
 
-                    debugButtonGroup.add(debugOptionDisabled);
-                    debugMenu.add(debugOptionDisabled);
+                debugButtonGroup.add(debugOptionDisabled);
+                debugMenu.add(debugOptionDisabled);
 
-                    JRadioButtonMenuItem debugOptionVerbose = new JRadioButtonMenuItem(new AbstractAction("Verbose") {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            sharedParameters.preferences.safeSetSetting("debugLevel", 1);
-                            sharedParameters.debugLevel = 1;
-                        }
-                    });
-                    if(sharedParameters.debugLevel == 1)
-                        debugOptionVerbose.setSelected(true);
-                    debugButtonGroup.add(debugOptionVerbose);
-                    debugMenu.add(debugOptionVerbose);
+                JRadioButtonMenuItem debugOptionVerbose = new JRadioButtonMenuItem(new AbstractAction("Verbose") {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        sharedParameters.preferences.safeSetSetting("debugLevel", 1);
+                        sharedParameters.debugLevel = 1;
+                    }
+                });
+                if (sharedParameters.debugLevel == 1)
+                    debugOptionVerbose.setSelected(true);
+                debugButtonGroup.add(debugOptionVerbose);
+                debugMenu.add(debugOptionVerbose);
 
-                    JRadioButtonMenuItem debugOptionVeryVerbose = new JRadioButtonMenuItem(new AbstractAction("Very Verbose") {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            sharedParameters.preferences.safeSetSetting("debugLevel", 2);
-                            sharedParameters.debugLevel = 2;
-                        }
-                    });
-                    if(sharedParameters.debugLevel > 1)
-                        debugOptionVeryVerbose.setSelected(true);
-                    debugButtonGroup.add(debugOptionVeryVerbose);
-                    debugMenu.add(debugOptionVeryVerbose);
-                    globalMenu.add(debugMenu);
+                JRadioButtonMenuItem debugOptionVeryVerbose = new JRadioButtonMenuItem(new AbstractAction("Very Verbose") {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        sharedParameters.preferences.safeSetSetting("debugLevel", 2);
+                        sharedParameters.debugLevel = 2;
+                    }
+                });
+                if (sharedParameters.debugLevel > 1)
+                    debugOptionVeryVerbose.setSelected(true);
+                debugButtonGroup.add(debugOptionVeryVerbose);
+                debugMenu.add(debugOptionVeryVerbose);
+                globalMenu.add(debugMenu);
 
-                    add(globalMenu);
-                    addSeparator();
+                add(globalMenu);
+                addSeparator();
 
-                    JMenuItem unloadExtension = new JMenuItem(new AbstractAction("Unload Extension") {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            try {
-                                int response = UIHelper.askConfirmMessage("Sharpener Extension Unload", "Are you sure you want to unload the extension?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
-                                if (response == 0) {
-                                    sharedParameters.callbacks.unloadExtension();
-                                }
-                            }catch(NoClassDefFoundError | Exception e){
-                                // It seems the extension is dead and we are left with a top menu bar
-                            }
-
-                            try{
-                                new Timer().schedule(
-                                        new TimerTask() {
-                                            @Override
-                                            public void run() {
-                                                // This is useful when the extension has been unloaded but the menu is still there because of an error
-                                                // We should force removing the top menu bar from Burp using all native libraries
-                                                JRootPane rootPane = topMenuForExtension.getRootPane();
-                                                if(rootPane!=null){
-                                                    JTabbedPane rootTabbedPane = (JTabbedPane) rootPane.getContentPane().getComponent(0);
-                                                    JFrame mainFrame = (JFrame) rootTabbedPane.getRootPane().getParent();
-                                                    JMenuBar mainMenuBar = mainFrame.getJMenuBar();
-                                                    mainMenuBar.remove(topMenuForExtension);
-                                                    mainFrame.validate();
-                                                    mainFrame.repaint();
-                                                }
-                                            }
-                                        },
-                                        5000 // 5 seconds-delay to ensure all has been settled!
-                                );
-                            }catch (Exception e){
-
-                            }
-                        }
-                    });
-                    add(unloadExtension);
-
-                    JMenuItem reloadAllSettings = new JMenuItem(new AbstractAction("Reload All Settings") {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
-                                    //sharedParameters.allSettings.subTabSettings.unsetSubTabsStyle();
-                                    SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
-                                    sharpenerBurpExtender.load(true);
-
-                                }
-                            }).start();
-                        }
-                    });
-                    add(reloadAllSettings);
-
-                    JMenuItem resetAllSettings = new JMenuItem(new AbstractAction("Remove All Settings & Unload") {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset All Settings & Unload", "Are you sure you want to remove all the settings and unload the extension?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                JMenuItem unloadExtension = new JMenuItem(new AbstractAction("Unload Extension") {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        try {
+                            int response = UIHelper.askConfirmMessage("Sharpener Extension Unload", "Are you sure you want to unload the extension?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
                             if (response == 0) {
-
-                                // A bug in resetting settings in BurpExtenderUtilities should be fixed so we will give it another chance instead of using a workaround
-                                // sharedParameters.resetAllSettings();
-                                sharedParameters.preferences.resetAllSettings();
                                 sharedParameters.callbacks.unloadExtension();
                             }
+                        } catch (NoClassDefFoundError | Exception e) {
+                            // It seems the extension is dead and we are left with a top menu bar
                         }
-                    });
 
-                    add(resetAllSettings);
-                    addSeparator();
+                        try {
+                            new Timer().schedule(
+                                    new TimerTask() {
+                                        @Override
+                                        public void run() {
+                                            SwingUtilities.invokeLater(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    // This is useful when the extension has been unloaded but the menu is still there because of an error
+                                                    // We should force removing the top menu bar from Burp using all native libraries
+                                                    JRootPane rootPane = topMenuForExtension.getRootPane();
+                                                    if (rootPane != null) {
+                                                        JTabbedPane rootTabbedPane = (JTabbedPane) rootPane.getContentPane().getComponent(0);
+                                                        JFrame mainFrame = (JFrame) rootTabbedPane.getRootPane().getParent();
+                                                        JMenuBar mainMenuBar = mainFrame.getJMenuBar();
+                                                        mainMenuBar.remove(topMenuForExtension);
+                                                        mainFrame.validate();
+                                                        mainFrame.repaint();
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    },
+                                    5000 // 5 seconds-delay to ensure all has been settled!
+                            );
+                        } catch (Exception e) {
 
-                    JCheckBoxMenuItem checkForUpdateOption = new JCheckBoxMenuItem("Check for Update on Start");
-                    checkForUpdateOption.setToolTipText("Check is done by accessing its GitHub repository");
-                    if (sharedParameters.preferences.safeGetBooleanSetting("checkForUpdate")) {
-                        checkForUpdateOption.setSelected(true);
+                        }
                     }
+                });
+                add(unloadExtension);
 
-                    checkForUpdateOption.addActionListener((e) -> {
-                        if (sharedParameters.preferences.safeGetBooleanSetting("checkForUpdate")) {
-                            sharedParameters.preferences.safeSetSetting("checkForUpdate", false);
-                        } else {
-                            sharedParameters.preferences.safeSetSetting("checkForUpdate", true);
-                            SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
-                            sharpenerBurpExtender.checkForUpdate();
-                        }
-                    });
-                    add(checkForUpdateOption);
+                JMenuItem reloadAllSettings = new JMenuItem(new AbstractAction("Reload All Settings") {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                MainToolsTabStyleHandler.resetToolTabStylesFromSettings(sharedParameters);
+                                //sharedParameters.allSettings.subTabSettings.unsetSubTabsStyle();
+                                SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
+                                sharpenerBurpExtender.load(true);
 
-                    JMenuItem showProjectPage = new JMenuItem(new AbstractAction("Project Page") {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        Desktop.getDesktop().browse(new URI(sharedParameters.extensionURL));
-                                    } catch (Exception e) {
-                                    }
-                                }
-                            }).start();
-                        }
-                    });
-                    showProjectPage.setToolTipText("Will be opened in the default browser");
-                    add(showProjectPage);
-
-                    JMenuItem reportAnIssue = new JMenuItem(new AbstractAction("Report Bug/Feature") {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        Desktop.getDesktop().browse(new URI(sharedParameters.extensionIssueTracker));
-                                    } catch (Exception e) {
-                                    }
-                                }
-                            }).start();
-                        }
-                    });
-                    reportAnIssue.setToolTipText("Will be opened in the default browser");
-                    add(reportAnIssue);
-
-                    addSeparator();
-
-                    Image mdsecLogoImg;
-                    if(sharedParameters.isDarkMode){
-                        mdsecLogoImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, "/MDSec-logo-grey.png"), 100);
-                    }else{
-                        mdsecLogoImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, "/MDSec-logo-blue.png"), 100);
-                    }
-                    ImageIcon mdsecLogoIcon = new ImageIcon(mdsecLogoImg);
-                    JMenuItem mdsecLogoMenu = new JMenuItem(mdsecLogoIcon);
-                    mdsecLogoMenu.setPreferredSize(new Dimension(100,50));
-
-                    mdsecLogoMenu.setToolTipText("About this extension");
-                    mdsecLogoMenu.addActionListener(new AbstractAction() {
-                        @Override
-                        public void actionPerformed(ActionEvent actionEvent) {
-                            String aboutMessage = "Burp Suite " + sharedParameters.extensionName + " - version " + sharedParameters.version +
-                                    "\nReleased as open source by MDSec - https://www.mdsec.co.uk/\n" +
-                                    "Developed by Soroush Dalili (@irsdl)\n" +
-                                    "Project link: " + sharedParameters.extensionURL +
-                                    "\nReleased under AGPL see LICENSE for more information";
-                            UIHelper.showMessage(aboutMessage, "About this extension", sharedParameters.get_mainFrame());
-                        }
-                    });
-                    add(mdsecLogoMenu);
-
-                    // fixing the spacing when an icon is used - this used to work fine with old Java
-                    for(var item:getMenuComponents()){
-                        if(item instanceof JMenuItem){
-                            if(((JMenuItem) item).getIcon() == null){
-                                ((JMenuItem) item).setHorizontalTextPosition(SwingConstants.LEFT);
                             }
+                        }).start();
+                    }
+                });
+                add(reloadAllSettings);
+
+                JMenuItem resetAllSettings = new JMenuItem(new AbstractAction("Remove All Settings & Unload") {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset All Settings & Unload", "Are you sure you want to remove all the settings and unload the extension?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                        if (response == 0) {
+
+                            // A bug in resetting settings in BurpExtenderUtilities should be fixed so we will give it another chance instead of using a workaround
+                            // sharedParameters.resetAllSettings();
+                            sharedParameters.preferences.resetAllSettings();
+                            sharedParameters.callbacks.unloadExtension();
                         }
                     }
+                });
 
-                }).start();
+                add(resetAllSettings);
+                addSeparator();
+
+                JCheckBoxMenuItem checkForUpdateOption = new JCheckBoxMenuItem("Check for Update on Start");
+                checkForUpdateOption.setToolTipText("Check is done by accessing its GitHub repository");
+                if (sharedParameters.preferences.safeGetBooleanSetting("checkForUpdate")) {
+                    checkForUpdateOption.setSelected(true);
+                }
+
+                checkForUpdateOption.addActionListener((e) -> {
+                    if (sharedParameters.preferences.safeGetBooleanSetting("checkForUpdate")) {
+                        sharedParameters.preferences.safeSetSetting("checkForUpdate", false);
+                    } else {
+                        sharedParameters.preferences.safeSetSetting("checkForUpdate", true);
+                        SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
+                        sharpenerBurpExtender.checkForUpdate();
+                    }
+                });
+                add(checkForUpdateOption);
+
+                JMenuItem showProjectPage = new JMenuItem(new AbstractAction("Project Page") {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Desktop.getDesktop().browse(new URI(sharedParameters.extensionURL));
+                                } catch (Exception e) {
+                                }
+                            }
+                        }).start();
+                    }
+                });
+                showProjectPage.setToolTipText("Will be opened in the default browser");
+                add(showProjectPage);
+
+                JMenuItem reportAnIssue = new JMenuItem(new AbstractAction("Report Bug/Feature") {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Desktop.getDesktop().browse(new URI(sharedParameters.extensionIssueTracker));
+                                } catch (Exception e) {
+                                }
+                            }
+                        }).start();
+                    }
+                });
+                reportAnIssue.setToolTipText("Will be opened in the default browser");
+                add(reportAnIssue);
+
+                addSeparator();
+
+                Image mdsecLogoImg;
+                if (sharedParameters.isDarkMode) {
+                    mdsecLogoImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, "/MDSec-logo-grey.png"), 100);
+                } else {
+                    mdsecLogoImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, "/MDSec-logo-blue.png"), 100);
+                }
+                ImageIcon mdsecLogoIcon = new ImageIcon(mdsecLogoImg);
+                JMenuItem mdsecLogoMenu = new JMenuItem(mdsecLogoIcon);
+                mdsecLogoMenu.setPreferredSize(new Dimension(100, 50));
+
+                mdsecLogoMenu.setToolTipText("About this extension");
+                mdsecLogoMenu.addActionListener(new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        String aboutMessage = "Burp Suite " + sharedParameters.extensionName + " - version " + sharedParameters.version +
+                                "\nReleased as open source by MDSec - https://www.mdsec.co.uk/\n" +
+                                "Developed by Soroush Dalili (@irsdl)\n" +
+                                "Project link: " + sharedParameters.extensionURL +
+                                "\nReleased under AGPL see LICENSE for more information";
+                        UIHelper.showMessage(aboutMessage, "About this extension", sharedParameters.get_mainFrame());
+                    }
+                });
+                add(mdsecLogoMenu);
+
+                // fixing the spacing when an icon is used - this used to work fine with old Java
+                for (var item : getMenuComponents()) {
+                    if (item instanceof JMenuItem) {
+                        if (((JMenuItem) item).getIcon() == null) {
+                            ((JMenuItem) item).setHorizontalTextPosition(SwingConstants.LEFT);
+                        }
+                    }
+                }
             }
         });
     }
@@ -532,13 +530,11 @@ public class TopMenuBar extends javax.swing.JMenu {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Thread(() -> {
-                    //removeTopMenuBar(); // this has been disabled as invoke later may mean that the menu may be removed after it is being updated!
-                    removeTopMenuBarLastResort(sharedParameters, true);
-                    sharedParameters.allSettings.mainToolsTabSettings.loadSettings(); // this is to reflect the changes in the UI
-                    topMenuForExtension = new TopMenuBar(sharedParameters);
-                    addTopMenuBar();
-                }).start();
+                //removeTopMenuBar(); // this has been disabled as invoke later may mean that the menu may be removed after it is being updated!
+                removeTopMenuBarLastResort(sharedParameters, true);
+                sharedParameters.allSettings.mainToolsTabSettings.loadSettings(); // this is to reflect the changes in the UI
+                topMenuForExtension = new TopMenuBar(sharedParameters);
+                addTopMenuBar();
             }
         });
     }
@@ -547,35 +543,40 @@ public class TopMenuBar extends javax.swing.JMenu {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Thread(() -> {
-                    try {
-                        // adding toolbar
-                        JMenuBar menuBar = sharedParameters.get_mainMenuBar();
-                        if (topMenuForExtension == null) {
-                            topMenuForExtension = new TopMenuBar(sharedParameters);
-                        }
-                        //menuBar.add(topMenuForExtension, menuBar.getMenuCount() - 1);
-                        // to make it bold
-                        topMenuForExtension.setFont(topMenuForExtension.getFont().deriveFont(topMenuForExtension.getFont().getStyle() ^ Font.BOLD));
-                        menuBar.add(topMenuForExtension, 5); // we are adding this just after menu `Window`
-                        //sharedParameters.get_mainFrame().revalidate();
-                        //sharedParameters.get_mainMenuBar().repaint();
-                        // to set back to plain after a few seconds
-
-                        new java.util.Timer().schedule(
-                                new java.util.TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        //topMenuForExtension.setFont(topMenuForExtension.getFont().deriveFont(topMenuForExtension.getFont().getStyle() ^ Font.BOLD)); // this would set the font so if we change them later in the UI, this menu will not be updated!
-                                        topMenuForExtension.setFont(UIManager.getLookAndFeelDefaults().getFont(topMenuForExtension.getComponent()));
-                                    }
-                                },
-                                2000
-                        );
-                    } catch (Exception e) {
-                        sharedParameters.stderr.println("Error in adding the top menu: " + e.getMessage());
+                try {
+                    // adding toolbar
+                    JMenuBar menuBar = sharedParameters.get_mainMenuBar();
+                    if (topMenuForExtension == null) {
+                        topMenuForExtension = new TopMenuBar(sharedParameters);
                     }
-                }).start();
+                    //menuBar.add(topMenuForExtension, menuBar.getMenuCount() - 1);
+                    // to make it bold
+                    topMenuForExtension.setFont(topMenuForExtension.getFont().deriveFont(topMenuForExtension.getFont().getStyle() ^ Font.BOLD));
+                    menuBar.add(topMenuForExtension, 5); // we are adding this just after menu `Window`
+                    // Revalidate helps ensure the menubar picks up our change
+                    menuBar.revalidate();
+                    //sharedParameters.get_mainFrame().revalidate();
+                    //sharedParameters.get_mainMenuBar().repaint();
+                    // to set back to plain after a few seconds
+
+                    new java.util.Timer().schedule(
+                            new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            //topMenuForExtension.setFont(topMenuForExtension.getFont().deriveFont(topMenuForExtension.getFont().getStyle() ^ Font.BOLD)); // this would set the font so if we change them later in the UI, this menu will not be updated!
+                                            topMenuForExtension.setFont(UIManager.getLookAndFeelDefaults().getFont(topMenuForExtension.getComponent()));
+                                        }
+                                    });
+                                }
+                            },
+                            2000
+                    );
+                } catch (Exception e) {
+                    sharedParameters.stderr.println("Error in adding the top menu: " + e.getMessage());
+                }
             }
         });
 
@@ -597,19 +598,17 @@ public class TopMenuBar extends javax.swing.JMenu {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Thread(() -> {
-                    try {
-                        // removing old toolbar
-                        sharedParameters.get_mainMenuBar().remove(topMenuForExtension);
-                    } catch (Exception e) {
-                        sharedParameters.stderr.println("Error in removing the top menu: " + e.getMessage());
-                    }
-                    // just in case the above did not work
-                    removeTopMenuBarLastResort(sharedParameters, false);
+                try {
+                    // removing old toolbar
+                    sharedParameters.get_mainMenuBar().remove(topMenuForExtension);
+                } catch (Exception e) {
+                    sharedParameters.stderr.println("Error in removing the top menu: " + e.getMessage());
+                }
+                // just in case the above did not work
+                removeTopMenuBarLastResort(sharedParameters, false);
 
-                    sharedParameters.get_mainMenuBar().revalidate();
-                    sharedParameters.get_mainMenuBar().repaint();
-                }).start();
+                sharedParameters.get_mainMenuBar().revalidate();
+                sharedParameters.get_mainMenuBar().repaint();
             }
         });
     }
