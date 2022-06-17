@@ -8,7 +8,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group 'com.irsdl'
-version '1.7-SNAPSHOT'
+version '1.71-SNAPSHOT'
 //version '1.04-BETA'
 
 repositories {
@@ -46,6 +46,7 @@ tasks.withType(Jar) {
 }
 
 task copyJarForArchivingTask(type: Copy) {
+        dependsOn(jar)
         from layout.buildDirectory.dir("$rootDir/build/compiled")
         include "*.jar"
         into layout.buildDirectory.dir("$rootDir/release")
