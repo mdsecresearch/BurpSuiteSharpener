@@ -16,23 +16,13 @@ public class UIHelper {
 
     // Show a message to the user
     public static void showMessage(final String strMsg, final String strTitle, Component parentcmp) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                JOptionPane.showMessageDialog(parentcmp, strMsg, strTitle, JOptionPane.INFORMATION_MESSAGE);
-            }
-        }).start();
+        new Thread(() -> JOptionPane.showMessageDialog(parentcmp, strMsg, strTitle, JOptionPane.INFORMATION_MESSAGE)).start();
 
     }
 
     // Show a message to the user
     public static void showWarningMessage(final String strMsg, Component parentcmp) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                JOptionPane.showMessageDialog(parentcmp, strMsg, "Warning", JOptionPane.WARNING_MESSAGE);
-            }
-        }).start();
+        new Thread(() -> JOptionPane.showMessageDialog(parentcmp, strMsg, "Warning", JOptionPane.WARNING_MESSAGE)).start();
     }
 
     // Show a message to the user
@@ -48,7 +38,7 @@ public class UIHelper {
     // Common method to ask a multiline question
     public static String[] showPlainInputMessages(final String strMessages[], final String strTitle, final String defaultValues[], Component parentcmp) {
         String[] output = new String[strMessages.length];
-        java.util.List<Object> strMessagesObjectList = new ArrayList<Object>();
+        java.util.List<Object> strMessagesObjectList = new ArrayList<>();
 
         for (int i = 0; i < strMessages.length; i++) {
             String defaultValue = "";
@@ -70,18 +60,14 @@ public class UIHelper {
 
     // Common method to ask a multiple question
     public static Integer askConfirmMessage(final String strTitle, final String strQuestion, String[] msgOptions, Component parentcmp) {
-        final Object[] options = msgOptions;
-        final int[] choice = new int[1];
-        choice[0] = 0;
-        choice[0] = JOptionPane.showOptionDialog(parentcmp,
+        return JOptionPane.showOptionDialog(parentcmp,
                 strQuestion,
                 strTitle,
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null,
-                options,
-                options[0]);
-        return choice[0];
+                msgOptions,
+                msgOptions[0]);
     }
 
     // to update the JCheckbox background colour after using the customizeUiComponent() method

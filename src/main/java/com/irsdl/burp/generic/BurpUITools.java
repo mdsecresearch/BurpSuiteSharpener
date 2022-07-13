@@ -96,8 +96,8 @@ public class BurpUITools {
     }
 
     // This is case insensitive to prevent confusion
-    public static Boolean isMenubarLoaded(String toolbarName, JMenuBar menuBar) {
-        Boolean result = false;
+    public static boolean isMenubarLoaded(String toolbarName, JMenuBar menuBar) {
+        boolean result = false;
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
             JMenuItem item = menuBar.getMenu(i);
             if (item.getText().trim().equalsIgnoreCase(toolbarName.trim())) {
@@ -110,24 +110,21 @@ public class BurpUITools {
 
     // This is case insensitive to prevent confusion
     public static void removeMenubarByName(String toolbarName, JMenuBar menuBar, boolean repaintUI) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
+        SwingUtilities.invokeLater(() -> {
 
-                for (int i = 0; i < menuBar.getMenuCount(); i++) {
-                    JMenuItem item = menuBar.getMenu(i);
-                    if (item.getText().trim().equalsIgnoreCase(toolbarName.trim())) {
-                        menuBar.remove(i);
-                        // break; // we may have more than one menu so this line needs to be commented
-                    }
+            for (int i = 0; i < menuBar.getMenuCount(); i++) {
+                JMenuItem item = menuBar.getMenu(i);
+                if (item.getText().trim().equalsIgnoreCase(toolbarName.trim())) {
+                    menuBar.remove(i);
+                    // break; // we may have more than one menu so this line needs to be commented
                 }
-
-                if (repaintUI) {
-                    menuBar.revalidate();
-                    menuBar.repaint();
-                }
-
             }
+
+            if (repaintUI) {
+                menuBar.revalidate();
+                menuBar.repaint();
+            }
+
         });
     }
 
@@ -144,8 +141,8 @@ public class BurpUITools {
         return result;
     }
 
-    // This is case insensitive to prevent confusion
-    public static MenuElement getSubMenuComponentFromMain(String toolbarName, String subItemName, JMenuBar menuBar, Class componentType) {
+    // This is case-insensitive to prevent confusion
+    public static MenuElement getSubMenuComponentFromMain(String toolbarName, String subItemName, JMenuBar menuBar) {
         MenuElement result = null;
         JMenuItem mainMenuItem = getMenuItem(toolbarName, menuBar);
         if (mainMenuItem != null) {
@@ -178,7 +175,7 @@ public class BurpUITools {
     public static boolean reattachTools(Set<BurpUITools.MainTabs> toolName, JMenuBar menuBar) {
         boolean result = false;
         for (BurpUITools.MainTabs tool : toolName) {
-            JMenuItem detachedTool = (JMenuItem) BurpUITools.getSubMenuComponentFromMain("Window", "Reattach " + tool, menuBar, JMenuItem.class);
+            JMenuItem detachedTool = (JMenuItem) BurpUITools.getSubMenuComponentFromMain("Window", "Reattach " + tool, menuBar);
             if (detachedTool != null) {
                 detachedTool.doClick();
                 result = true;

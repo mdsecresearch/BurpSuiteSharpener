@@ -40,7 +40,7 @@ public class BurpExtensionSharedParameters {
 
     public boolean isDarkMode = false; // Sometimes extensions need to see whether Burp uses dark or light mode
 
-    public Boolean isScopeChangeDecisionOngoing = false; // this is useful to not ask the scope question more than once at the time
+    public boolean isScopeChangeDecisionOngoing = false; // this is useful to not ask the scope question more than once at the time
 
     // params with custom getter or setter - the `setUIParametersFromExtensionTab` method should be used to set them
     private JFrame _mainFrame = null; // This is Burp Suite's main jFrame
@@ -250,7 +250,7 @@ public class BurpExtensionSharedParameters {
         return _originalBurpIcon;
     }
 
-    public Boolean get_isUILoaded() {
+    public boolean get_isUILoaded() {
         return _isUILoaded;
     }
 }

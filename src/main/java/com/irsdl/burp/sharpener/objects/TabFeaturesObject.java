@@ -19,7 +19,6 @@ public class TabFeaturesObject extends TabFeaturesObjectStyle {
         super("", fontName, fontSize, isBold, isItalic, isCloseButtonVisible, colorCode, iconString, iconSize);
         this.index = index;
         this.title = title;
-        //this.titleHistory = Arrays.stream(titleHistory).filter(s -> (s != null && s.length() > 0)).collect(Collectors.toCollection( LinkedHashSet::new ));
         this.titleHistory = Arrays.stream(titleHistory).filter(s -> (s != null && !s.isBlank())).toArray(String[]::new);
     }
 
