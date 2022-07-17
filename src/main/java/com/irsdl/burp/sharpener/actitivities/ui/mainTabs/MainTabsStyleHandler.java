@@ -74,7 +74,8 @@ public class MainTabsStyleHandler {
                     break;
                 }
             }
-
+            tabbedPane.revalidate();
+            tabbedPane.repaint();
         });
 
 
@@ -100,7 +101,6 @@ public class MainTabsStyleHandler {
                     MainTabsStyleHandler.setMainTabsStyle(sharedParameters, tool);
                 }
             }
-
         });
     }
 

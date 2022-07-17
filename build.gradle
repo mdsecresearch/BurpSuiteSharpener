@@ -8,8 +8,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group 'com.irsdl'
-version '1.8-SNAPSHOT'
-//version '1.04-BETA'
+version '1.9-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -24,8 +23,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'com.google.guava:guava:31.1-jre'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
-    implementation 'com.formdev:flatlaf:2.3'
-    implementation 'org.springframework:spring-core:5.3.21'
+    implementation 'com.formdev:flatlaf:2.4'
+    implementation 'org.springframework:spring-core:5.3.22'
 
 }
 

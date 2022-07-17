@@ -63,112 +63,11 @@ public class TopMenu extends javax.swing.JMenu {
         SwingUtilities.invokeLater(() -> {
             removeAll();
 
-            // Project menu
-            JMenu projectMenu = new JMenu("Project Settings");
-
-            // Change title button
-            JMenuItem changeTitle = new JMenuItem(new AbstractAction("Change Title") {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    String newTitle = UIHelper.showPlainInputMessage("Change Burp Suite Title String To:", "Change Burp Suite Title", sharedParameters.get_mainFrame().getTitle(), sharedParameters.get_mainFrame());
-                    if (newTitle != null && !newTitle.trim().isEmpty()) {
-                        if (!sharedParameters.get_mainFrame().getTitle().equals(newTitle)) {
-                            BurpTitleAndIcon.setTitle(sharedParameters, newTitle);
-                            sharedParameters.preferences.safeSetSetting("BurpTitle", newTitle);
-                        }
-                    }
-                }
-            });
-            projectMenu.add(changeTitle);
-
-            // Change title button
-            String burpResourceIconName = sharedParameters.preferences.safeGetStringSetting("BurpResourceIconName");
-            Resource[] resourceIcons = new Resource[]{};
-
-            try {
-                PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(sharedParameters.extensionClass.getClassLoader());
-                resourceIcons = resolver.getResources("classpath:icons/*.*");
-
-            } catch (IOException e) {
-                sharedParameters.printDebugMessage("No icon was found in resources");
-            }
-
-            JMenu changeBurpIcon = new JMenu("Change Burp Suite Icon");
-
-            ButtonGroup burpIconGroup = new ButtonGroup();
-            for (Resource resourceIcon : resourceIcons) {
-                String resourcePath = "/icons/" + resourceIcon.getFilename();
-                JRadioButtonMenuItem burpIconImage = new JRadioButtonMenuItem(resourceIcon.getFilename().replaceAll("\\..*$", ""));
-                burpIconImage.setIcon(new ImageIcon(ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, resourcePath), 16)));
-                if (resourceIcon.getFilename().equalsIgnoreCase(burpResourceIconName)) {
-                    burpIconImage.setSelected(true);
-                }
-                burpIconImage.addActionListener((e) -> {
-                    BurpTitleAndIcon.setIcon(sharedParameters, resourcePath, 48, true);
-                    sharedParameters.preferences.safeSetSetting("BurpResourceIconName", resourcePath);
-                    sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", "");
-                });
-                burpIconGroup.add(burpIconImage);
-                changeBurpIcon.add(burpIconImage);
-            }
-
-            JRadioButtonMenuItem burpIconImage = new JRadioButtonMenuItem("Custom");
-            if (!((String) sharedParameters.preferences.safeGetStringSetting("BurpIconCustomPath")).isBlank()) {
-                burpIconImage.setSelected(true);
-            }
-
-            burpIconImage.addActionListener(new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    String lastIconPath = sharedParameters.preferences.safeGetStringSetting("LastBurpIconCustomPath");
-                    FileFilter imageFilter = new FileNameExtensionFilter("Image files", ImageIO.getReaderFileSuffixes());
-                    String newIconPath = UIHelper.showFileDialog(lastIconPath, imageFilter, sharedParameters.get_mainFrame());
-                    if (newIconPath != null && !newIconPath.trim().isEmpty()) {
-                        BurpTitleAndIcon.setIcon(sharedParameters, newIconPath, 48, false);
-                        sharedParameters.preferences.safeSetSetting("BurpResourceIconName", "");
-                        sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", newIconPath);
-                        sharedParameters.preferences.safeSetSetting("LastBurpIconCustomPath", newIconPath);
-                    }
-                }
-            });
-            burpIconGroup.add(burpIconImage);
-            changeBurpIcon.add(burpIconImage);
-
-            projectMenu.add(changeBurpIcon);
-
-
-            // Reset title button
-            JMenuItem resetTitle = new JMenuItem(new AbstractAction("Reset Burp Suite Title") {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Title", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
-                    if (response == 0) {
-                        BurpTitleAndIcon.resetTitle(sharedParameters);
-                        sharedParameters.preferences.safeSetSetting("BurpTitle", "");
-                    }
-                }
-            });
-            projectMenu.add(resetTitle);
-
-            // Reset icon button
-            JMenuItem resetIcon = new JMenuItem(new AbstractAction("Reset Burp Suite Icon") {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Icon", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
-                    if (response == 0) {
-                        BurpTitleAndIcon.resetIcon(sharedParameters);
-                        sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", "");
-                    }
-                }
-            });
-            projectMenu.add(resetIcon);
-            add(projectMenu);
-
             // Global menu
             JMenu globalMenu = new JMenu("Global Settings");
 
             // Style menu
-            JMenu toolsUniqueStyleMenu = new JMenu("Burp-Tools' Unique Style");
+            JMenu toolsUniqueStyleMenu = new JMenu("Tools' Template And Style");
             JMenuItem enableAll = new JMenuItem(new AbstractAction("Enable All") {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
@@ -293,7 +192,7 @@ public class TopMenu extends javax.swing.JMenu {
             globalMenu.add(topMenuScrollableLayout);
 
 
-            JCheckBoxMenuItem useLastScreenPositionAndSizeChkBox = new JCheckBoxMenuItem("Use Last Screen Position And Size");
+            JCheckBoxMenuItem useLastScreenPositionAndSizeChkBox = new JCheckBoxMenuItem("Use Last Screen Position And Size When Opened");
 
             if (sharedParameters.preferences.safeGetBooleanSetting("useLastScreenPositionAndSize")) {
                 useLastScreenPositionAndSizeChkBox.setSelected(true);
@@ -309,6 +208,23 @@ public class TopMenu extends javax.swing.JMenu {
             });
 
             globalMenu.add(useLastScreenPositionAndSizeChkBox);
+
+            JCheckBoxMenuItem detectOffScreenChkBox = new JCheckBoxMenuItem("Detect Off Screen Window Position");
+
+            if (sharedParameters.preferences.safeGetBooleanSetting("detectOffScreenPosition")) {
+                detectOffScreenChkBox.setSelected(true);
+            }
+
+            detectOffScreenChkBox.addActionListener((e) -> {
+                boolean useLastScreenPositionAndSize = sharedParameters.preferences.safeGetBooleanSetting("detectOffScreenPosition");
+                if (useLastScreenPositionAndSize) {
+                    sharedParameters.preferences.safeSetSetting("detectOffScreenPosition", false);
+                } else {
+                    sharedParameters.preferences.safeSetSetting("detectOffScreenPosition", true);
+                }
+            });
+
+            globalMenu.add(detectOffScreenChkBox);
 
 
             JMenu supportedCapabilitiesMenu = new JMenu("Supported Capabilities");
@@ -372,6 +288,108 @@ public class TopMenu extends javax.swing.JMenu {
             globalMenu.add(debugMenu);
 
             add(globalMenu);
+
+            // Project menu
+            JMenu projectMenu = new JMenu("Project Settings");
+
+            // Change title button
+            JMenuItem changeTitle = new JMenuItem(new AbstractAction("Change Burp Suite Title") {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    String newTitle = UIHelper.showPlainInputMessage("Change Burp Suite Title String To:", "Change Burp Suite Title", sharedParameters.get_mainFrame().getTitle(), sharedParameters.get_mainFrame());
+                    if (newTitle != null && !newTitle.trim().isEmpty()) {
+                        if (!sharedParameters.get_mainFrame().getTitle().equals(newTitle)) {
+                            BurpTitleAndIcon.setTitle(sharedParameters, newTitle);
+                            sharedParameters.preferences.safeSetSetting("BurpTitle", newTitle);
+                        }
+                    }
+                }
+            });
+            projectMenu.add(changeTitle);
+
+            // Change title button
+            String burpResourceIconName = sharedParameters.preferences.safeGetStringSetting("BurpResourceIconName");
+            Resource[] resourceIcons = new Resource[]{};
+
+            try {
+                PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(sharedParameters.extensionClass.getClassLoader());
+                resourceIcons = resolver.getResources("classpath:icons/*.*");
+
+            } catch (IOException e) {
+                sharedParameters.printDebugMessage("No icon was found in resources");
+            }
+
+            JMenu changeBurpIcon = new JMenu("Change Burp Suite Icon");
+
+            ButtonGroup burpIconGroup = new ButtonGroup();
+            for (Resource resourceIcon : resourceIcons) {
+                String resourcePath = "/icons/" + resourceIcon.getFilename();
+                JRadioButtonMenuItem burpIconImage = new JRadioButtonMenuItem(resourceIcon.getFilename().replaceAll("\\..*$", ""));
+                burpIconImage.setIcon(new ImageIcon(ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, resourcePath), 16)));
+                if (resourceIcon.getFilename().equalsIgnoreCase(burpResourceIconName)) {
+                    burpIconImage.setSelected(true);
+                }
+                burpIconImage.addActionListener((e) -> {
+                    BurpTitleAndIcon.setIcon(sharedParameters, resourcePath, 48, true);
+                    sharedParameters.preferences.safeSetSetting("BurpResourceIconName", resourcePath);
+                    sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", "");
+                });
+                burpIconGroup.add(burpIconImage);
+                changeBurpIcon.add(burpIconImage);
+            }
+
+            JRadioButtonMenuItem burpIconImage = new JRadioButtonMenuItem("Custom");
+            if (!((String) sharedParameters.preferences.safeGetStringSetting("BurpIconCustomPath")).isBlank()) {
+                burpIconImage.setSelected(true);
+            }
+
+            burpIconImage.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    String lastIconPath = sharedParameters.preferences.safeGetStringSetting("LastBurpIconCustomPath");
+                    FileFilter imageFilter = new FileNameExtensionFilter("Image files", ImageIO.getReaderFileSuffixes());
+                    String newIconPath = UIHelper.showFileDialog(lastIconPath, imageFilter, sharedParameters.get_mainFrame());
+                    if (newIconPath != null && !newIconPath.trim().isEmpty()) {
+                        BurpTitleAndIcon.setIcon(sharedParameters, newIconPath, 48, false);
+                        sharedParameters.preferences.safeSetSetting("BurpResourceIconName", "");
+                        sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", newIconPath);
+                        sharedParameters.preferences.safeSetSetting("LastBurpIconCustomPath", newIconPath);
+                    }
+                }
+            });
+            burpIconGroup.add(burpIconImage);
+            changeBurpIcon.add(burpIconImage);
+
+            projectMenu.add(changeBurpIcon);
+
+
+            // Reset title button
+            JMenuItem resetTitle = new JMenuItem(new AbstractAction("Reset Burp Suite Title") {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Title", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                    if (response == 0) {
+                        BurpTitleAndIcon.resetTitle(sharedParameters);
+                        sharedParameters.preferences.safeSetSetting("BurpTitle", "");
+                    }
+                }
+            });
+            projectMenu.add(resetTitle);
+
+            // Reset icon button
+            JMenuItem resetIcon = new JMenuItem(new AbstractAction("Reset Burp Suite Icon") {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    int response = UIHelper.askConfirmMessage("Sharpener Extension: Reset Icon", "Are you sure?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                    if (response == 0) {
+                        BurpTitleAndIcon.resetIcon(sharedParameters);
+                        sharedParameters.preferences.safeSetSetting("BurpIconCustomPath", "");
+                    }
+                }
+            });
+            projectMenu.add(resetIcon);
+            add(projectMenu);
+
             addSeparator();
 
             JMenuItem unloadExtension = new JMenuItem(new AbstractAction("Unload Extension") {

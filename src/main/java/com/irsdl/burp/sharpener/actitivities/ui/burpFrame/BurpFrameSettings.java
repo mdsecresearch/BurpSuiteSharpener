@@ -11,12 +11,15 @@ import com.irsdl.burp.generic.BurpTitleAndIcon;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.objects.PreferenceObject;
 import com.irsdl.burp.sharpener.objects.StandardSettings;
+import com.irsdl.generic.UIHelper;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class BurpFrameSettings extends StandardSettings {
+
+    private BurpFrameListeners burpFrameListeners;
 
     public BurpFrameSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
@@ -55,10 +58,10 @@ public class BurpFrameSettings extends StandardSettings {
             }
         }
 
-        PreferenceObject preferenceObject = new PreferenceObject("useLastScreenPositionAndSize", boolean.class, false, Preferences.Visibility.GLOBAL);
+        PreferenceObject preferenceObject = new PreferenceObject("useLastScreenPositionAndSize", boolean.class, true, Preferences.Visibility.GLOBAL);
         preferenceObjectCollection.add(preferenceObject);
 
-        preferenceObject = new PreferenceObject("detectOffScreenPosition", boolean.class, false, Preferences.Visibility.GLOBAL);
+        preferenceObject = new PreferenceObject("detectOffScreenPosition", boolean.class, true, Preferences.Visibility.GLOBAL);
         preferenceObjectCollection.add(preferenceObject);
 
         preferenceObject = new PreferenceObject("lastApplicationPosition", Point.class, null, Preferences.Visibility.GLOBAL);
@@ -93,26 +96,31 @@ public class BurpFrameSettings extends StandardSettings {
 
         if(useLastScreenPositionAndSize){
             Point lastApplicationPosition = sharedParameters.preferences.safeGetSetting("lastApplicationPosition", null);
-            Point lastApplicationSize = sharedParameters.preferences.safeGetSetting("lastApplicationSize", null);
-            if(lastApplicationPosition != null){
+            Dimension lastApplicationSize = sharedParameters.preferences.safeGetSetting("lastApplicationSize", null);
 
+            if(lastApplicationPosition != null){
+                sharedParameters.get_mainFrame().setLocation(lastApplicationPosition);
             }
 
             if(lastApplicationSize != null){
-
+                sharedParameters.get_mainFrame().setSize(lastApplicationSize);
             }
-
         }
-        if(detectOffScreenPosition){
 
-        }
+        burpFrameListeners = new BurpFrameListeners(sharedParameters);
     }
 
     @Override
     public void unloadSettings() {
         sharedParameters.printDebugMessage("reset Burp title and icon");
+
+        if(burpFrameListeners!=null){
+            burpFrameListeners.removeBurpFrameListener(sharedParameters.get_mainFrame());
+        }
+
         // reset Burp title and icon
         BurpTitleAndIcon.resetTitle(sharedParameters);
         BurpTitleAndIcon.resetIcon(sharedParameters);
+
     }
 }

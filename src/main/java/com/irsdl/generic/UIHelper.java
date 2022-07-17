@@ -6,6 +6,8 @@
 
 package com.irsdl.generic;
 
+import com.irsdl.burp.generic.BurpTitleAndIcon;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
@@ -123,6 +125,34 @@ public class UIHelper {
             filePath = _fileChooser.getSelectedFile().getAbsolutePath();
         }
         return filePath;
+    }
+
+    public static boolean isFrameOutOffScreen(JFrame jframe, double offScreenMargin){
+        if(offScreenMargin > 1 || offScreenMargin < 0)
+            offScreenMargin = 0;
+
+        Rectangle bounds = new Rectangle(0, 0, 0, 0);
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice lstGDs[] = ge.getScreenDevices();
+        for (GraphicsDevice gd : lstGDs) {
+            bounds.add(gd.getDefaultConfiguration().getBounds());
+        }
+
+        Rectangle frameBounds = jframe.getBounds();
+        double widthOffset = offScreenMargin * frameBounds.getWidth();
+        double heightOffset = offScreenMargin * frameBounds.getHeight();
+        Rectangle boundsWithThreshold = new Rectangle((int)(bounds.getX() - widthOffset),
+                (int)(bounds.getY() - heightOffset),
+                (int)(bounds.getWidth() + 2 * widthOffset),
+                (int)(bounds.getHeight() + 2 * heightOffset)
+        );
+
+        return !boundsWithThreshold.contains(frameBounds);
+    }
+
+    public static void moveFrameToCenter(JFrame jframe){
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        jframe.setLocation(dim.width/2-jframe.getSize().width/2, dim.height/2-jframe.getSize().height/2);
     }
 
 }
