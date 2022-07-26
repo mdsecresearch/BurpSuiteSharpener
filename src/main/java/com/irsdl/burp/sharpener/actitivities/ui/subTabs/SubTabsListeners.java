@@ -60,6 +60,7 @@ public class SubTabsListeners implements ContainerListener {
     public SubTabsListeners(SharpenerSharedParameters sharedParameters, Consumer<MouseEvent> mouseEventConsumer) {
         this.sharedParameters = sharedParameters;
         this.mouseEventConsumer = mouseEventConsumer;
+        removeTabListener(sharedParameters.get_rootTabbedPane());
         addTabListener(sharedParameters.get_rootTabbedPane());
     }
 

@@ -178,6 +178,7 @@ public class SubTabsSettings extends StandardSettings {
         // Adding MiddleClick / RightClick+Alt to Repeater and Intruder
         if (sharedParameters.get_rootTabbedPane() != null) {
             sharedParameters.printDebugMessage("Adding MiddleClick / RightClick+Alt to Repeater and Intruder");
+
             subTabsListeners = new SubTabsListeners(sharedParameters, mouseEvent -> {
                 SubTabsActions.tabClicked(mouseEvent, sharedParameters);
             });
