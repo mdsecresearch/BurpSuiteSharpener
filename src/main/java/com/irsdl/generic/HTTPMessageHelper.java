@@ -41,7 +41,7 @@ public class HTTPMessageHelper {
             Matcher m = my_pattern.matcher(strHeader);
             if (m.find()) {
                 charset = m.group(1);
-                charset = charset.replaceAll("\"", "");
+                charset = charset.replace("\"", "");
                 if (trimSpaces)
                     charset = charset.trim();
             }
@@ -57,7 +57,7 @@ public class HTTPMessageHelper {
             Matcher m = my_pattern.matcher(strHeader);
             if (m.find()) {
                 boundary = m.group(1);
-                boundary = boundary.replaceAll("\"", "");
+                boundary = boundary.replace("\"", "");
                 if (trimSpaces)
                     boundary = boundary.trim();
             }
@@ -94,7 +94,7 @@ public class HTTPMessageHelper {
         String contentType = "";
         for (String strHeader : headers) {
             if (!strHeader.equals("")) {
-                Pattern my_pattern = Pattern.compile("(?im)^content-type:[ \\t]*([^;, \\s]+)");
+                Pattern my_pattern = Pattern.compile("(?im)^content-type:[ \\t]*([^;,\\s]+)");
                 Matcher m = my_pattern.matcher(strHeader);
                 if (m.find()) {
                     contentType = m.group(1);
@@ -184,7 +184,7 @@ public class HTTPMessageHelper {
         return getQueryString(fullMessage, "", delimiter_QS_param);
     }
 
-    // gets querystring parameters because burp can't handle special cases such as when we have jsessionid after ;
+    // gets querystring parameters because burp can't handle special cases such as when we have jsessionid after semicolon
     public static List<List<String>> getQueryString(String reqMessage, String delimiter_QS, String delimiter_QS_param) {
         if (delimiter_QS.isEmpty()) delimiter_QS = "?";
         if (delimiter_QS_param.isEmpty()) delimiter_QS = "&";
@@ -257,7 +257,7 @@ public class HTTPMessageHelper {
 
     // replaces querystring or adds it if empty in a request
     public static String replaceQueryString(String reqMessage, String newQS, String delimiter_QS) {
-        String finalMessage = reqMessage;
+        String finalMessage;
         if (delimiter_QS.isEmpty()) delimiter_QS = "?";
         // we assume that we are dealing with one HTTP message (not multiple in a pipeline)
         String[] splittedRequest = reqMessage.split("\\r?\\n|\\r\\n?", 2);
@@ -272,7 +272,7 @@ public class HTTPMessageHelper {
             firstline = matcher.replaceAll(delimiter_QS + newQS);
         } else {
             // adding QS to the request
-            String HTTP_version_pattern = "([ ]+HTTP/[^ \\s]+)";
+            String HTTP_version_pattern = "([ ]+HTTP/[^\\s]+)";
             pattern = Pattern.compile(HTTP_version_pattern);
             matcher = pattern.matcher(firstline);
             if (matcher.find()) {
@@ -307,7 +307,9 @@ public class HTTPMessageHelper {
     // get the first value of a header
     public static String getFirstHeaderValueByNameFromHeaders(List<String> headers, String headerName, boolean isCaseSensitive) {
         String result = "";
-        headerName = headerName.toLowerCase();
+        if(!isCaseSensitive)
+            headerName = headerName.toLowerCase();
+
         for (String item : headers) {
             if (item.indexOf(":") >= 0) {
                 String[] headerItem = item.split(":", 2);
@@ -446,7 +448,7 @@ public class HTTPMessageHelper {
 
     // replace or add a cookie value with the new value
     public static String replaceOrAddCookieValuesInCookieString(String cookieHeaderValue, String targetCookieName, String newCookieValue, boolean isCaseSensitive) {
-        var result = cookieHeaderValue;
+        String result;
 
         var flags = Pattern.CASE_INSENSITIVE | Pattern.MULTILINE;
         if (isCaseSensitive) {

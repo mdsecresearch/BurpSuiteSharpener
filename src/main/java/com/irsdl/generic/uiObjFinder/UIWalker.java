@@ -97,7 +97,7 @@ public class UIWalker {
         Component foundObject = null;
         if (rootUIJComponent.getParent() instanceof JComponent) {
             JComponent parentComponent = (JComponent) rootUIJComponent.getParent();
-            foundObject = FindUIObjectInSubComponents(rootUIJComponent, 1, uiSpecObject);
+            foundObject = FindUIObjectInSubComponents(parentComponent, 1, uiSpecObject);
         }
         return foundObject;
     }

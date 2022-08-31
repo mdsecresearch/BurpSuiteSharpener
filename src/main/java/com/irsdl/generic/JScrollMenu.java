@@ -46,7 +46,7 @@ public class JScrollMenu extends JMenu {
     /**
      * Lazily creates the popup menu. This method will create the popup using the <code>JScrollPopupMenu</code> class.
      */
-    protected void ensurePopupMenuCreated() {
+    protected void ensurePopupMenuCreatedHere() {
         if (popupMenu == null) {
             this.popupMenu = new JScrollPopupMenu();
             popupMenu.setLightWeightPopupEnabled(false);
@@ -70,7 +70,7 @@ public class JScrollMenu extends JMenu {
 
     @Override
     public boolean isPopupMenuVisible() {
-        ensurePopupMenuCreated();
+        ensurePopupMenuCreatedHere();
         return popupMenu.isVisible();
     }
 
@@ -85,20 +85,20 @@ public class JScrollMenu extends JMenu {
 
     @Override
     public JMenuItem add(JMenuItem menuItem) {
-        ensurePopupMenuCreated();
+        ensurePopupMenuCreatedHere();
         return popupMenu.add(menuItem);
     }
 
     @Override
     public Component add(Component c) {
-        ensurePopupMenuCreated();
+        ensurePopupMenuCreatedHere();
         popupMenu.add(c);
         return c;
     }
 
     @Override
     public Component add(Component c, int index) {
-        ensurePopupMenuCreated();
+        ensurePopupMenuCreatedHere();
         popupMenu.add(c, index);
         return c;
     }
@@ -106,7 +106,7 @@ public class JScrollMenu extends JMenu {
 
     @Override
     public void addSeparator() {
-        ensurePopupMenuCreated();
+        ensurePopupMenuCreatedHere();
         popupMenu.addSeparator();
     }
 
@@ -116,7 +116,7 @@ public class JScrollMenu extends JMenu {
             throw new IllegalArgumentException("index less than zero.");
         }
 
-        ensurePopupMenuCreated();
+        ensurePopupMenuCreatedHere();
         popupMenu.insert(new JMenuItem(s), pos);
     }
 
@@ -125,7 +125,7 @@ public class JScrollMenu extends JMenu {
         if (pos < 0) {
             throw new IllegalArgumentException("index less than zero.");
         }
-        ensurePopupMenuCreated();
+        ensurePopupMenuCreatedHere();
         popupMenu.insert(mi, pos);
         return mi;
     }
@@ -136,10 +136,10 @@ public class JScrollMenu extends JMenu {
             throw new IllegalArgumentException("index less than zero.");
         }
 
-        ensurePopupMenuCreated();
+        ensurePopupMenuCreatedHere();
         JMenuItem mi = new JMenuItem(a);
-        mi.setHorizontalTextPosition(JButton.TRAILING);
-        mi.setVerticalTextPosition(JButton.CENTER);
+        mi.setHorizontalTextPosition(SwingConstants.TRAILING);
+        mi.setVerticalTextPosition(SwingConstants.CENTER);
         popupMenu.insert(mi, pos);
         return mi;
     }
@@ -150,7 +150,7 @@ public class JScrollMenu extends JMenu {
             throw new IllegalArgumentException("index less than zero.");
         }
 
-        ensurePopupMenuCreated();
+        ensurePopupMenuCreatedHere();
         popupMenu.insert(new JPopupMenu.Separator(), index);
     }
 
@@ -206,7 +206,7 @@ public class JScrollMenu extends JMenu {
 
     @Override
     public JPopupMenu getPopupMenu() {
-        ensurePopupMenuCreated();
+        ensurePopupMenuCreatedHere();
         return popupMenu;
     }
 

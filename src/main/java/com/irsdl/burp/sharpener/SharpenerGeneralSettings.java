@@ -8,19 +8,23 @@ package com.irsdl.burp.sharpener;
 
 import com.coreyd97.BurpExtenderUtilities.Preferences;
 import com.irsdl.burp.generic.BurpUITools;
+import com.irsdl.burp.sharpener.actitivities.capabilities.pwnFox.PwnFoxSettings;
+import com.irsdl.burp.sharpener.actitivities.ui.burpFrame.BurpFrameSettings;
+import com.irsdl.burp.sharpener.actitivities.ui.mainTabs.MainTabsSettings;
+import com.irsdl.burp.sharpener.actitivities.ui.subTabs.SubTabsSettings;
+import com.irsdl.burp.sharpener.actitivities.ui.topMenu.TopMenuSettings;
 import com.irsdl.burp.sharpener.objects.PreferenceObject;
 import com.irsdl.burp.sharpener.objects.StandardSettings;
-import com.irsdl.burp.sharpener.uiModifiers.burpFrame.BurpFrameSettings;
-import com.irsdl.burp.sharpener.uiModifiers.subTabs.SubTabSettings;
-import com.irsdl.burp.sharpener.uiModifiers.toolsTabs.MainToolsTabSettings;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class SharpenerGeneralSettings extends StandardSettings {
-    public SubTabSettings subTabSettings;
-    public MainToolsTabSettings mainToolsTabSettings;
+    public SubTabsSettings subTabsSettings;
+    public MainTabsSettings mainTabsSettings;
     public BurpFrameSettings burpFrameSettings;
+    public TopMenuSettings topMenuSettings;
+    public PwnFoxSettings pwnFoxSettings;
 
     public SharpenerGeneralSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
@@ -38,10 +42,6 @@ public class SharpenerGeneralSettings extends StandardSettings {
         try {
             preferenceObject = new PreferenceObject("checkForUpdate", boolean.class, false, Preferences.Visibility.GLOBAL);
             preferenceObjectCollection.add(preferenceObject);
-
-            preferenceObject = new PreferenceObject("pwnFoxSupportCapability", boolean.class, false, Preferences.Visibility.GLOBAL);
-            preferenceObjectCollection.add(preferenceObject);
-
         } catch (Exception e) {
             //already registered setting
             sharedParameters.printDebugMessage(e.getMessage());
@@ -65,13 +65,38 @@ public class SharpenerGeneralSettings extends StandardSettings {
             }
         }
 
+        topMenuSettings = new TopMenuSettings(sharedParameters);
         burpFrameSettings = new BurpFrameSettings(sharedParameters);
-        mainToolsTabSettings = new MainToolsTabSettings(sharedParameters);
-        subTabSettings = new SubTabSettings(sharedParameters);
+        mainTabsSettings = new MainTabsSettings(sharedParameters);
+        subTabsSettings = new SubTabsSettings(sharedParameters);
+        pwnFoxSettings = new PwnFoxSettings(sharedParameters);
 
         if (sharedParameters.preferences.safeGetSetting("checkForUpdate", false)) {
             SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
             sharpenerBurpExtender.checkForUpdate();
+        }
+    }
+
+    @Override
+    public void unloadSettings() {
+        if(burpFrameSettings!=null){
+            burpFrameSettings.unloadSettings();
+        }
+
+        if(mainTabsSettings != null){
+            mainTabsSettings.unloadSettings();
+        }
+
+        if(subTabsSettings != null){
+            subTabsSettings.unloadSettings();
+        }
+
+        if(pwnFoxSettings != null){
+            pwnFoxSettings.unloadSettings();
+        }
+
+        if(topMenuSettings != null){
+            topMenuSettings.unloadSettings();
         }
     }
 }

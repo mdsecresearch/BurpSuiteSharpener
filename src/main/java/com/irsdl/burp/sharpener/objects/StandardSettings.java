@@ -14,7 +14,7 @@ public abstract class StandardSettings {
     private final Collection<PreferenceObject> _preferenceObjectCollection;
     public SharpenerSharedParameters sharedParameters;
 
-    public StandardSettings(SharpenerSharedParameters sharedParameters) {
+    protected StandardSettings(SharpenerSharedParameters sharedParameters) {
         this.sharedParameters = sharedParameters;
         init();
         this._preferenceObjectCollection = definePreferenceObjectCollection();
@@ -22,11 +22,13 @@ public abstract class StandardSettings {
         loadSettings();
     }
 
-    abstract public void init();
+    public abstract void init();
 
-    abstract public Collection<PreferenceObject> definePreferenceObjectCollection();
+    public abstract Collection<PreferenceObject> definePreferenceObjectCollection();
 
-    abstract public void loadSettings();
+    public abstract void loadSettings();
+
+    public abstract void unloadSettings();
 
     public Collection<PreferenceObject> get_preferenceObjectCollection() {
         return _preferenceObjectCollection;

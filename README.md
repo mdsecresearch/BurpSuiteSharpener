@@ -23,20 +23,22 @@ This extension should add a number of UI and functional features to Burp Suite t
 * Scrollable main tool tabs
 * Scrollable Repeater and Intruder tabs
 * Taking screenshot of repeater or intruder tabs
-* Filtering using title names or custom styles (disabled in version 2022.6 for compatibility reasons)
-* Searching only in filtered items (disabled in version 2022.6 for compatibility reasons)
+* Filtering using title names or custom styles (disabled since version 2022.6 for compatibility reasons)
+* Searching only in filtered items (disabled since version 2022.6 for compatibility reasons)
 * Trimming long titles into 100 characters
 * Show previously chosen titles for a tab
 * Fixing tab positions in Repeater and Intruder when there are multiple rows
 * Several keyboard shortcuts to make the tab navigation easier
 * Repeater and Intruder tabs can be minimised to save space
 * Support for PwnFox Firefox extension highlighter
+* Ability to save the last size and position of Burp Suite to move it to the same location next time
+* Ability to detect off-screen Burp Suite window to bring it to the centre
 
 # Burp Suite Compatibility and Reporting Errors
 As PortSwigger has a plan to update Burp Suite UI in a near future, some features in this extension may become redundant or unreliable.
 While we use this extension ourselves we can see potential errors from time to time, as an open source project, it relies on the community feedback for improvements and to fix the issues. Please report any errors in [issues](https://github.com/mdsecresearch/BurpSuiteSharpener/issues).
 
-This extension has been tested against the latest pro version which was 2022.6 at the time of writing this document. It should however be also compatible with the community edition.
+This extension has been tested against the latest pro version which was 2022.7 at the time of writing this document. It should however be also compatible with the community edition.
 
 # Suggesting New Features
 The plan is to add simple but effective missing features to this single extension to make tester's life easier as a must-have companion when using Burp Suite (so we cannot Burp without it!).
@@ -51,7 +53,7 @@ Perhaps the best features can be imported from different open-source extensions 
 * Add it to Burp Suite using the Extender tab
   
 # Usage Tips
-* You can use the following key combinations to access the Repeater and Intruder sub-tab menu:
+* You can use the following key combination(s) in Repeater and Intruder sub-tab menu:
 
 | Description                                      | Combinations/Shortcuts                                                                             |
 |--------------------------------------------------|----------------------------------------------------------------------------------------------------|
@@ -72,6 +74,12 @@ Perhaps the best features can be imported from different open-source extensions 
 | Increase Font Size & Bold                        | Middle Click + CTRL                                                                                |
 | Decrease Font Size & Bold                        | Middle Click + CTRL + SHIFT                                                                        |
 | Big & Red & Bold                                 | Middle Click + SHIFT                                                                               |
+
+* You can use the following key combination(s) on the main window frame:
+
+| Description                                        | Combinations/Shortcuts |
+|----------------------------------------------------|------------------------|
+| Move Burp Suite Window to the centre of the Screen | Ctrl + Alt + C         |
 
 * After setting style on a sub-tab, setting the same title on another sub-tab will copy its style
 * Alt + Any Mouse Click works on empty parts of the tabs which do not contain any text

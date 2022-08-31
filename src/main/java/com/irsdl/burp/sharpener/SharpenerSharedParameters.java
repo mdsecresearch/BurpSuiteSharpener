@@ -10,9 +10,10 @@ import burp.IBurpExtender;
 import burp.IBurpExtenderCallbacks;
 import com.irsdl.burp.generic.BurpExtensionSharedParameters;
 import com.irsdl.burp.generic.BurpUITools;
+import com.irsdl.burp.sharpener.actitivities.ui.subTabs.SubTabsContainerHandler;
+import com.irsdl.burp.sharpener.actitivities.ui.topMenu.TopMenu;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObject;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
-import com.irsdl.burp.sharpener.uiModifiers.subTabs.SubTabContainerHandler;
 import com.irsdl.generic.uiObjFinder.UISpecObject;
 
 import javax.swing.*;
@@ -21,10 +22,11 @@ import java.awt.*;
 import java.util.*;
 
 public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
-    public HashMap<BurpUITools.MainTabs, ArrayList<SubTabContainerHandler>> allSubTabContainerHandlers = new HashMap<>();
+    public TopMenu topMenuBar;
+    public HashMap<BurpUITools.MainTabs, ArrayList<SubTabsContainerHandler>> allSubTabContainerHandlers = new HashMap<>();
     public Set<BurpUITools.MainTabs> subTabSupportedTabs = new HashSet<>();
     public HashMap<BurpUITools.MainTabs, HashMap<String, TabFeaturesObject>> supportedTools_SubTabs = new HashMap<>();
-    public SubTabContainerHandler defaultSubTabObject = null;
+    public TabFeaturesObjectStyle defaultTabFeaturesObjectStyle = null;
     public SharpenerGeneralSettings allSettings;
     public TabFeaturesObjectStyle copiedTabFeaturesObjectStyle;
     public String lastClipboardText = "";
@@ -34,8 +36,8 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
     public String searchedTabTitleForJumpToTab = "";
     public String titleFilterRegEx = "";
     public boolean isTitleFilterNegative = false;
-    public Boolean isTabGroupSupportedByDefault = false;
-    public Boolean isSubTabScrollSupportedByDefault = false;
+    public boolean isTabGroupSupportedByDefault = false;
+    public boolean isSubTabScrollSupportedByDefault = false;
     public HashMap<BurpUITools.MainTabs, Integer> filterOperationMode = new HashMap<>();
     public HashMap<BurpUITools.MainTabs, LinkedList<Integer>> subTabPreviouslySelectedIndexHistory = new HashMap<>();
     public HashMap<BurpUITools.MainTabs, LinkedList<Integer>> subTabNextlySelectedIndexHistory = new HashMap<>();
@@ -90,7 +92,7 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
         if (useCache && cachedJTabbedPaneTools.get(toolTabName) != null) {
             subTabbedPane = cachedJTabbedPaneTools.get(toolTabName);
             try {
-                Component dummy = subTabbedPane.getSelectedComponent();
+                subTabbedPane.getSelectedComponent();
             } catch (Exception e) {
                 // could not access the object
                 subTabbedPane = null;

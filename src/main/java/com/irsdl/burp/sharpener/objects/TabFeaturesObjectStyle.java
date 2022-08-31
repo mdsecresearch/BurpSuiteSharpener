@@ -35,7 +35,7 @@ public class TabFeaturesObjectStyle implements Serializable {
     public String get_IconResourceString() {
         if (iconResourceString == null)
             iconResourceString = "";
-        return iconResourceString.replaceAll(":", "").replaceAll("\\\\", "/").replaceAll("/+", "/").replaceAll("\\.\\s*+/", "./").replaceAll("/\\s*\\.+", "/.");
+        return iconResourceString.replace(":", "").replace("\\", "/").replaceAll("/+", "/").replaceAll("\\.\\s*+/", "./").replaceAll("/\\s*\\.+", "/.");
     }
 
     public Color getColor() {
@@ -76,7 +76,7 @@ public class TabFeaturesObjectStyle implements Serializable {
         boolean result = false;
         if (o instanceof TabFeaturesObjectStyle) {
             TabFeaturesObjectStyle temp = (TabFeaturesObjectStyle) o;
-            if (temp.fontName == fontName && temp.fontSize == fontSize && Boolean.compare(temp.isBold, isBold) == 0 &&
+            if (temp.fontName.equals(fontName) && temp.fontSize == fontSize && Boolean.compare(temp.isBold, isBold) == 0 &&
                     Boolean.compare(temp.isItalic, isItalic) == 0 && temp.iconResourceString.equals(iconResourceString) && temp.iconSize == iconSize &&
                     Boolean.compare(temp.isCloseButtonVisible, isCloseButtonVisible) == 0) {
                 result = true;
@@ -84,14 +84,4 @@ public class TabFeaturesObjectStyle implements Serializable {
         }
         return result;
     }
-
-    /*
-    public String get_uid() {
-        return _uid;
-    }
-
-    private void set_uid() {
-        this._uid = UUID.randomUUID().toString();
-    }
-*/
 }

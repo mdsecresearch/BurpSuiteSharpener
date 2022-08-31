@@ -6,6 +6,8 @@
 
 package com.irsdl.generic;
 
+import com.irsdl.burp.generic.BurpTitleAndIcon;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
@@ -16,23 +18,13 @@ public class UIHelper {
 
     // Show a message to the user
     public static void showMessage(final String strMsg, final String strTitle, Component parentcmp) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                JOptionPane.showMessageDialog(parentcmp, strMsg, strTitle, JOptionPane.INFORMATION_MESSAGE);
-            }
-        }).start();
+        new Thread(() -> JOptionPane.showMessageDialog(parentcmp, strMsg, strTitle, JOptionPane.INFORMATION_MESSAGE)).start();
 
     }
 
     // Show a message to the user
     public static void showWarningMessage(final String strMsg, Component parentcmp) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                JOptionPane.showMessageDialog(parentcmp, strMsg, "Warning", JOptionPane.WARNING_MESSAGE);
-            }
-        }).start();
+        new Thread(() -> JOptionPane.showMessageDialog(parentcmp, strMsg, "Warning", JOptionPane.WARNING_MESSAGE)).start();
     }
 
     // Show a message to the user
@@ -48,7 +40,7 @@ public class UIHelper {
     // Common method to ask a multiline question
     public static String[] showPlainInputMessages(final String strMessages[], final String strTitle, final String defaultValues[], Component parentcmp) {
         String[] output = new String[strMessages.length];
-        java.util.List<Object> strMessagesObjectList = new ArrayList<Object>();
+        java.util.List<Object> strMessagesObjectList = new ArrayList<>();
 
         for (int i = 0; i < strMessages.length; i++) {
             String defaultValue = "";
@@ -70,18 +62,14 @@ public class UIHelper {
 
     // Common method to ask a multiple question
     public static Integer askConfirmMessage(final String strTitle, final String strQuestion, String[] msgOptions, Component parentcmp) {
-        final Object[] options = msgOptions;
-        final int[] choice = new int[1];
-        choice[0] = 0;
-        choice[0] = JOptionPane.showOptionDialog(parentcmp,
+        return JOptionPane.showOptionDialog(parentcmp,
                 strQuestion,
                 strTitle,
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null,
-                options,
-                options[0]);
-        return choice[0];
+                msgOptions,
+                msgOptions[0]);
     }
 
     // to update the JCheckbox background colour after using the customizeUiComponent() method
@@ -137,6 +125,34 @@ public class UIHelper {
             filePath = _fileChooser.getSelectedFile().getAbsolutePath();
         }
         return filePath;
+    }
+
+    public static boolean isFrameOutOffScreen(JFrame jframe, double offScreenMargin){
+        if(offScreenMargin > 1 || offScreenMargin < 0)
+            offScreenMargin = 0;
+
+        Rectangle bounds = new Rectangle(0, 0, 0, 0);
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice lstGDs[] = ge.getScreenDevices();
+        for (GraphicsDevice gd : lstGDs) {
+            bounds.add(gd.getDefaultConfiguration().getBounds());
+        }
+
+        Rectangle frameBounds = jframe.getBounds();
+        double widthOffset = offScreenMargin * frameBounds.getWidth();
+        double heightOffset = offScreenMargin * frameBounds.getHeight();
+        Rectangle boundsWithThreshold = new Rectangle((int)(bounds.getX() - widthOffset),
+                (int)(bounds.getY() - heightOffset),
+                (int)(bounds.getWidth() + 2 * widthOffset),
+                (int)(bounds.getHeight() + 2 * heightOffset)
+        );
+
+        return !boundsWithThreshold.contains(frameBounds);
+    }
+
+    public static void moveFrameToCenter(JFrame jframe){
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        jframe.setLocation(dim.width/2-jframe.getSize().width/2, dim.height/2-jframe.getSize().height/2);
     }
 
 }

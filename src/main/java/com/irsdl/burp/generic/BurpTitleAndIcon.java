@@ -30,35 +30,29 @@ public class BurpTitleAndIcon {
     }
 
     public static void setTitle(BurpExtensionSharedParameters sharedParameters, String title) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                sharedParameters.get_mainFrame().setTitle(title);
-                sharedParameters.printDebugMessage("Burp Suite title was changed to: " + title);
-            }
+        SwingUtilities.invokeLater(() -> {
+            sharedParameters.get_mainFrame().setTitle(title);
+            sharedParameters.printDebugMessage("Burp Suite title was changed to: " + title);
         });
     }
 
     private static void setIcon(BurpExtensionSharedParameters sharedParameters, Image img) {
         if (img != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+            SwingUtilities.invokeLater(() -> {
 
-                    java.util.List<Image> iconList = new ArrayList<Image>();
-                    iconList.add(img);
-                        /*
-                        for (Frame frame : Frame.getFrames()) {
-                            frame.setIconImages(iconList);
-                        }
-                        */
-                    for (Window window : Window.getWindows()) {
-                        window.setIconImages(iconList);
-                    }
-                    //sharedParameters.get_mainFrame().setIconImage(img);
-                    sharedParameters.printDebugMessage("Burp Suite icon has been updated");
-
+                java.util.List<Image> iconList = new ArrayList<Image>();
+                iconList.add(img);
+                for (Window window : Window.getWindows()) {
+                    window.setIconImages(iconList);
                 }
+                /* another way?
+                    for (Frame frame : Frame.getFrames()) {
+                        frame.setIconImages(iconList);
+                    }
+                    sharedParameters.get_mainFrame().setIconImage(img);
+                */
+                sharedParameters.printDebugMessage("Burp Suite icon has been updated");
+
             });
         }
     }
@@ -85,7 +79,7 @@ public class BurpTitleAndIcon {
         if (loadedImg != null) {
             setIcon(sharedParameters, loadedImg);
 
-            if (sharedParameters.addedIconListener = true) {
+            if (sharedParameters.addedIconListener) {
                 removeMainFrameWindowFocusListener(sharedParameters);
             }
 

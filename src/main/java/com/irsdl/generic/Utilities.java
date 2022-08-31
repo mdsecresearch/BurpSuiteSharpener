@@ -6,12 +6,13 @@
 
 package com.irsdl.generic;
 
+import java.util.Random;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public class Utilities {
-    public static int getRandomNumber(int min, int max) {
-        return (int) Math.random() * (max - min + 2) + min;
+    public static int getInsecureRandomNumber(int min, int max) {
+        return new Random().nextInt(min, max+1);
     }
 
     public static boolean isValidRegExPattern(String regexString) {
