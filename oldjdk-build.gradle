@@ -1,0 +1,54 @@
+// Burp Suite Sharpener
+// Released as open source by MDSec - https://www.mdsec.co.uk
+// Developed by Soroush Dalili (@irsdl)
+// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
+// Released under AGPL see LICENSE for more information
+
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+group 'com.irsdl'
+version '1.91-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://jitpack.io"
+    }
+}
+
+dependencies {
+    implementation 'net.portswigger.burp.extender:burp-extender-api:2.3'
+    implementation 'com.github.CoreyD97:BurpExtenderUtilities:-SNAPSHOT'
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'com.formdev:flatlaf:2.4'
+    implementation 'org.springframework:spring-core:5.3.22'
+
+}
+
+jar{
+    archivesBaseName = project.name
+    from {
+        (configurations.runtimeClasspath).collect { it.isDirectory() ? it : zipTree(it) }
+    }{
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+        exclude "META-INF/*.txt"
+    }
+}
+
+tasks.withType(Jar) {
+    destinationDirectory = file("$rootDir/build/compiled/oldjdk")
+}
+
+task copyJarForArchivingTask(type: Copy) {
+        dependsOn(jar)
+        from layout.buildDirectory.dir("$rootDir/build/compiled/oldjdk")
+        include "*.jar"
+        into layout.buildDirectory.dir("$rootDir/release/oldjdk")
+}
+
+build.dependsOn copyJarForArchivingTask
