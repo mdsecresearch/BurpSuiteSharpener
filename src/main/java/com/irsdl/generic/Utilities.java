@@ -12,7 +12,9 @@ import java.util.regex.PatternSyntaxException;
 
 public class Utilities {
     public static int getInsecureRandomNumber(int min, int max) {
-        return new Random().nextInt(min, max+1);
+        //return new Random().nextInt(min, max+1);
+        Random rand = new Random();
+        return rand.nextInt((max - min) + 1) + min;
     }
 
     public static boolean isValidRegExPattern(String regexString) {

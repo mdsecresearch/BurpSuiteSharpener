@@ -592,7 +592,11 @@ public class SubTabsActions {
                     String displayName = p.getDisplayName();
                     switch (displayName) {
                         //case "RGB":
-                        case "HSL", "HSV", "CMYK" -> colorChooser.removeChooserPanel(p);
+                        case "HSL":
+                        case "HSV":
+                        case "CMYK":
+                            colorChooser.removeChooserPanel(p);
+                            break;
                     }
                 }
 
