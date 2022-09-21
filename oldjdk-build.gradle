@@ -8,7 +8,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group 'com.irsdl'
-version '1.91-SNAPSHOT'
+version '2.0-SNAPSHOT'
 
 repositories {
     mavenCentral()

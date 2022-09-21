@@ -6,4 +6,4 @@ gradle-app.setting
 .gradletasknamecache
 .git
 .idea/
-
+release/

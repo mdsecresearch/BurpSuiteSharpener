@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 
 public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
-    private String version = "1.91";
+    private String version = "2.0";
     private IBurpExtender instance;
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
