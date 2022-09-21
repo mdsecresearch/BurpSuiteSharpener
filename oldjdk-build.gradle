@@ -41,12 +41,12 @@ jar{
 }
 
 tasks.withType(Jar) {
-    destinationDirectory = file("$rootDir/build/compiled/oldjdk")
+    destinationDirectory = file("$rootDir/build/compiled")
 }
 
 task copyJarForArchivingTask(type: Copy) {
         dependsOn(jar)
-        from layout.buildDirectory.dir("$rootDir/build/compiled/oldjdk")
+        from layout.buildDirectory.dir("$rootDir/build/compiled")
         include "*.jar"
         into layout.buildDirectory.dir("$rootDir/release/oldjdk")
 }
