@@ -4,11 +4,15 @@
 // Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
 // Released under AGPL see LICENSE for more information
 
+apply plugin: 'java'
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group 'com.irsdl'
 version '2.0-SNAPSHOT'
+
+//targetCompatibility = '1.8'
+//sourceCompatibility = '1.8'
 
 repositories {
     mavenCentral()
@@ -25,6 +29,12 @@ dependencies {
     implementation "org.apache.commons:commons-lang3:3.12.0"
     implementation "com.formdev:flatlaf:2.4"
     implementation "org.springframework:spring-core:5.3.23"
+}
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(15))
+  }
 }
 
 jar{
