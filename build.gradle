@@ -31,12 +31,6 @@ dependencies {
     implementation "org.springframework:spring-core:5.3.23"
 }
 
-java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(15))
-  }
-}
-
 jar{
     archivesBaseName = project.name
     from {
