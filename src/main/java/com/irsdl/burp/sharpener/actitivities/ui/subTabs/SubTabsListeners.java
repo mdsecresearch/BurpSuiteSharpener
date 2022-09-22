@@ -261,7 +261,7 @@ public class SubTabsListeners implements ContainerListener {
         //Defining shortcuts for search in tab titles: ctrl+shift+f , F3, shift+F3
         if (_isShortcutEnabled) {
             clearInputMap(subTabbedPane);
-            subTabsShortcutMappings.forEach((k, v) -> subTabbedPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+            subTabsShortcutMappings.forEach((k, v) -> subTabbedPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
                     KeyStroke.getKeyStroke(k), v));
 
             subTabbedPane.getActionMap().put("ShowMenu", new AbstractAction() {
@@ -398,7 +398,7 @@ public class SubTabsListeners implements ContainerListener {
     }
 
     private void clearInputMap(JComponent jc) {
-        subTabsShortcutMappings.forEach((k, v) -> jc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+        subTabsShortcutMappings.forEach((k, v) -> jc.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
                 KeyStroke.getKeyStroke(k), "none"));
     }
 

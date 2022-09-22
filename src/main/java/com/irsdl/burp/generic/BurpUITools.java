@@ -13,18 +13,19 @@ import java.util.Set;
 public class BurpUITools {
     public enum MainTabs {
         None("None"),
-        Dashboard("Dashboard"),
-        Target("Target"),
-        Proxy("Proxy"),
-        Intruder("Intruder"),
-        Sequencer("Sequencer"),
-        Repeater("Repeater"),
-        Decoder("Decoder"),
+        Collaborator("Collaborator"),
         Comparer("Comparer"),
+        Dashboard("Dashboard"),
+        Decoder("Decoder"),
         Extender("Extender"),
-        ProjectOptions("Project options"),
-        UserOptions("User options"),
+        Intruder("Intruder"),
         Logger("Logger"),
+        ProjectOptions("Project options"),
+        Proxy("Proxy"),
+        Repeater("Repeater"),
+        Sequencer("Sequencer"),
+        Target("Target"),
+        UserOptions("User options"),
         //HackVertor("Hackvertor"),
         ;
         private final String text;
