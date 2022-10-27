@@ -25,7 +25,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -47,6 +46,8 @@ public class SubTabsActions {
             return;
 
         subTabsContainerHandler.currentTabContainer.requestFocus();
+
+        fixHistoryAndJumpToTabIndex(sharedParameters, subTabsContainerHandler, subTabsContainerHandler.getTabIndex(), true, true, false);
 
         if (SwingUtilities.isMiddleMouseButton(event) || event.isAltDown() || ((event.getModifiersEx() & ActionEvent.ALT_MASK) == ActionEvent.ALT_MASK)) {
             jumpToTabIndex(sharedParameters, subTabsContainerHandler, subTabsContainerHandler.getTabIndex());
@@ -1654,7 +1655,7 @@ public class SubTabsActions {
         }
 
         if (previouslySelectedIndex != null && currentSubTabsContainerHandler.parentTabbedPane.getTabComponentAt(previouslySelectedIndex) != null) {
-            jumpToTabIndex(sharedParameters, currentSubTabsContainerHandler, previouslySelectedIndex, false, false);
+            fixHistoryAndJumpToTabIndex(sharedParameters, currentSubTabsContainerHandler, previouslySelectedIndex, false, false, true);
             sharedParameters.printDebugMessage("Jump to previously selected tab");
         } else {
             sharedParameters.subTabPreviouslySelectedIndexHistory.get(currentSubTabsContainerHandler.currentToolTab).add(currentSelectedIndex);
@@ -1679,7 +1680,7 @@ public class SubTabsActions {
         nextlySelectedIndex = sharedParameters.subTabNextlySelectedIndexHistory.get(currentSubTabsContainerHandler.currentToolTab).pollLast();
 
         if (nextlySelectedIndex != null && currentSubTabsContainerHandler.parentTabbedPane.getTabComponentAt(nextlySelectedIndex) != null) {
-            jumpToTabIndex(sharedParameters, currentSubTabsContainerHandler, nextlySelectedIndex, false, true);
+            fixHistoryAndJumpToTabIndex(sharedParameters, currentSubTabsContainerHandler, nextlySelectedIndex, false, true, true);
         }
 
         if (notificationMenuItem != null)
@@ -1689,10 +1690,10 @@ public class SubTabsActions {
     }
 
     public static void jumpToTabIndex(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, int indexNumber) {
-        jumpToTabIndex(sharedParameters, currentSubTabsContainerHandler, indexNumber, true, true);
+        fixHistoryAndJumpToTabIndex(sharedParameters, currentSubTabsContainerHandler, indexNumber, true, true, true);
     }
 
-    public static void jumpToTabIndex(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, int indexNumber, boolean cleanNextlySelectedTabs, boolean ignoreNextlySelectedTabs) {
+    public static void fixHistoryAndJumpToTabIndex(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, int indexNumber, boolean cleanNextlySelectedTabs, boolean ignoreNextlySelectedTabs, boolean shouldJump) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1710,12 +1711,28 @@ public class SubTabsActions {
 
             }
 
-            if ((sharedParameters.subTabPreviouslySelectedIndexHistory.get(currentSubTabsContainerHandler.currentToolTab).size() <= 0 ||
-                    (sharedParameters.subTabPreviouslySelectedIndexHistory.get(currentSubTabsContainerHandler.currentToolTab).getLast() != indexNumber) &&
-                            (currentSubTabsContainerHandler.parentTabbedPane.getTabCount() - 1 != indexNumber) && !sharedParameters.isTabGroupSupportedByDefault)) {
+            if (
+                    sharedParameters.subTabPreviouslySelectedIndexHistory.get(currentSubTabsContainerHandler.currentToolTab).size() <= 0
+                    ||
+                    (
+                        sharedParameters.subTabPreviouslySelectedIndexHistory.get(currentSubTabsContainerHandler.currentToolTab).getLast() != indexNumber
+                        &&
+                        (
+                            (
+                                currentSubTabsContainerHandler.parentTabbedPane.getTabCount() - 1 != indexNumber
+                                &&
+                                !sharedParameters.isTabGroupSupportedByDefault
+                            )
+                            ||
+                            sharedParameters.isTabGroupSupportedByDefault
+                        )
+                    )
+                )
+            {
                 sharedParameters.subTabPreviouslySelectedIndexHistory.get(currentSubTabsContainerHandler.currentToolTab).add(indexNumber);
             }
-            currentSubTabsContainerHandler.parentTabbedPane.setSelectedIndex(indexNumber);
+            if(shouldJump)
+                currentSubTabsContainerHandler.parentTabbedPane.setSelectedIndex(indexNumber);
         }
     }
 
@@ -1737,7 +1754,6 @@ public class SubTabsActions {
                 );
         sharedParameters.printDebugMessage("Title has been copied to clipboard");
     }
-
     public static void pasteTitle(SharpenerSharedParameters sharedParameters, ActionEvent event) {
         pasteTitle(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event));
     }

@@ -6,6 +6,7 @@
 
 package com.irsdl.burp.sharpener.actitivities.ui.burpFrame;
 
+import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.actitivities.ui.subTabs.SubTabsActions;
 import com.irsdl.generic.UIHelper;
@@ -20,9 +21,11 @@ import java.util.HashMap;
 public class BurpFrameListeners implements ComponentListener {
     private final SharpenerSharedParameters sharedParameters;
     private boolean _isRecenterInProgress = false;
-    public HashMap<String, String> burpFrameShortcutMappings = new HashMap<String, String>() {{
+    private HashMap<String, String> burpFrameShortcutMappings = new HashMap<>() {{
         put("control alt C", "MoveToCenter");
     }};
+    private boolean isResizedFrameCheckInProgress = false;
+    private boolean isMovedFrameCheckInProgress = false;
     public BurpFrameListeners(SharpenerSharedParameters sharedParameters){
         this.sharedParameters = sharedParameters;
         addBurpFrameListener(sharedParameters.get_mainFrame());
@@ -37,7 +40,7 @@ public class BurpFrameListeners implements ComponentListener {
         jframe.addComponentListener(this);
         clearInputMap(jframe.getRootPane());
 
-        burpFrameShortcutMappings.forEach((k, v) -> jframe.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+        burpFrameShortcutMappings.forEach((k, v) -> jframe.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
                 KeyStroke.getKeyStroke(k), v));
 
         jframe.getRootPane().getActionMap().put("MoveToCenter", new AbstractAction() {
@@ -55,26 +58,50 @@ public class BurpFrameListeners implements ComponentListener {
     }
 
     @Override
-    public void componentResized(ComponentEvent e) {
-        Dimension newSize = e.getComponent().getBounds().getSize();
-        Point newLocation = e.getComponent().getBounds().getLocation();
-        sharedParameters.preferences.safeSetSetting("lastApplicationSize", newSize);
-        sharedParameters.preferences.safeSetSetting("lastApplicationPosition", newLocation);
-        boolean detectOffScreenPosition = sharedParameters.preferences.safeGetBooleanSetting("detectOffScreenPosition");
-        if(detectOffScreenPosition && !_isRecenterInProgress){
-            checkAndCenterOffScreen(sharedParameters.get_mainFrame(), 0.8, false);
+    public synchronized void componentResized(ComponentEvent e) {
+        if(!isResizedFrameCheckInProgress){
+            isResizedFrameCheckInProgress = true;
+            new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            Dimension newSize = e.getComponent().getBounds().getSize();
+                            Point newLocation = e.getComponent().getBounds().getLocation();
+                            sharedParameters.preferences.safeSetSetting("lastApplicationSize", newSize);
+                            sharedParameters.preferences.safeSetSetting("lastApplicationPosition", newLocation);
+                            boolean detectOffScreenPosition = sharedParameters.preferences.safeGetBooleanSetting("detectOffScreenPosition");
+                            if(detectOffScreenPosition && !_isRecenterInProgress){
+                                checkAndCenterOffScreen(sharedParameters.get_mainFrame(), 0.8, false);
+                            }
+                            isResizedFrameCheckInProgress = false;
+                        }
+                    },
+                    2000 // 2 seconds delay to decrease the amount of checking process
+            );
         }
     }
 
     @Override
-    public void componentMoved(ComponentEvent e) {
-        Dimension newSize = e.getComponent().getBounds().getSize();
-        Point newLocation = e.getComponent().getBounds().getLocation();
-        sharedParameters.preferences.safeSetSetting("lastApplicationSize", newSize);
-        sharedParameters.preferences.safeSetSetting("lastApplicationPosition", newLocation);
-        boolean detectOffScreenPosition = sharedParameters.preferences.safeGetBooleanSetting("detectOffScreenPosition");
-        if(detectOffScreenPosition && !_isRecenterInProgress){
-            checkAndCenterOffScreen(sharedParameters.get_mainFrame(), 0.8, false);
+    public synchronized void componentMoved(ComponentEvent e) {
+        if(!isMovedFrameCheckInProgress) {
+            isMovedFrameCheckInProgress = true;
+            new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            Dimension newSize = e.getComponent().getBounds().getSize();
+                            Point newLocation = e.getComponent().getBounds().getLocation();
+                            sharedParameters.preferences.safeSetSetting("lastApplicationSize", newSize);
+                            sharedParameters.preferences.safeSetSetting("lastApplicationPosition", newLocation);
+                            boolean detectOffScreenPosition = sharedParameters.preferences.safeGetBooleanSetting("detectOffScreenPosition");
+                            if (detectOffScreenPosition && !_isRecenterInProgress) {
+                                checkAndCenterOffScreen(sharedParameters.get_mainFrame(), 0.8, false);
+                            }
+                            isMovedFrameCheckInProgress = false;
+                        }
+                    },
+                    1000 // 1 second delay to decrease the amount of checking process
+            );
         }
     }
 
@@ -106,7 +133,7 @@ public class BurpFrameListeners implements ComponentListener {
     }
 
     private void clearInputMap(JComponent jc) {
-        burpFrameShortcutMappings.forEach((k, v) -> jc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+        burpFrameShortcutMappings.forEach((k, v) -> jc.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
                 KeyStroke.getKeyStroke(k), "none"));
     }
 }

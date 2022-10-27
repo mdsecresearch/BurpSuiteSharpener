@@ -102,4 +102,15 @@ public class UIWalker {
         return foundObject;
     }
 
+    public static Component FindUIObjectInComponents(Component[] arrayOfComponents, UISpecObject uiSpecObject) {
+        Component foundObject = null;
+        for(Component currentComponent:arrayOfComponents){
+            if (uiSpecObject.isCompatible(currentComponent)) {
+                foundObject = currentComponent;
+                break;
+            }
+        }
+        return foundObject;
+    }
+
 }

@@ -62,7 +62,7 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
             subTabNextlySelectedIndexHistory.put(supportedTabs, new LinkedList<>());
         }
 
-        this.printlnOutput("Sharpener has been loaded successfully");
+        this.printlnOutput(extensionName + " is being loaded...");
     }
 
     public boolean isFiltered(BurpUITools.MainTabs toolTabName) {

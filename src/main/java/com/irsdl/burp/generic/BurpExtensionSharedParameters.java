@@ -10,10 +10,13 @@ import burp.IBurpExtender;
 import burp.IBurpExtenderCallbacks;
 import com.coreyd97.BurpExtenderUtilities.DefaultGsonProvider;
 import com.coreyd97.BurpExtenderUtilities.Preferences;
+import com.irsdl.generic.uiObjFinder.UISpecObject;
+import com.irsdl.generic.uiObjFinder.UIWalker;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.PrintWriter;
+import java.security.spec.ECField;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -213,6 +216,9 @@ public class BurpExtensionSharedParameters {
     }
 
     public JMenuBar get_mainMenuBar() {
+        if(_mainMenuBar == null){
+            _mainMenuBar = _mainFrame.getJMenuBar();
+        }
         return _mainMenuBar;
     }
 
@@ -226,8 +232,21 @@ public class BurpExtensionSharedParameters {
 
     private void set_extensionJPanel(JPanel extensionJPanel) {
         this._extensionJPanel = extensionJPanel;
-        JRootPane rootPane = ((JFrame) SwingUtilities.getWindowAncestor(extensionJPanel)).getRootPane();
-        set_rootTabbedPane((JTabbedPane) rootPane.getContentPane().getComponent(0));
+        try{
+            JRootPane rootPane = ((JFrame) SwingUtilities.getWindowAncestor(extensionJPanel)).getRootPane();
+            set_rootTabbedPane((JTabbedPane) rootPane.getContentPane().getComponent(0));
+        }catch(Exception e){
+            // This is to find the root of the Burp Suite frame when our poor JPanel is lost (since Burp v2022.9.5)
+            // Defining how our Burp Suite frame is
+            UISpecObject uiSpecObject = new UISpecObject();
+            uiSpecObject.set_objectType(JFrame.class);
+            uiSpecObject.set_isShowing(true);
+
+
+            JRootPane rootPane = ((JFrame) UIWalker.FindUIObjectInComponents(JFrame.getWindows(), uiSpecObject)).getRootPane();
+            set_rootTabbedPane((JTabbedPane) rootPane.getContentPane().getComponent(0));
+        }
+
     }
 
     public JTabbedPane get_rootTabbedPane() {
