@@ -17,6 +17,9 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.List;
 
 public class BurpExtensionSharedParameters {
     public String version = "0.0"; // we need to keep this a double number to make sure check for update can work
@@ -224,10 +227,27 @@ public class BurpExtensionSharedParameters {
         return _extensionJPanel;
     }
 
-    private void set_extensionJPanel(JPanel extensionJPanel) {
+    private void set_extensionJPanel(JPanel extensionJPanel) throws Exception {
         this._extensionJPanel = extensionJPanel;
-        JRootPane rootPane = ((JFrame) SwingUtilities.getWindowAncestor(extensionJPanel)).getRootPane();
+        // Get the main burp frame
+        JFrame burpFrame = getBurpFrame();
+        JRootPane rootPane = burpFrame.getRootPane();
         set_rootTabbedPane((JTabbedPane) rootPane.getContentPane().getComponent(0));
+    }
+
+    private JFrame getBurpFrame() throws Exception {
+        // Get all frames
+        Frame[] allFrames = JFrame.getFrames();
+        // Filter the stream find the main burp window frame, and convert to a list
+        List<Frame> filteredFrames = Arrays.stream(allFrames).filter(f ->
+                f.getTitle().startsWith("Burp Suite") && f.isVisible()
+        ).collect(Collectors.toList());
+        //  If size is 1, we have the main burp frame. Otherwise fails
+        if (filteredFrames.size() == 1) {
+            return (JFrame) filteredFrames.get(0);
+        } else {
+            throw new Exception("Expected one burp pane, but found " + filteredFrames.size());
+        }
     }
 
     public JTabbedPane get_rootTabbedPane() {
