@@ -34,6 +34,10 @@ public class UIHelper {
         if (output == null) {
             output = defaultValue;
         }
+
+        if(output == null)
+            output = "";
+
         return output;
     }
 
@@ -56,13 +60,14 @@ public class UIHelper {
                 output[i] = ((JTextField) strMessagesObjectList.get(i * 2 + 1)).getText();
             }
         }
-
+        if(output == null)
+            output = new String[strMessages.length];
         return output;
     }
 
     // Common method to ask a multiple question
     public static Integer askConfirmMessage(final String strTitle, final String strQuestion, String[] msgOptions, Component parentcmp) {
-        return JOptionPane.showOptionDialog(parentcmp,
+        Integer output = JOptionPane.showOptionDialog(parentcmp,
                 strQuestion,
                 strTitle,
                 JOptionPane.YES_NO_CANCEL_OPTION,
@@ -70,6 +75,9 @@ public class UIHelper {
                 null,
                 msgOptions,
                 msgOptions[0]);
+        if(output == null)
+            output = -1;
+        return output;
     }
 
     // to update the JCheckbox background colour after using the customizeUiComponent() method
@@ -124,35 +132,52 @@ public class UIHelper {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             filePath = _fileChooser.getSelectedFile().getAbsolutePath();
         }
+
+        if(filePath == null)
+            filePath = "";
+
         return filePath;
     }
 
     public static boolean isFrameOutOffScreen(JFrame jframe, double offScreenMargin){
-        if(offScreenMargin > 1 || offScreenMargin < 0)
-            offScreenMargin = 0;
+        boolean result = false;
+        try{
+            if(offScreenMargin > 1 || offScreenMargin < 0)
+                offScreenMargin = 0;
 
-        Rectangle bounds = new Rectangle(0, 0, 0, 0);
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice lstGDs[] = ge.getScreenDevices();
-        for (GraphicsDevice gd : lstGDs) {
-            bounds.add(gd.getDefaultConfiguration().getBounds());
+            Rectangle bounds = new Rectangle(0, 0, 0, 0);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice lstGDs[] = ge.getScreenDevices();
+            for (GraphicsDevice gd : lstGDs) {
+                bounds.add(gd.getDefaultConfiguration().getBounds());
+            }
+
+            Rectangle frameBounds = jframe.getBounds();
+            double widthOffset = offScreenMargin * frameBounds.getWidth();
+            double heightOffset = offScreenMargin * frameBounds.getHeight();
+            Rectangle boundsWithThreshold = new Rectangle((int)(bounds.getX() - widthOffset),
+                    (int)(bounds.getY() - heightOffset),
+                    (int)(bounds.getWidth() + 2 * widthOffset),
+                    (int)(bounds.getHeight() + 2 * heightOffset)
+            );
+
+            result = !boundsWithThreshold.contains(frameBounds);
+
+        }catch(Exception e){
+            result = false;
+            System.err.println("Error in isFrameOutOffScreen, it has been ignored");
         }
-
-        Rectangle frameBounds = jframe.getBounds();
-        double widthOffset = offScreenMargin * frameBounds.getWidth();
-        double heightOffset = offScreenMargin * frameBounds.getHeight();
-        Rectangle boundsWithThreshold = new Rectangle((int)(bounds.getX() - widthOffset),
-                (int)(bounds.getY() - heightOffset),
-                (int)(bounds.getWidth() + 2 * widthOffset),
-                (int)(bounds.getHeight() + 2 * heightOffset)
-        );
-
-        return !boundsWithThreshold.contains(frameBounds);
+        return result;
     }
 
     public static void moveFrameToCenter(JFrame jframe){
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        jframe.setLocation(dim.width/2-jframe.getSize().width/2, dim.height/2-jframe.getSize().height/2);
+        try{
+            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+            jframe.setLocation(dim.width/2-jframe.getSize().width/2, dim.height/2-jframe.getSize().height/2);
+        }catch(Exception e){
+            System.err.println("Error in moveFrameToCenter, it has been ignored");
+        }
+
     }
 
 }

@@ -98,9 +98,9 @@ public class BurpExtensionSharedParameters {
         debugLevel = preferences.getSetting("debugLevel");
     }
 
-    public void setUIParametersFromExtensionTab(JPanel extensionJPanel, int waitSeconds) {
+    public void setUIParametersFromExtensionTab(JPanel extensionJPanel, int maxLoadAttempts) {
         boolean foundUI = false;
-        int attemptsRemaining = waitSeconds * 10;
+        int attemptsRemaining = maxLoadAttempts;
 
         while (!foundUI && attemptsRemaining > 0) {
             try {
@@ -108,7 +108,7 @@ public class BurpExtensionSharedParameters {
                     set_extensionJPanel(extensionJPanel);
                 }
 
-                if (get_rootTabbedPane() != null) {
+                if (get_rootTabbedPane() != null && get_mainFrame() != null && get_mainFrame().getRootPane() != null) {
                     isDarkMode = BurpUITools.isDarkMode(get_rootTabbedPane());
                     foundUI = true;
                 } else
@@ -119,7 +119,7 @@ public class BurpExtensionSharedParameters {
             } catch (Exception e) {
                 attemptsRemaining--;
                 try {
-                    Thread.sleep(100); // 100 * `waitSeconds` * 10 = `waitSeconds` seconds
+                    Thread.sleep(1000 * (maxLoadAttempts-attemptsRemaining)); // 100 * `waitSeconds` * 10 = `waitSeconds` seconds
                 } catch (InterruptedException ignored) {
                 }
             }
@@ -169,6 +169,15 @@ public class BurpExtensionSharedParameters {
         }
     }
 
+    public void printException(Exception error) {
+        this.stderr.println(error.getMessage());
+
+        for (StackTraceElement elem : error.getStackTrace()) {
+            this.stderr.println(elem);
+        }
+
+        error.printStackTrace();
+    }
     public void printlnError(String message) {
         this.stderr.println(message);
         printDebugMessage(message, "printlnError", true);
@@ -241,7 +250,6 @@ public class BurpExtensionSharedParameters {
             UISpecObject uiSpecObject = new UISpecObject();
             uiSpecObject.set_objectType(JFrame.class);
             uiSpecObject.set_isShowing(true);
-
 
             JRootPane rootPane = ((JFrame) UIWalker.FindUIObjectInComponents(JFrame.getWindows(), uiSpecObject)).getRootPane();
             set_rootTabbedPane((JTabbedPane) rootPane.getContentPane().getComponent(0));

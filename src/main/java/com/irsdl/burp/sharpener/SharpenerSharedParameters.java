@@ -47,7 +47,7 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
     public SharpenerSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, IBurpExtender burpExtenderObj, IBurpExtenderCallbacks callbacks) {
         super(version, extensionName, extensionURL, extensionIssueTracker, burpExtenderObj, callbacks);
 
-        if (burpMajorVersion >= 2022 && burpMinorVersion >= 6) {
+        if ((burpMajorVersion >= 2022 && burpMinorVersion >= 6) || burpMajorVersion >= 2023) {
             this.isTabGroupSupportedByDefault = true;
             this.isSubTabScrollSupportedByDefault = true;
         }
