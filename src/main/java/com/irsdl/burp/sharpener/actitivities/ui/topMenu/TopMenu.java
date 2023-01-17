@@ -49,7 +49,7 @@ import java.util.TimerTask;
 public class TopMenu extends javax.swing.JMenu {
     private JMenu topMenuForExtension;
     private final transient SharpenerSharedParameters sharedParameters;
-    private final String[] themeNames = {"none", "halloween", "game", "hacker", "gradient", "mobster", "office"};
+    private final String[] themeNames = {"none", "halloween", "game", "hacker", "gradient", "mobster", "office", "@irsdl"};
     private final String[] iconSizes = {"48", "32", "24", "20", "16", "14", "12", "10", "8", "6"};
 
     public TopMenu(SharpenerSharedParameters sharedParameters) {
@@ -154,6 +154,13 @@ public class TopMenu extends javax.swing.JMenu {
             for (BurpUITools.MainTabs tool : BurpUITools.MainTabs.values()) {
                 if (tool.toString().equalsIgnoreCase("none"))
                     continue;
+
+                if(sharedParameters.burpMajorVersion >= 2023 && tool.toString().equalsIgnoreCase("Extender")){
+                    continue;
+                }else if(sharedParameters.burpMajorVersion < 2023 && tool.toString().equalsIgnoreCase("Extensions")){
+                    continue;
+                }
+
                 JCheckBoxMenuItem toolStyleOption = new JCheckBoxMenuItem(tool.toString());
                 if (sharedParameters.preferences.safeGetBooleanSetting("isUnique_" + tool)) {
                     toolStyleOption.setSelected(true);

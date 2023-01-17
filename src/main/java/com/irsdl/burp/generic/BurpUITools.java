@@ -18,6 +18,7 @@ public class BurpUITools {
         Dashboard("Dashboard"),
         Decoder("Decoder"),
         Extender("Extender"),
+        Extensions("Extensions"),
         Intruder("Intruder"),
         Logger("Logger"),
         ProjectOptions("Project options"),
@@ -26,7 +27,11 @@ public class BurpUITools {
         Sequencer("Sequencer"),
         Target("Target"),
         UserOptions("User options"),
-        //HackVertor("Hackvertor"),
+
+        HackVertor("Hackvertor"),
+        LoggerPlusPlus("Logger++"),
+        PythonScripter("Python Scripts"),
+        Stepper("Stepper"),
         ;
         private final String text;
 

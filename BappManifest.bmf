@@ -8,6 +8,6 @@ MinPlatformVersion: 0
 ProOnly: False
 Author: Soroush Dalili
 ShortDescription: Adds a number of UI and functional features to Burp Suite.
-EntryPoint: release/BurpSuiteSharpener-2.2-SNAPSHOT.jar
+EntryPoint: release/BurpSuiteSharpener-2.3-SNAPSHOT.jar
 BuildCommand: ./gradlew jar
 SupportedProducts: Pro, Community

@@ -44,6 +44,10 @@ public class MainTabsStyleHandler {
                             Image myImg;
                             if (!themeName.equalsIgnoreCase("custom")) {
                                 myImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, "/themes/" + themeName + "/" + toolName.toString() + ".png"), iconSize);
+                                if(myImg==null){
+                                    // is this an extension?
+                                    myImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageResource(sharedParameters.extensionClass, "/themes/extensions/" + toolName.toString() + ".png"), iconSize);
+                                }
                             } else {
                                 // custom path!
                                 myImg = ImageHelper.scaleImageToWidth(ImageHelper.loadImageFile(themeCustomPath + "/" + toolName.toString() + ".png"), iconSize);
