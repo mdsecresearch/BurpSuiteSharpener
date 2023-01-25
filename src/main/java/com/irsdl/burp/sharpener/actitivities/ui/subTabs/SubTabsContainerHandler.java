@@ -367,10 +367,12 @@ public class SubTabsContainerHandler {
                 maxIndex += 1;
 
             for (int index = 0; index < maxIndex; index++) {
-                if (isCaseSensitive) {
-                    cachedTabTitles.add(parentTabbedPane.getTitleAt(index));
-                } else {
-                    cachedTabTitles.add(parentTabbedPane.getTitleAt(index).toLowerCase());
+                if(parentTabbedPane.getTitleAt(index) != null){
+                    if (isCaseSensitive) {
+                        cachedTabTitles.add(parentTabbedPane.getTitleAt(index));
+                    } else {
+                        cachedTabTitles.add(parentTabbedPane.getTitleAt(index).toLowerCase());
+                    }
                 }
             }
         }
@@ -438,7 +440,9 @@ public class SubTabsContainerHandler {
         String title = "";
         if (getTabIndex() != -1)
             title = parentTabbedPane.getTitleAt(getTabIndex());
-
+        if (title == null || title.isBlank()) {
+            title = "";
+        }
         return title;
     }
 
@@ -459,12 +463,13 @@ public class SubTabsContainerHandler {
         if (sharedParameters.isTabGroupSupportedByDefault)
             maxIndex += 1;
         for (int index = 0; index < maxIndex; index++) {
-            if (isCaseSensitive) {
-                cachedTabTitles.add(parentTabbedPane.getTitleAt(index));
-            } else {
-                cachedTabTitles.add(parentTabbedPane.getTitleAt(index).toLowerCase());
+            if(parentTabbedPane.getTitleAt(index) != null){
+                if (isCaseSensitive) {
+                    cachedTabTitles.add(parentTabbedPane.getTitleAt(index));
+                } else {
+                    cachedTabTitles.add(parentTabbedPane.getTitleAt(index).toLowerCase());
+                }
             }
-
         }
     }
 

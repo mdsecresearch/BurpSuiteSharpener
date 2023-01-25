@@ -161,7 +161,7 @@ public class TopMenu extends javax.swing.JMenu {
                     continue;
                 }
 
-                JCheckBoxMenuItem toolStyleOption = new JCheckBoxMenuItem(tool.toString());
+                JCheckBoxMenuItem toolStyleOption = new JCheckBoxMenuItem(tool.toRawString());
                 if (sharedParameters.preferences.safeGetBooleanSetting("isUnique_" + tool)) {
                     toolStyleOption.setSelected(true);
                 }

@@ -28,10 +28,12 @@ public class BurpUITools {
         Target("Target"),
         UserOptions("User options"),
 
-        HackVertor("Hackvertor"),
-        LoggerPlusPlus("Logger++"),
-        PythonScripter("Python Scripts"),
-        Stepper("Stepper"),
+        HackVertor("Extension:Hackvertor"),
+        LoggerPlusPlus("Extension:Logger++"),
+        PythonScripter("Extension:Python Scripts"),
+        Stepper("Extension:Stepper"),
+        Autorize("Extension:Autorize"),
+        Errors("Extension:Errors"),
         ;
         private final String text;
 
@@ -39,7 +41,7 @@ public class BurpUITools {
          * @param text
          */
         MainTabs(final String text) {
-            this.text = text;
+            this.text = text.replaceAll("Extension: *","Extension> ");
         }
 
         /* (non-Javadoc)
@@ -47,8 +49,13 @@ public class BurpUITools {
          */
         @Override
         public String toString() {
+            return text.replaceAll("Extension> *", "");
+        }
+
+        public String toRawString() {
             return text;
         }
+
     }
 
     public static MainTabs getMainTabsObjFromString(String tabTitleName) {
