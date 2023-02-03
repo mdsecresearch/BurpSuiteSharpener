@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
+
 public class ImageHelper {
     public static Image scaleImageToWidth(BufferedImage image, int width) {
         if (image == null)
@@ -81,7 +83,7 @@ public class ImageHelper {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g.drawImage(originalIcon.getImage(), null, null);
             } catch (Exception e) {
-                System.err.println(e.getMessage() + "\r\n" + e.getStackTrace());
+                System.err.println(e.getMessage() + "\r\n" + getStackTrace(e));
             }
         }
         return bufferedImage;
@@ -89,7 +91,7 @@ public class ImageHelper {
 
     // https://alvinalexander.com/java/java-copy-image-to-clipboard-example/
     // code below from exampledepot.com
-    //This method writes a image to the system clipboard.
+    //This method writes an image to the system clipboard.
     //otherwise it returns null.
     public static void setClipboard(Image image) {
         ImageSelection imgSel = new ImageSelection(image);
@@ -99,7 +101,7 @@ public class ImageHelper {
 
     // This class is used to hold an image while on the clipboard.
     static class ImageSelection implements Transferable {
-        private Image image;
+        private final Image image;
 
         public ImageSelection(Image image) {
             this.image = image;

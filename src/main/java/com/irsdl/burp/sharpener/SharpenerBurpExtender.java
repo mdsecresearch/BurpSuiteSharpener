@@ -6,9 +6,16 @@
 
 package com.irsdl.burp.sharpener;
 
-import burp.*;
+import burp.api.montoya.BurpExtension;
+import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.extension.ExtensionUnloadingHandler;
+import burp.api.montoya.http.HttpService;
+import burp.api.montoya.http.message.requests.HttpRequest;
+import com.irsdl.burp.generic.BurpExtensionFeatures;
 import com.irsdl.burp.generic.BurpUITools;
-import com.irsdl.burp.sharpener.actitivities.capabilities.pwnFox.PwnFoxProxyListener;
+import com.irsdl.burp.sharpener.capabilities.pwnFox.PwnFoxProxyListener;
+import com.irsdl.burp.sharpener.uiSelf.contextMenu.MainContextMenu;
+import com.irsdl.burp.sharpener.uiSelf.suiteTab.MainSuiteTab;
 import com.irsdl.generic.UIHelper;
 
 import javax.swing.*;
@@ -21,55 +28,65 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
-    private final String version = "2.4";
-    private IBurpExtender instance;
+public class SharpenerBurpExtender implements BurpExtension, ExtensionUnloadingHandler {
     private SharpenerSharedParameters sharedParameters = null;
     private Boolean isActive = null;
-    private JPanel dummyPanel;
     private boolean anotherExist = false;
     private PropertyChangeListener lookAndFeelPropChangeListener;
 
-    public synchronized Boolean getIsActive() {
+    @Override
+    public void initialize(MontoyaApi api) {
+        var features = new BurpExtensionFeatures();
+        features.hasContextMenu = false;
+        features.hasSuiteTab = false;
+        features.isCommunityVersionCompatible = true;
+        features.minSupportedMajorVersionInclusive = 2023;
+        features.minSupportedMinorVersionInclusive = 1;
+
+        this.sharedParameters = new SharpenerSharedParameters("3.0", "Sharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener/issues", this, api, features);
+
+        // set our extension name
+        api.extension().setName(sharedParameters.extensionName);
+
+        api.extension().registerUnloadingHandler(this);
+
+        if(!sharedParameters.isCompatibleWithCurrentBurpVersion){
+            // This is not a compatible extension, what should we do?
+            UIHelper.showWarningMessage("The " + sharedParameters.extensionName +
+                    " extension is not compatible with the current version or edition of Burp Suite" +
+                    "\nPlease look at the extension errors for more details.", sharedParameters.get_rootTabbedPaneUsingMontoya());
+            api.extension().unload();
+        }
+
+        PwnFoxProxyListener pwnFoxProxyListener = new PwnFoxProxyListener(sharedParameters);
+        api.proxy().registerRequestHandler(pwnFoxProxyListener);
+
+        // create our UI
+        SwingUtilities.invokeLater(() -> {
+            // we no longer need to create an extension GUI tab to get access to the jFrame - Montoya can give us access
+
+            if(sharedParameters.features.hasSuiteTab){
+                sharedParameters.extensionSuiteTab = new MainSuiteTab();
+                sharedParameters.extensionSuiteTabRegistration = api.userInterface().registerSuiteTab(sharedParameters.extensionName, sharedParameters.extensionSuiteTab);
+            }
+
+            if(sharedParameters.features.hasContextMenu){
+                sharedParameters.extensionMainContextMenu = new MainContextMenu();
+                sharedParameters.extensionContextMenuRegistration = api.userInterface().registerContextMenuItemsProvider(sharedParameters.extensionMainContextMenu);
+            }
+
+            load(false);
+            sharedParameters.printlnOutput(sharedParameters.extensionName + " has been loaded successfully.");
+        });
+    }
+    public synchronized boolean getIsActive() {
         if (this.isActive == null)
             setIsActive(false);
         return this.isActive;
     }
 
-    public synchronized void setIsActive(Boolean isActive) {
+    public synchronized void setIsActive(boolean isActive) {
         this.isActive = isActive;
-    }
-
-    public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks) {
-        this.instance = this;
-        this.sharedParameters = new SharpenerSharedParameters(version, "Sharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener/issues", instance, callbacks);
-
-        // set our extension name
-        callbacks.setExtensionName(sharedParameters.extensionName);
-
-        callbacks.registerExtensionStateListener(this);
-
-        PwnFoxProxyListener pwnFoxProxyListener = new PwnFoxProxyListener(sharedParameters);
-
-        callbacks.registerProxyListener(pwnFoxProxyListener);
-
-        // create our UI
-        SwingUtilities.invokeLater(() -> {
-            dummyPanel = new JPanel(); //Will be removed shortly after it's added, doesn't need to be anything special at the moment!
-            callbacks.addSuiteTab(SharpenerBurpExtender.this);
-            load(false);
-        });
-
-    }
-
-    @Override
-    public String getTabCaption() {
-        return sharedParameters.extensionName;
-    }
-
-    @Override
-    public Component getUiComponent() {
-        return dummyPanel;
     }
 
     @Override
@@ -81,49 +98,44 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
         sharedParameters.printDebugMessage("load - isDirty: " + isDirty);
         try{
             if (!isDirty) {
-                sharedParameters.printDebugMessage("is not dirty: setUIParametersFromExtensionTab");
-                sharedParameters.setUIParametersFromExtensionTab(dummyPanel, 10);
+                sharedParameters.printDebugMessage("is not dirty: setUIParametersUsingMontoya");
+                sharedParameters.setUIParametersUsingMontoya(10);
             } else {
                 sharedParameters.printDebugMessage("is dirty: unload");
                 unload();
             }
 
-            if ((sharedParameters.get_isUILoaded() && !isDirty) || isDirty) {
-
-                if (!isDirty) {
-                    sharedParameters.printDebugMessage("is not dirty: removeSuiteTab");
-                    sharedParameters.callbacks.removeSuiteTab(SharpenerBurpExtender.this); // we don't need this
-                }
-
-                if (!BurpUITools.isMenubarLoaded(sharedParameters.extensionName, sharedParameters.get_mainMenuBar()) || isDirty) {
+            if (sharedParameters.get_isUILoaded() || isDirty) {
+                if (!BurpUITools.isMenuBarLoaded(sharedParameters.extensionName, sharedParameters.get_mainMenuBarUsingMontoya()) || isDirty) {
                     sharedParameters.printDebugMessage("Loading all settings!");
                     // Loading all settings!
                     sharedParameters.allSettings = new SharpenerGeneralSettings(sharedParameters);
-                    sharedParameters.callbacks.registerScopeChangeListener(() -> {
+
+                    sharedParameters.montoyaApi.scope().registerScopeChangeHandler(scopeChange -> {
                         try {
                             URL burpExtenderUtilitiesURL = new URL("https://project-extension-preference-store-do-not-delete:65535/");
-                            if (!sharedParameters.callbacks.isInScope(burpExtenderUtilitiesURL) && !sharedParameters.isScopeChangeDecisionOngoing) {
+                            if (!sharedParameters.montoyaApi.scope().isInScope(burpExtenderUtilitiesURL.toString()) && !sharedParameters.isScopeChangeDecisionOngoing) {
                                 sharedParameters.isScopeChangeDecisionOngoing = true;
                                 int scopeDecision = UIHelper.askConfirmMessage("Scope Removal Confirmation",
                                         sharedParameters.extensionName + " settings cannot be saved. Do you want to add it back to the scope?",
-                                        new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                                        new String[]{"Yes", "No"}, sharedParameters.get_mainFrameUsingMontoya());
 
                                 if (scopeDecision == 0) {
                                     // There is a bug in Burp Suite which shows UI error if we do not switch to another tab at this point!
-                                    if (!BurpUITools.switchToMainTab("Dashboard", sharedParameters.get_rootTabbedPane()))
-                                        if (!BurpUITools.switchToMainTab("Proxy", sharedParameters.get_rootTabbedPane()))
-                                            BurpUITools.switchToMainTab("User options", sharedParameters.get_rootTabbedPane());
+                                    if (!BurpUITools.switchToMainTab("Dashboard", sharedParameters.get_rootTabbedPaneUsingMontoya()))
+                                        if (!BurpUITools.switchToMainTab("Proxy", sharedParameters.get_rootTabbedPaneUsingMontoya()))
+                                            BurpUITools.switchToMainTab("User options", sharedParameters.get_rootTabbedPaneUsingMontoya());
 
                                     new java.util.Timer().schedule(
                                             new java.util.TimerTask() {
                                                 @Override
                                                 public void run() {
-                                                    sharedParameters.callbacks.includeInScope(burpExtenderUtilitiesURL);
+                                                    sharedParameters.montoyaApi.scope().includeInScope(burpExtenderUtilitiesURL.toString());
                                                 }
                                             },
                                             2000
                                     );
-                                    UIHelper.showWarningMessage("Please wait for 5 seconds before clicking on the Target tab to prevent a Burp Suite internal bug when updating the scope!", sharedParameters.get_rootTabbedPane());
+                                    UIHelper.showWarningMessage("Please wait for 5 seconds before clicking on the Target tab to prevent a Burp Suite internal bug when updating the scope!", sharedParameters.get_rootTabbedPaneUsingMontoya());
                                 }
 
                                 new java.util.Timer().schedule(
@@ -151,9 +163,9 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                                         SwingUtilities.invokeLater(() -> {
                                             sharedParameters.printDebugMessage("lookAndFeelPropChangeListener");
                                             sharedParameters.defaultTabFeaturesObjectStyle = null;
-                                            UIHelper.showWarningMessage("Due to a major UI change, the " + sharedParameters.extensionName + " extension needs to be unload. Please load it manually.", sharedParameters.get_mainFrame());
-                                            BurpUITools.switchToMainTab("Extender", sharedParameters.get_rootTabbedPane());
-                                            sharedParameters.callbacks.unloadExtension();
+                                            UIHelper.showWarningMessage("Due to a major UI change, the " + sharedParameters.extensionName + " extension needs to be unload. Please load it manually.", sharedParameters.get_mainFrameUsingMontoya());
+                                            BurpUITools.switchToMainTab("Extender", sharedParameters.get_rootTabbedPaneUsingMontoya());
+                                            sharedParameters.montoyaApi.extension().unload();
                                         });
                                     }
                                 },
@@ -168,12 +180,12 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                     anotherExist = true;
                     String errMessage = "The top menu for this extension already exists. Has it been loaded twice?";
                     sharedParameters.printlnError(errMessage);
-                    UIHelper.showWarningMessage(errMessage, sharedParameters.get_mainFrame());
-                    sharedParameters.callbacks.unloadExtension();
+                    UIHelper.showWarningMessage(errMessage, sharedParameters.get_mainFrameUsingMontoya());
+                    sharedParameters.montoyaApi.extension().unload();
                 }
             } else {
                 sharedParameters.printlnError("UI cannot be loaded... try again");
-                sharedParameters.callbacks.unloadExtension();
+                sharedParameters.montoyaApi.extension().unload();
             }
         }catch (Exception e){
             sharedParameters.printlnError("Fatal error in loading the extension");
@@ -185,7 +197,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
         sharedParameters.printDebugMessage("unload");
         try{
             // reattaching related tools before working on them!
-            if (BurpUITools.reattachTools(sharedParameters.subTabSupportedTabs, sharedParameters.get_mainMenuBar())) {
+            if (BurpUITools.reattachTools(sharedParameters.subTabSupportedTabs, sharedParameters.get_mainMenuBarUsingMontoya())) {
                 try {
                     sharedParameters.printDebugMessage("reattaching");
                     // to make sure UI has been updated
@@ -231,12 +243,18 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
             try{
                 boolean isError = true;
                 String rawRequest = "GET /mdsecresearch/BurpSuiteSharpener/main/build.gradle HTTP/1.1\r\nHOST: raw.githubusercontent.com\r\n\r\n";
-                byte[] buildgradleFile = sharedParameters.callbacks.makeHttpRequest("raw.githubusercontent.com", 443, true, rawRequest.getBytes());
 
-                if (buildgradleFile != null) {
-                    String buildgradleFileStr = new String(buildgradleFile);
+                var buildGradleFileResponse = sharedParameters.montoyaApi.http().sendRequest(HttpRequest.httpRequest(
+                        HttpService.httpService("raw.githubusercontent.com", 443, true)
+                        , rawRequest
+                ));
+
+                var buildGradleFile = buildGradleFileResponse.response().body().getBytes();
+
+                if (buildGradleFile != null) {
+                    String buildGradleFileStr = new String(buildGradleFile);
                     Pattern version_Pattern = Pattern.compile("version '([\\d.]+)");
-                    Matcher m = version_Pattern.matcher(buildgradleFileStr);
+                    Matcher m = version_Pattern.matcher(buildGradleFileStr);
                     if (m.find()) {
                         String githubVersionStr = m.group(1);
                         try {
@@ -246,7 +264,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                             if (githubVersion > currentVersion) {
                                 sharedParameters.printlnOutput(sharedParameters.extensionName + " is outdated. The latest version is: " + githubVersionStr);
                                 new Thread(() -> {
-                                    int answer = UIHelper.askConfirmMessage("A new version of " + sharedParameters.extensionName + " is available", "Do you want to open the " + sharedParameters.extensionName + " project page to download the latest version?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrame());
+                                    int answer = UIHelper.askConfirmMessage("A new version of " + sharedParameters.extensionName + " is available", "Do you want to open the " + sharedParameters.extensionName + " project page to download the latest version?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrameUsingMontoya());
                                     if (answer == 0) {
                                         try {
                                             Desktop.getDesktop().browse(new URI(sharedParameters.extensionURL + "/tree/main/release"));
@@ -263,7 +281,7 @@ public class SharpenerBurpExtender implements IBurpExtender, ITab, IExtensionSta
                             }
                             isError = false;
                         } catch (Exception e) {
-
+                            sharedParameters.printDebugMessage("Error in SharpenerBurpExtender.checkForUpdate()" + e.getMessage());
                         }
                     }
                 }

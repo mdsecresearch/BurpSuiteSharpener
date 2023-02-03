@@ -19,11 +19,11 @@ public class Utilities {
 
     public static boolean isValidRegExPattern(String regexString) {
         boolean result = false;
-        String userInputPattern = regexString;
         try {
-            Pattern.compile(userInputPattern);
+            Pattern.compile(regexString);
             result = true;
         } catch (PatternSyntaxException exception) {
+            //ignore
         }
         return result;
     }

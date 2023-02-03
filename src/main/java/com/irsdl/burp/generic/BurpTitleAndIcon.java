@@ -31,7 +31,7 @@ public class BurpTitleAndIcon {
 
     public static void setTitle(BurpExtensionSharedParameters sharedParameters, String title) {
         SwingUtilities.invokeLater(() -> {
-            sharedParameters.get_mainFrame().setTitle(title);
+            sharedParameters.get_mainFrameUsingMontoya().setTitle(title);
             sharedParameters.printDebugMessage("Burp Suite title was changed to: " + title);
         });
     }
@@ -40,7 +40,7 @@ public class BurpTitleAndIcon {
         if (img != null) {
             SwingUtilities.invokeLater(() -> {
 
-                java.util.List<Image> iconList = new ArrayList<Image>();
+                java.util.List<Image> iconList = new ArrayList<>();
                 iconList.add(img);
                 for (Window window : Window.getWindows()) {
                     window.setIconImages(iconList);
@@ -60,10 +60,10 @@ public class BurpTitleAndIcon {
     private static void removeMainFrameWindowFocusListener(BurpExtensionSharedParameters sharedParameters) {
         if (sharedParameters.addedIconListener) {
             sharedParameters.addedIconListener = false;
-            int listenerCount = sharedParameters.get_mainFrame().getWindowFocusListeners().length;
+            int listenerCount = sharedParameters.get_mainFrameUsingMontoya().getWindowFocusListeners().length;
             if (listenerCount > 0) {
                 // We assume that the last one is ours!
-                sharedParameters.get_mainFrame().removeWindowFocusListener(sharedParameters.get_mainFrame().getWindowFocusListeners()[listenerCount - 1]);
+                sharedParameters.get_mainFrameUsingMontoya().removeWindowFocusListener(sharedParameters.get_mainFrameUsingMontoya().getWindowFocusListeners()[listenerCount - 1]);
             }
         }
     }
@@ -96,7 +96,7 @@ public class BurpTitleAndIcon {
                 }
             };
 
-            sharedParameters.get_mainFrame().addWindowFocusListener(mainFrameWindowFocusListener);
+            sharedParameters.get_mainFrameUsingMontoya().addWindowFocusListener(mainFrameWindowFocusListener);
             sharedParameters.addedIconListener = true;
 
         } else {

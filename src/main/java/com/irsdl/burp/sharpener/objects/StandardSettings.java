@@ -6,6 +6,7 @@
 
 package com.irsdl.burp.sharpener.objects;
 
+import com.irsdl.burp.generic.BurpExtensionSharedParameters;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 
 import java.util.Collection;
@@ -44,7 +45,7 @@ public abstract class StandardSettings {
             } catch (Exception e) {
                 //already registered setting
                 sharedParameters.printDebugMessage(e.getMessage());
-                if (sharedParameters.debugLevel > 1)
+                if (sharedParameters.debugLevel == BurpExtensionSharedParameters.DebugLevels.VeryVerbose.getValue())
                     e.printStackTrace(sharedParameters.stderr);
             }
         }
@@ -56,11 +57,11 @@ public abstract class StandardSettings {
 
         for (PreferenceObject preferenceObject : _preferenceObjectCollection) {
             try {
-                // sharedParameters.preferences.resetSetting(preferenceObject.settingName); // there is a bug in the library so we can't use this for now
+                // sharedParameters.preferences.resetSetting(preferenceObject.settingName); // there is a bug in the library, so we can't use this for now
                 sharedParameters.preferences.safeSetSetting(preferenceObject.settingName, null);
             } catch (Exception e) {
                 sharedParameters.printDebugMessage(e.getMessage());
-                if (sharedParameters.debugLevel > 1)
+                if (sharedParameters.debugLevel == BurpExtensionSharedParameters.DebugLevels.VeryVerbose.getValue())
                     e.printStackTrace(sharedParameters.stderr);
             }
         }

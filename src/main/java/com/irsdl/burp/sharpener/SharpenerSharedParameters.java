@@ -6,15 +6,16 @@
 
 package com.irsdl.burp.sharpener;
 
-import burp.IBurpExtender;
-import burp.IBurpExtenderCallbacks;
+import burp.api.montoya.BurpExtension;
+import burp.api.montoya.MontoyaApi;
+import com.irsdl.burp.generic.BurpExtensionFeatures;
 import com.irsdl.burp.generic.BurpExtensionSharedParameters;
 import com.irsdl.burp.generic.BurpUITools;
-import com.irsdl.burp.sharpener.actitivities.ui.subTabs.SubTabsContainerHandler;
-import com.irsdl.burp.sharpener.actitivities.ui.topMenu.TopMenu;
+import com.irsdl.burp.sharpener.uiControllers.subTabs.SubTabsContainerHandler;
+import com.irsdl.burp.sharpener.uiSelf.topMenu.TopMenu;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObject;
 import com.irsdl.burp.sharpener.objects.TabFeaturesObjectStyle;
-import com.irsdl.generic.uiObjFinder.UISpecObject;
+import com.irsdl.generic.uiObjFinder.UiSpecObject;
 
 import javax.swing.*;
 import javax.swing.plaf.TabbedPaneUI;
@@ -42,10 +43,10 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
     public HashMap<BurpUITools.MainTabs, LinkedList<Integer>> subTabPreviouslySelectedIndexHistory = new HashMap<>();
     public HashMap<BurpUITools.MainTabs, LinkedList<Integer>> subTabNextlySelectedIndexHistory = new HashMap<>();
     public HashMap<BurpUITools.MainTabs, TabbedPaneUI> originalSubTabbedPaneUI = new HashMap<>();
-    private HashMap<BurpUITools.MainTabs, JTabbedPane> cachedJTabbedPaneTools = new HashMap<>(); // This will keep pointer to the current repeater or intruder even when they are detached
+    private final HashMap<BurpUITools.MainTabs, JTabbedPane> cachedJTabbedPaneTools = new HashMap<>(); // This will keep pointer to the current repeater or intruder even when they are detached
 
-    public SharpenerSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, IBurpExtender burpExtenderObj, IBurpExtenderCallbacks callbacks) {
-        super(version, extensionName, extensionURL, extensionIssueTracker, burpExtenderObj, callbacks);
+    public SharpenerSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, BurpExtension burpExtenderObj, MontoyaApi montoyaApi, BurpExtensionFeatures burpExtensionFeatures) {
+        super(version, extensionName, extensionURL, extensionIssueTracker, burpExtenderObj, montoyaApi, burpExtensionFeatures);
 
         if ((burpMajorVersion >= 2022 && burpMinorVersion >= 6) || burpMajorVersion >= 2023) {
             this.isTabGroupSupportedByDefault = true;
@@ -66,11 +67,7 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
     }
 
     public boolean isFiltered(BurpUITools.MainTabs toolTabName) {
-        if (getHiddenSubTabsCount(toolTabName) > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return getHiddenSubTabsCount(toolTabName) > 0;
     }
 
     public int getHiddenSubTabsCount(BurpUITools.MainTabs toolTabName) {
@@ -86,7 +83,7 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
 
     public JTabbedPane get_toolTabbedPane(BurpUITools.MainTabs toolTabName, boolean useCache) {
         JTabbedPane subTabbedPane = null;
-        JTabbedPane _rootTabbedPane = get_rootTabbedPane();
+        JTabbedPane _rootTabbedPane = get_rootTabbedPaneUsingMontoya();
 
 
         if (useCache && cachedJTabbedPaneTools.get(toolTabName) != null) {
@@ -125,14 +122,14 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
             }
 
             if (subTabbedPane == null) {
-                // it could not find the tool, this can happen when a tool has been detached so we need to look for it!
+                // it could not find the tool, this can happen when a tool has been detached, so we need to look for it!
                 for (Window window : Window.getWindows()) {
                     if (window.isShowing()) {
                         if (window instanceof JFrame) {
                             String title = ((JFrame) window).getTitle();
                             // "Repeater" becomes "Burp Repeater" when it is detached
                             if (title.equalsIgnoreCase("Burp " + toolTabName.toString())) {
-                                com.irsdl.generic.uiObjFinder.UISpecObject uiSpecObject = new UISpecObject(JTabbedPane.class);
+                                UiSpecObject uiSpecObject = new UiSpecObject(JTabbedPane.class);
                                 uiSpecObject.set_isJComponent(true);
                                 uiSpecObject.set_isShowing(true);
                                 uiSpecObject.set_minJComponentCount(1);
@@ -154,6 +151,10 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
             } else {
                 cachedJTabbedPaneTools.put(toolTabName, subTabbedPane);
             }
+        }
+
+        if(subTabbedPane == null){
+            printDebugMessage("subTabbedPane is null for " + toolTabName + ". This can cause an error if not handled gracefully.");
         }
 
         return subTabbedPane;

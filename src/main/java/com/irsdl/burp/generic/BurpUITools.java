@@ -37,9 +37,6 @@ public class BurpUITools {
         ;
         private final String text;
 
-        /**
-         * @param text
-         */
         MainTabs(final String text) {
             this.text = text.replaceAll("Extension: *","Extension> ");
         }
@@ -72,10 +69,7 @@ public class BurpUITools {
     }
 
     public static boolean isDarkMode(Component component) {
-        boolean result = false;
-        if (component.getBackground().getBlue() < 128) {
-            result = true;
-        }
+        boolean result = component.getBackground().getBlue() < 128;
         return result;
     }
 
@@ -98,7 +92,7 @@ public class BurpUITools {
         return result;
     }
 
-    public static Boolean isStringInMainTabs(String tabTitleName) {
+    public static boolean isStringInMainTabs(String tabTitleName) {
         boolean result = true;
         try {
             MainTabs.valueOf(tabTitleName);
@@ -108,8 +102,8 @@ public class BurpUITools {
         return result;
     }
 
-    // This is case insensitive to prevent confusion
-    public static boolean isMenubarLoaded(String toolbarName, JMenuBar menuBar) {
+    // This is case-insensitive to prevent confusion
+    public static boolean isMenuBarLoaded(String toolbarName, JMenuBar menuBar) {
         boolean result = false;
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
             JMenuItem item = menuBar.getMenu(i);
@@ -121,8 +115,8 @@ public class BurpUITools {
         return result;
     }
 
-    // This is case insensitive to prevent confusion
-    public static void removeMenubarByName(String toolbarName, JMenuBar menuBar, boolean repaintUI) {
+    // This is case-insensitive to prevent confusion
+    public static void removeMenuBarByName(String toolbarName, JMenuBar menuBar, boolean repaintUI) {
         SwingUtilities.invokeLater(() -> {
 
             for (int i = 0; i < menuBar.getMenuCount(); i++) {
@@ -141,7 +135,7 @@ public class BurpUITools {
         });
     }
 
-    // This is case insensitive to prevent confusion
+    // This is case-insensitive to prevent confusion
     public static JMenuItem getMenuItem(String toolbarName, JMenuBar menuBar) {
         JMenuItem result = null;
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
@@ -161,20 +155,17 @@ public class BurpUITools {
         if (mainMenuItem != null) {
             for (int i = 0; i < mainMenuItem.getSubElements()[0].getSubElements().length - 1; i++) {
                 MenuElement item = mainMenuItem.getSubElements()[0].getSubElements()[i];
-                if (item instanceof JMenuItem) {
-                    JMenuItem finalObj = (JMenuItem) item;
+                if (item instanceof JMenuItem finalObj) {
                     if (finalObj.getText().equalsIgnoreCase(subItemName)) {
                         result = finalObj;
                         break;
                     }
-                } else if (item instanceof JMenu) {
-                    JMenu finalObj = (JMenu) item;
+                } else if (item instanceof JMenu finalObj) {
                     if (finalObj.getText().equalsIgnoreCase(subItemName)) {
                         result = finalObj;
                         break;
                     }
-                } else if (item instanceof JCheckBoxMenuItem) {
-                    JCheckBoxMenuItem finalObj = (JCheckBoxMenuItem) item;
+                } else if (item instanceof JCheckBoxMenuItem finalObj) {
                     if (finalObj.getText().equalsIgnoreCase(subItemName)) {
                         result = finalObj;
                         break;
@@ -197,9 +188,9 @@ public class BurpUITools {
         return result;
     }
 
-    // This is case insensitive to prevent confusion
-    public static Boolean isTabLoaded(String tabName, JTabbedPane tabbedPane) {
-        Boolean result = false;
+    // This is case-insensitive to prevent confusion
+    public static boolean isTabLoaded(String tabName, JTabbedPane tabbedPane) {
+        boolean result = false;
         for (Component component : tabbedPane.getComponents()) {
             int componentIndex = tabbedPane.indexOfComponent(component);
             if (componentIndex == -1) {

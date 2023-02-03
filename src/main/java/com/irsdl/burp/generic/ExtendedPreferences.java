@@ -6,15 +6,15 @@
 
 package com.irsdl.burp.generic;
 
-import burp.IBurpExtenderCallbacks;
+import burp.api.montoya.MontoyaApi;
 import com.coreyd97.BurpExtenderUtilities.IGsonProvider;
 import com.coreyd97.BurpExtenderUtilities.Preferences;
 
 public class ExtendedPreferences extends Preferences {
     BurpExtensionSharedParameters sharedParameters;
 
-    public ExtendedPreferences(String extensionIdentifier, IGsonProvider gsonProvider, IBurpExtenderCallbacks callbacks) {
-        super(extensionIdentifier, gsonProvider, callbacks);
+    public ExtendedPreferences(String extensionIdentifier, IGsonProvider gsonProvider, MontoyaApi montoyaApi) {
+        super(montoyaApi, extensionIdentifier, gsonProvider);
     }
 
     public synchronized void safeSetSetting(String settingName, Object value) {
@@ -24,8 +24,8 @@ public class ExtendedPreferences extends Preferences {
             tryTimes++;
 
             if (sharedParameters != null) {
-                sharedParameters.printDebugMessage("Try number: " + tryTimes);
-                sharedParameters.printDebugMessage("Trying to save " + settingName);
+                sharedParameters.printDebugMessage("Try number: " + tryTimes, BurpExtensionSharedParameters.DebugLevels.VerboseAndPrefsRW.getValue());
+                sharedParameters.printDebugMessage("Trying to save " + settingName, BurpExtensionSharedParameters.DebugLevels.VerboseAndPrefsRW.getValue());
             }
 
             try {
@@ -34,13 +34,13 @@ public class ExtendedPreferences extends Preferences {
                 if (getSetting(settingName).equals(value)) {
                     isSaved = true;
                     if (sharedParameters != null) {
-                        sharedParameters.printDebugMessage("This was saved successfully: " + settingName);
+                        sharedParameters.printDebugMessage("This was saved successfully: " + settingName, BurpExtensionSharedParameters.DebugLevels.VerboseAndPrefsRW.getValue());
                     }
                 }
             } catch (Exception e) {
                 if (sharedParameters != null) {
-                    sharedParameters.printDebugMessage("Save error: " + e.getMessage());
-                    if (sharedParameters.debugLevel > 1)
+                    sharedParameters.printDebugMessage("Save error: " + e.getMessage(), BurpExtensionSharedParameters.DebugLevels.VerboseAndPrefsRW.getValue());
+                    if (sharedParameters.debugLevel == BurpExtensionSharedParameters.DebugLevels.VeryVerbose.getValue())
                         e.printStackTrace(sharedParameters.stderr);
                 }
             }
@@ -53,14 +53,14 @@ public class ExtendedPreferences extends Preferences {
 
         try {
             if (sharedParameters != null) {
-                sharedParameters.printDebugMessage("Trying to get value of " + settingName + " from settings");
+                sharedParameters.printDebugMessage("Trying to get value of " + settingName + " from settings", BurpExtensionSharedParameters.DebugLevels.VerboseAndPrefsRW.getValue());
             }
 
             result = getSetting(settingName);
         } catch (Exception e) {
             if (sharedParameters != null) {
                 sharedParameters.printDebugMessage("Get error: " + e.getMessage());
-                if (sharedParameters.debugLevel > 1)
+                if (sharedParameters.debugLevel == BurpExtensionSharedParameters.DebugLevels.VeryVerbose.getValue())
                     e.printStackTrace(sharedParameters.stderr);
             }
         }

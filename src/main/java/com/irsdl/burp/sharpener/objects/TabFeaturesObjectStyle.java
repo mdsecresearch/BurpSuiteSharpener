@@ -20,6 +20,10 @@ public class TabFeaturesObjectStyle implements Serializable {
     public int iconSize = 0;
     public String colorCode = "";
 
+    public TabFeaturesObjectStyle(){
+
+    }
+
     public TabFeaturesObjectStyle(String styleName, String fontName, float fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, Color colorCode, String iconResourceString, int iconSize) {
         this.name = styleName;
         this.fontName = fontName;
@@ -61,8 +65,7 @@ public class TabFeaturesObjectStyle implements Serializable {
     @Override
     public boolean equals(Object o) {
         boolean result = false;
-        if (o instanceof TabFeaturesObjectStyle) {
-            TabFeaturesObjectStyle temp = (TabFeaturesObjectStyle) o;
+        if (o instanceof TabFeaturesObjectStyle temp) {
             if (temp.fontName == fontName && temp.fontSize == fontSize && Boolean.compare(temp.isBold, isBold) == 0 &&
                     Boolean.compare(temp.isItalic, isItalic) == 0 && temp.iconResourceString.equals(iconResourceString) && temp.iconSize == iconSize &&
                     Boolean.compare(temp.isCloseButtonVisible, isCloseButtonVisible) == 0 && temp.colorCode.equals(colorCode)) {
@@ -74,8 +77,7 @@ public class TabFeaturesObjectStyle implements Serializable {
 
     public boolean equalsIgnoreColor(Object o) {
         boolean result = false;
-        if (o instanceof TabFeaturesObjectStyle) {
-            TabFeaturesObjectStyle temp = (TabFeaturesObjectStyle) o;
+        if (o instanceof TabFeaturesObjectStyle temp) {
             if (temp.fontName.equals(fontName) && temp.fontSize == fontSize && Boolean.compare(temp.isBold, isBold) == 0 &&
                     Boolean.compare(temp.isItalic, isItalic) == 0 && temp.iconResourceString.equals(iconResourceString) && temp.iconSize == iconSize &&
                     Boolean.compare(temp.isCloseButtonVisible, isCloseButtonVisible) == 0) {

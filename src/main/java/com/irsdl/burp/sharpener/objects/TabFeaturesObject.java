@@ -15,6 +15,10 @@ public class TabFeaturesObject extends TabFeaturesObjectStyle {
     //public LinkedHashSet<String> titleHistory = new LinkedHashSet<>(); // https://github.com/CoreyD97/BurpExtenderUtilities/issues/7 we still can't keep the order using LinkedHashSet
     public String[] titleHistory = new String[]{};
 
+    public TabFeaturesObject(){
+        super();
+    }
+
     public TabFeaturesObject(int index, String title, String[] titleHistory, String fontName, float fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, Color colorCode, String iconString, int iconSize) {
         super("", fontName, fontSize, isBold, isItalic, isCloseButtonVisible, colorCode, iconString, iconSize);
         this.index = index;
@@ -25,8 +29,7 @@ public class TabFeaturesObject extends TabFeaturesObjectStyle {
     @Override
     public boolean equals(Object o) {
         boolean result = false;
-        if (o instanceof TabFeaturesObject) {
-            TabFeaturesObject temp = (TabFeaturesObject) o;
+        if (o instanceof TabFeaturesObject temp) {
             if (temp.title.equals(title) && temp.getStyle().equals(getStyle())) {
                 result = true;
             }

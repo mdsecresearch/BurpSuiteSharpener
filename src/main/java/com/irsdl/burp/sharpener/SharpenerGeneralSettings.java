@@ -8,11 +8,11 @@ package com.irsdl.burp.sharpener;
 
 import com.coreyd97.BurpExtenderUtilities.Preferences;
 import com.irsdl.burp.generic.BurpUITools;
-import com.irsdl.burp.sharpener.actitivities.capabilities.pwnFox.PwnFoxSettings;
-import com.irsdl.burp.sharpener.actitivities.ui.burpFrame.BurpFrameSettings;
-import com.irsdl.burp.sharpener.actitivities.ui.mainTabs.MainTabsSettings;
-import com.irsdl.burp.sharpener.actitivities.ui.subTabs.SubTabsSettings;
-import com.irsdl.burp.sharpener.actitivities.ui.topMenu.TopMenuSettings;
+import com.irsdl.burp.sharpener.capabilities.pwnFox.PwnFoxSettings;
+import com.irsdl.burp.sharpener.uiControllers.burpFrame.BurpFrameSettings;
+import com.irsdl.burp.sharpener.uiControllers.mainTabs.MainTabsSettings;
+import com.irsdl.burp.sharpener.uiControllers.subTabs.SubTabsSettings;
+import com.irsdl.burp.sharpener.uiSelf.topMenu.TopMenuSettings;
 import com.irsdl.burp.sharpener.objects.PreferenceObject;
 import com.irsdl.burp.sharpener.objects.StandardSettings;
 
@@ -55,13 +55,13 @@ public class SharpenerGeneralSettings extends StandardSettings {
     @Override
     public synchronized void loadSettings() {
         // reattaching related tools before working on them!
-        if (BurpUITools.reattachTools(sharedParameters.subTabSupportedTabs, sharedParameters.get_mainMenuBar())) {
+        if (BurpUITools.reattachTools(sharedParameters.subTabSupportedTabs, sharedParameters.get_mainMenuBarUsingMontoya())) {
             try {
                 // to make sure UI has been updated
                 sharedParameters.printlnOutput("Detached windows were found. We need to wait for a few seconds after reattaching the tabs.");
                 Thread.sleep(3000);
             } catch (Exception e) {
-
+                sharedParameters.printDebugMessage("Error in SharpenerGeneralSettings.loadSettings(): " + e.getMessage());
             }
         }
 

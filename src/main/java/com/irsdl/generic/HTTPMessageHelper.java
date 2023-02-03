@@ -6,7 +6,7 @@
 package com.irsdl.generic;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,7 +66,7 @@ public class HTTPMessageHelper {
     }
 
     // Makes a content-type header using provided parameters
-    // Obviously the ; delimiter can be changed by comma in certain cases but that's not for discussion here!
+    // Obviously the ";" delimiter can be changed by comma in certain cases but that's not for discussion here!
     public static String createContentTypeHeader(String cType, String charset, String boundary, boolean trimSpaces) {
         String contentType = "";
         if (trimSpaces) {
@@ -138,12 +138,12 @@ public class HTTPMessageHelper {
 
     // Splits header and body of a request or response
     public static List<String> getHeadersListFromFullRequest(byte[] fullMessage) {
-        return getHeadersListFromFullRequest(new String(fullMessage, Charset.forName("ISO-8859-1")));
+        return getHeadersListFromFullRequest(new String(fullMessage, StandardCharsets.ISO_8859_1));
     }
 
     // Splits header and body of a request or response
     public static List<String> getHeadersListFromHeader(byte[] headerMessage) {
-        return new ArrayList<>(Arrays.asList(new String(headerMessage, Charset.forName("ISO-8859-1")).split("\r?\n")));
+        return new ArrayList<>(Arrays.asList(new String(headerMessage, StandardCharsets.ISO_8859_1).split("\r?\n")));
     }
 
     // Splits header and body of a request or response
@@ -184,7 +184,7 @@ public class HTTPMessageHelper {
         return getQueryString(fullMessage, "", delimiter_QS_param);
     }
 
-    // gets querystring parameters because burp can't handle special cases such as when we have jsessionid after semicolon
+    // gets url parameters because burp can't handle special cases such as when we have jsessionid after semicolon
     public static List<List<String>> getQueryString(String reqMessage, String delimiter_QS, String delimiter_QS_param) {
         if (delimiter_QS.isEmpty()) delimiter_QS = "?";
         if (delimiter_QS_param.isEmpty()) delimiter_QS = "&";
@@ -192,13 +192,13 @@ public class HTTPMessageHelper {
         List<List<String>> qs_list = new ArrayList<List<String>>();
 
         // we assume that we are dealing with one HTTP message (not multiple in a pipeline)
-        String firstline = reqMessage.split("\\r?\\n|\\r\\n?", 2)[0];
+        String firstLine = reqMessage.split("\\r?\\n|\\r\\n?", 2)[0];
 
-        // we assume that we are dealing with an standard HTTP message in which there is a space after the last parameter value
+        // we assume that we are dealing with a standard HTTP message in which there is a space after the last parameter value
         String QS = "";
 
         Pattern pattern = Pattern.compile(Encoding.unicodeEscape(delimiter_QS, true, false) + "([^ \\s]+)");
-        Matcher matcher = pattern.matcher(firstline);
+        Matcher matcher = pattern.matcher(firstLine);
         if (matcher.find()) {
             QS = matcher.group(1);
         }
@@ -255,47 +255,47 @@ public class HTTPMessageHelper {
         return replaceQueryString(reqMessage, newQS, "");
     }
 
-    // replaces querystring or adds it if empty in a request
+    // replaces url parameters or adds it if empty in a request
     public static String replaceQueryString(String reqMessage, String newQS, String delimiter_QS) {
         String finalMessage;
         if (delimiter_QS.isEmpty()) delimiter_QS = "?";
         // we assume that we are dealing with one HTTP message (not multiple in a pipeline)
         String[] splittedRequest = reqMessage.split("\\r?\\n|\\r\\n?", 2);
-        String firstline = splittedRequest[0];
-        firstline = firstline.trim(); // we don't have spaces before or after the first line if it is standard!
+        String firstLine = splittedRequest[0];
+        firstLine = firstLine.trim(); // we don't have spaces before or after the first line if it is standard!
 
         String QS_pattern = Encoding.unicodeEscape(delimiter_QS, true, false) + "[^ \\s]+";
         Pattern pattern = Pattern.compile(QS_pattern);
-        Matcher matcher = pattern.matcher(firstline);
+        Matcher matcher = pattern.matcher(firstLine);
         if (matcher.find()) {
             // replacing existing QS
-            firstline = matcher.replaceAll(delimiter_QS + newQS);
+            firstLine = matcher.replaceAll(delimiter_QS + newQS);
         } else {
             // adding QS to the request
             String HTTP_version_pattern = "([ ]+HTTP/[^\\s]+)";
             pattern = Pattern.compile(HTTP_version_pattern);
-            matcher = pattern.matcher(firstline);
+            matcher = pattern.matcher(firstLine);
             if (matcher.find()) {
-                firstline = matcher.replaceAll(delimiter_QS + newQS + "$1");
+                firstLine = matcher.replaceAll(delimiter_QS + newQS + "$1");
             } else {
                 // HTTP v0.9?!
-                firstline += delimiter_QS + newQS;
+                firstLine += delimiter_QS + newQS;
             }
 
         }
-        finalMessage = firstline + "\r\n" + splittedRequest[1];
+        finalMessage = firstLine + "\r\n" + splittedRequest[1];
         return finalMessage;
     }
 
     // get values of a header even when it is duplicated
-    public static ArrayList<String> getAllHeaderValuesByName(List<String> headers, String headername) {
+    public static ArrayList<String> getAllHeaderValuesByName(List<String> headers, String headerName) {
         ArrayList<String> result = new ArrayList<String>();
-        headername = headername.toLowerCase();
+        headerName = headerName.toLowerCase();
         for (String item : headers) {
             if (item.indexOf(":") >= 0) {
                 String[] headerItem = item.split(":", 2);
                 String headerNameLC = headerItem[0].toLowerCase();
-                if (headerNameLC.equals(headername)) {
+                if (headerNameLC.equals(headerName)) {
                     // We have a match
                     result.add(headerItem[1].trim());
                 }
@@ -324,15 +324,14 @@ public class HTTPMessageHelper {
         return result;
     }
 
-    // get values of a header even when it is duplicated
-    public static ArrayList<String> removeHeadersByName(List<String> headers, String headername) {
+    public static ArrayList<String> removeHeadersByName(List<String> headers, String headerName) {
         ArrayList<String> result = new ArrayList<String>();
-        headername = headername.toLowerCase();
+        headerName = headerName.toLowerCase();
         for (String item : headers) {
             if (item.indexOf(":") >= 0) {
                 String[] headerItem = item.split(":", 2);
                 String headerNameLC = headerItem[0].toLowerCase();
-                if (!headerNameLC.equals(headername)) {
+                if (!headerNameLC.equals(headerName)) {
                     // Header name is different so we keep it!
                     result.add(item);
                 }
@@ -344,7 +343,7 @@ public class HTTPMessageHelper {
     }
 
     // get values of a cookie even when it is duplicated
-    public static ArrayList<String> getAllCookieValuesByName(String cookieHeaderValue, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
+    public static ArrayList<String> getAllCookieValuesByName(String cookieHeaderValue, String targetCookieName, boolean isCaseSensitive, boolean isRequest) {
         ArrayList<String> result = new ArrayList<String>();
         if (!isCaseSensitive) {
             targetCookieName = targetCookieName.toLowerCase();
@@ -378,7 +377,7 @@ public class HTTPMessageHelper {
     }
 
     // get the first value of a cookie
-    public static String getFirstCookieValueByName(String cookieHeaderValue, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
+    public static String getFirstCookieValueByName(String cookieHeaderValue, String targetCookieName, boolean isCaseSensitive, boolean isRequest) {
         String result = "";
 
         if (!isCaseSensitive) {
@@ -414,7 +413,7 @@ public class HTTPMessageHelper {
     }
 
     // get values of a cookie even when it is duplicated
-    public static ArrayList<String> getAllCookieValuesByNameFromHeaders(List<String> headers, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
+    public static ArrayList<String> getAllCookieValuesByNameFromHeaders(List<String> headers, String targetCookieName, boolean isCaseSensitive, boolean isRequest) {
         ArrayList<String> result = new ArrayList<String>();
         String headerName = "Cookie";
         if (!isRequest) {
@@ -433,7 +432,7 @@ public class HTTPMessageHelper {
     }
 
     // get the first value of a cookie
-    public static String getFirstCookieValueByNameFromHeaders(List<String> headers, String targetCookieName, Boolean isCaseSensitive, Boolean isRequest) {
+    public static String getFirstCookieValueByNameFromHeaders(List<String> headers, String targetCookieName, boolean isCaseSensitive, boolean isRequest) {
         String result = "";
         String headerName = "Cookie";
         if (!isRequest) {
@@ -470,7 +469,7 @@ public class HTTPMessageHelper {
     }
 
     // replace or add a cookie value with the new value
-    public static List<String> replaceOrAddCookieValuesInHeaderList(List<String> headers, String targetCookieName, String newCookieValue, boolean isCaseSensitive, Boolean isRequest) {
+    public static List<String> replaceOrAddCookieValuesInHeaderList(List<String> headers, String targetCookieName, String newCookieValue, boolean isCaseSensitive, boolean isRequest) {
         List<String> result = new ArrayList<String>();
 
         String headerName = "cookie";
@@ -522,7 +521,7 @@ public class HTTPMessageHelper {
     }
 
     // replace or add a cookie value with the new value - this uses a RegEx which might be a faster approach...
-    public static String replaceOrAddCookieValuesInHeaderString(String strHeader, String targetCookieName, String newCookieValue, boolean isCaseSensitive, Boolean isRequest) {
+    public static String replaceOrAddCookieValuesInHeaderString(String strHeader, String targetCookieName, String newCookieValue, boolean isCaseSensitive, boolean isRequest) {
         String result = "";
 
         String headerName = "Cookie";
@@ -622,4 +621,5 @@ public class HTTPMessageHelper {
         result = strHeader.replaceFirst("^[^ \\t]+", newVerb);
         return result;
     }
+
 }

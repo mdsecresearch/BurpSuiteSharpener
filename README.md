@@ -1,5 +1,5 @@
 # Burp Suite Sharpener
-This extension should add a number of UI and functional features to Burp Suite to make working with it easier. 
+This extension should add a number of UI and functional features to Burp Suite to make working with it a bit easier. 
 
 <pre>
  ___  _                                      
@@ -8,6 +8,12 @@ This extension should add a number of UI and functional features to Burp Suite t
 <___/|_|_|<___||_|  |  _/\___.|_|_|\___.|_|
                     |_|
 </pre>
+
+# Using the Legacy Extension
+The latest version of this extension is only compatible with Burp Suite version 2023.1 and above due to the full support of Montoya API.
+The older versions of this extension can be downloaded from the legacy branch:
+https://github.com/mdsecresearch/BurpSuiteSharpener/tree/Legacy-Extension/release
+The legacy branch will not receive any future updates.
 
 # Current Features
 * Making main tools' tabs more distinguishable by choosing a theme
@@ -27,9 +33,7 @@ This extension should add a number of UI and functional features to Burp Suite t
 * Searching only in filtered items (disabled since version 2022.6 for compatibility reasons)
 * Trimming long titles into 100 characters
 * Show previously chosen titles for a tab
-* Fixing tab positions in Repeater and Intruder when there are multiple rows
 * Several keyboard shortcuts to make the tab navigation easier
-* Repeater and Intruder tabs can be minimised to save space
 * Support for PwnFox Firefox extension highlighter
 * Ability to save the last size and position of Burp Suite to move it to the same location next time
 * Ability to detect off-screen Burp Suite window to bring it to the centre
@@ -38,7 +42,7 @@ This extension should add a number of UI and functional features to Burp Suite t
 As PortSwigger has a plan to update Burp Suite UI in a near future, some features in this extension may become redundant or unreliable.
 While we use this extension ourselves we can see potential errors from time to time, as an open source project, it relies on the community feedback for improvements and to fix the issues. Please report any errors in [issues](https://github.com/mdsecresearch/BurpSuiteSharpener/issues).
 
-This extension has been tested against the latest pro version which was 2022.9.1 at the time of writing this document. It should however be also compatible with the community edition.
+This extension has been tested against the latest early edition of pro version which was 2023.1 at the time of writing this document. It should however be also compatible with the community edition.
 
 # Suggesting New Features
 The plan is to add simple but effective missing features to this single extension to make tester's life easier as a must-have companion when using Burp Suite (so we cannot Burp without it!).
@@ -103,8 +107,14 @@ Perhaps the best features can be imported from different open-source extensions 
 
 ![images/img_6.png](images/img_6.png)
 
+![images/img_7.png](images/img_7.png)
+
+![images/img_8.png](images/img_8.png)
+
+![images/img_9.png](images/img_9.png)
+
 # Thanks To
-* Corey Arthur [CoreyD97](https://twitter.com/CoreyD97)
+* Corey Arthur [CoreyD97](https://twitter.com/CoreyD97) for https://github.com/CoreyD97/Burp-Montoya-Utilities/
 * Bruno Demarche (for initial Swing hack inspiration)
 
 Please feel free to report bugs, suggest features, or send pull requests.

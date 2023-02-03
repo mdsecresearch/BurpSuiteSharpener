@@ -221,8 +221,8 @@ public class JScrollMenu extends JMenu {
         super.applyComponentOrientation(o);
 
         if (popupMenu != null) {
-            int ncomponents = getMenuComponentCount();
-            for (int i = 0; i < ncomponents; ++i) {
+            int nComponents = getMenuComponentCount();
+            for (int i = 0; i < nComponents; ++i) {
                 getMenuComponent(i).applyComponentOrientation(o);
             }
             popupMenu.setComponentOrientation(o);
