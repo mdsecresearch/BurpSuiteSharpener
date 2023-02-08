@@ -39,5 +39,5 @@ jobs:
       - name: Release
         uses: ncipollo/release-action@v1
         with:
-          tag: "latest release"
+          tag: "latest_release"
           artifacts: "releases/*.jar"
