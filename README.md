@@ -53,7 +53,7 @@ It would be great to also list any known available extensions which might have i
 Perhaps the best features can be imported from different open-source extensions so the overhead of adding different extensions can be reduced.
 
 # Installation
-* Download the jar file from the [Workflows' Artifacts](https://github.com/mdsecresearch/BurpSuiteSharpener/actions) or the [release](https://github.com/mdsecresearch/BurpSuiteSharpener/tree/main/release) directory which will hopefully be updated with the latest version (compiled offline).
+* Download the latest jar file built by GitHub from [/releases/latest](https://github.com/mdsecresearch/BurpSuiteSharpener/releases/latest), or by going through the [Workflows' Artifacts](https://github.com/mdsecresearch/BurpSuiteSharpener/actions), or from the [releases](https://github.com/mdsecresearch/BurpSuiteSharpener/tree/main/releases) directory which has been compiled offline by the developers/maintainers.
 * Add it to Burp Suite using the Extender tab
   
 # Usage Tips
