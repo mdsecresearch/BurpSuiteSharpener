@@ -11,15 +11,16 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK 17
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
+          distribution: 'oracle'
           java-version: '17'
+          cache: 'gradle'
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
@@ -27,9 +28,15 @@ jobs:
       - name: Creating the jar file
         run: ./gradlew jar
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          path: ./build/compiled/*.jar
+          path: ./releases/*.jar
           name: Downloadable Extension File
-      - name: Run copyJarForArchiving task
-        run: ./gradlew -b build.gradle
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        files: |
+          releases/*.jar
+        id: "automatic_releases"

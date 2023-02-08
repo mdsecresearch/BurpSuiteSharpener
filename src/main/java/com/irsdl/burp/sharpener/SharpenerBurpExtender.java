@@ -43,7 +43,7 @@ public class SharpenerBurpExtender implements BurpExtension, ExtensionUnloadingH
         features.minSupportedMajorVersionInclusive = 2023;
         features.minSupportedMinorVersionInclusive = 1;
 
-        this.sharedParameters = new SharpenerSharedParameters("3.0", "Sharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener/issues", this, api, features);
+        this.sharedParameters = new SharpenerSharedParameters("3.1", "Sharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener", "https://github.com/mdsecresearch/BurpSuiteSharpener/issues", this, api, features);
 
         // set our extension name
         api.extension().setName(sharedParameters.extensionName);
