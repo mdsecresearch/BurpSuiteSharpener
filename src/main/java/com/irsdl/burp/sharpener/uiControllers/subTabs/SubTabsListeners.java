@@ -250,7 +250,8 @@ public class SubTabsListeners implements ContainerListener {
             }
 
             // this for dotdotdot tab!
-            if (!sharedParameters.isTabGroupSupportedByDefault) { // before version 2022.6
+            if (sharedParameters.burpMajorVersion < 2022
+                    || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion < 6)) { // before version 2022.6
                 SubTabsContainerHandler tempDotDotDotSubTabsContainerHandler = new SubTabsContainerHandler(sharedParameters, subTabbedPane, subTabbedPane.getTabCount() - 1, true);
                 if (!subTabsContainerHandlers.contains(tempDotDotDotSubTabsContainerHandler)) {
                     // we have a new tab
@@ -407,11 +408,11 @@ public class SubTabsListeners implements ContainerListener {
                 KeyStroke.getKeyStroke(k), "none"));
     }
 
-    private synchronized void set_isUpdateInProgress(boolean _isUpdateInProgress) {
+    private void set_isUpdateInProgress(boolean _isUpdateInProgress) {
         this._isUpdateInProgress = _isUpdateInProgress;
     }
 
-    private synchronized boolean get_isUpdateInProgress() {
+    private boolean get_isUpdateInProgress() {
         return this._isUpdateInProgress;
     }
 }

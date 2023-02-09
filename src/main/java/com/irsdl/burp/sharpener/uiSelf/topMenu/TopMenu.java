@@ -33,7 +33,7 @@ package com.irsdl.burp.sharpener.uiSelf.topMenu;
 import com.irsdl.burp.generic.BurpExtensionSharedParameters;
 import com.irsdl.burp.generic.BurpTitleAndIcon;
 import com.irsdl.burp.generic.BurpUITools;
-import com.irsdl.burp.sharpener.SharpenerBurpExtender;
+import com.irsdl.burp.sharpener.SharpenerBurpExtension;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.burp.sharpener.uiControllers.mainTabs.MainTabsStyleHandler;
 import com.irsdl.generic.ImageHelper;
@@ -437,8 +437,8 @@ public class TopMenu extends javax.swing.JMenu {
                 public void actionPerformed(ActionEvent actionEvent) {
                     new Thread(() -> {
                         MainTabsStyleHandler.resetMainTabsStylesFromSettings(sharedParameters);
-                        SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
-                        sharpenerBurpExtender.load(true);
+                        SharpenerBurpExtension sharpenerBurpExtension = (SharpenerBurpExtension) sharedParameters.burpExtender;
+                        sharpenerBurpExtension.load(true);
 
                     }).start();
                 }
@@ -473,8 +473,8 @@ public class TopMenu extends javax.swing.JMenu {
                     sharedParameters.preferences.safeSetSetting("checkForUpdate", false);
                 } else {
                     sharedParameters.preferences.safeSetSetting("checkForUpdate", true);
-                    SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
-                    sharpenerBurpExtender.checkForUpdate();
+                    SharpenerBurpExtension sharpenerBurpExtension = (SharpenerBurpExtension) sharedParameters.burpExtender;
+                    sharpenerBurpExtension.checkForUpdate();
                 }
             });
             add(checkForUpdateOption);
@@ -524,10 +524,8 @@ public class TopMenu extends javax.swing.JMenu {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
                     String aboutMessage = "Burp Suite " + sharedParameters.extensionName + " - version " + sharedParameters.version +
-                            "\nReleased as open source by MDSec - https://www.mdsec.co.uk/\n" +
-                            "Developed by Soroush Dalili (@irsdl)\n" +
-                            "Project link: " + sharedParameters.extensionURL +
-                            "\nReleased under AGPL see LICENSE for more information";
+                            "\n" + sharedParameters.extensionCopyrightMessage + "\n" +
+                            "Project link: " + sharedParameters.extensionURL;
                     UIHelper.showMessage(aboutMessage, "About this extension", sharedParameters.get_mainFrameUsingMontoya());
                 }
             });

@@ -10,17 +10,29 @@ import com.irsdl.burp.generic.BurpExtensionSharedParameters;
 import com.irsdl.burp.sharpener.SharpenerSharedParameters;
 
 import java.util.Collection;
+import java.util.concurrent.*;
 
 public abstract class StandardSettings {
-    private final Collection<PreferenceObject> _preferenceObjectCollection;
+    private Collection<PreferenceObject> _preferenceObjectCollection;
     public SharpenerSharedParameters sharedParameters;
 
     protected StandardSettings(SharpenerSharedParameters sharedParameters) {
+        boolean isError = false;
         this.sharedParameters = sharedParameters;
-        init();
-        this._preferenceObjectCollection = definePreferenceObjectCollection();
-        registerSettings();
-        loadSettings();
+        try{
+            init();
+            this._preferenceObjectCollection = definePreferenceObjectCollection();
+            registerSettings();
+            loadSettings();
+        }catch(Exception e){
+            isError = true;
+            sharedParameters.printException(e);
+        }
+
+        if(isError){
+            sharedParameters.printlnError("A fatal error has occurred in loading the settings. The extension is going to be unloaded.");
+            sharedParameters.montoyaApi.extension().unload();
+        }
     }
 
     public abstract void init();
@@ -35,7 +47,7 @@ public abstract class StandardSettings {
         return _preferenceObjectCollection;
     }
 
-    public synchronized void registerSettings() {
+    private void registerSettings() {
         if (_preferenceObjectCollection == null)
             return;
 
@@ -51,7 +63,7 @@ public abstract class StandardSettings {
         }
     }
 
-    public synchronized void resetSettings() {
+    public void resetSettings() {
         if (_preferenceObjectCollection == null)
             return;
 

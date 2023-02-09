@@ -53,7 +53,7 @@ public class SharpenerGeneralSettings extends StandardSettings {
     }
 
     @Override
-    public synchronized void loadSettings() {
+    public void loadSettings() {
         // reattaching related tools before working on them!
         if (BurpUITools.reattachTools(sharedParameters.subTabSupportedTabs, sharedParameters.get_mainMenuBarUsingMontoya())) {
             try {
@@ -72,8 +72,8 @@ public class SharpenerGeneralSettings extends StandardSettings {
         pwnFoxSettings = new PwnFoxSettings(sharedParameters);
 
         if (sharedParameters.preferences.safeGetSetting("checkForUpdate", false)) {
-            SharpenerBurpExtender sharpenerBurpExtender = (SharpenerBurpExtender) sharedParameters.burpExtender;
-            sharpenerBurpExtender.checkForUpdate();
+            SharpenerBurpExtension sharpenerBurpExtension = (SharpenerBurpExtension) sharedParameters.burpExtender;
+            sharpenerBurpExtension.checkForUpdate();
         }
     }
 

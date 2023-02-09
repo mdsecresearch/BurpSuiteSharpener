@@ -145,7 +145,7 @@ public class SubTabsContainerHandler {
                                                 if (!beforeManualEditTabTitle.equals(getTabTitle())) {
                                                     addTitleHistory(beforeManualEditTabTitle, true);
                                                     // title has changed manually
-                                                    sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(instance);
+                                                    sharedParameters.allSettings.subTabsSettings.saveSettings(instance);
                                                 }
                                                 sharedParameters.allSettings.subTabsSettings.loadSettings();
                                             }
@@ -342,6 +342,8 @@ public class SubTabsContainerHandler {
     public boolean isCurrentTitleUnique(boolean isCaseSensitive) {
         boolean result = true;
         String currentTabTitle = getTabTitle();
+
+
         if (cachedTabTitles == null || !titleHistory.get(titleHistory.size() - 1).equals(currentTabTitle)) {
             refreshLocalTitleCache(isCaseSensitive);
             addTitleHistory(currentTabTitle, true);
@@ -435,7 +437,31 @@ public class SubTabsContainerHandler {
         }
     }
 
-    public String getTabTitle() {
+    public void makeUniqueTitle(){
+        String title = getTabTitle();
+        if (!isCurrentTitleUnique(false)) {
+            // We need to rename its title to become unique
+            int i = 1;
+            String newTitle = "";
+            while (newTitle.isEmpty() || !isNewTitleUnique(newTitle, false)) {
+                // we need to add a number to the title to make it a unique title
+                i++;
+                newTitle = "#" + i + " " + title ;
+            }
+
+            TabFeaturesObject originalFO = sharedParameters.supportedTools_SubTabs.get(currentToolTab).get(title);
+            if (originalFO != null) {
+                // the original item has special style, so we need to copy it
+                originalFO.title = newTitle; // we will fix the supportedTools_SubTabs parameter in saveSettings()
+                updateByTabFeaturesObject(originalFO, false, true);
+            } else {
+                // the original item has no style
+                setTabTitle(newTitle, false,true);
+            }
+        }
+    }
+
+    public String getTabTitle(){
         String title = "";
         if (getTabIndex() != -1)
             title = parentTabbedPane.getTitleAt(getTabIndex());
@@ -445,15 +471,20 @@ public class SubTabsContainerHandler {
         return title;
     }
 
-    public void setTabTitle(String title, boolean ignoreHasChanges) {
+    public void setTabTitle(String title, boolean keepHistory, boolean ignoreHasChanges) {
         if (isValid() && !title.isEmpty() && !getTabTitle().equals(title)) {
             if (!ignoreHasChanges)
                 setHasChanges(true);
             title = StringUtils.abbreviate(title, 100);
-            addTitleHistory(title, true);
+            if(keepHistory){
+                addTitleHistory(title, true);
+            }
             parentTabbedPane.setTitleAt(getTabIndex(), title);
             refreshLocalTitleCache(false);
         }
+    }
+    public void setTabTitle(String title, boolean ignoreHasChanges) {
+        setTabTitle(title, ignoreHasChanges, true);
     }
 
     public void refreshLocalTitleCache(boolean isCaseSensitive) {

@@ -8,7 +8,7 @@ apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group 'com.irsdl'
-version '3.1-SNAPSHOT'
+version '3.2-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation "net.portswigger.burp.extensions:montoya-api:1.0.0"
+    implementation "net.portswigger.burp.extensions:montoya-api:2023.2"
     implementation "com.github.CoreyD97:Burp-Montoya-Utilities:master-SNAPSHOT"
     implementation "com.google.code.gson:gson:2.10.1"
     implementation "com.google.guava:guava:31.1-jre"

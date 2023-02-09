@@ -27,6 +27,7 @@ public class BurpExtensionSharedParameters {
     public String extensionName = "MyExtension";
     public String extensionURL = "https://github.com/user/proj";
     public String extensionIssueTracker = "https://github.com/user/proj/issues";
+    public String extensionCopyrightMessage = "This has been developed by XXX from YYY";
     public Integer debugLevel = null;
     public BurpExtension burpExtender;
     public Class extensionClass = null; // this is useful when trying to load a resource such as an image
@@ -115,11 +116,12 @@ public class BurpExtensionSharedParameters {
 
     }
 
-    public BurpExtensionSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, BurpExtension burpExtenderObj, MontoyaApi montoyaApi, BurpExtensionFeatures burpExtensionFeatures) {
+    public BurpExtensionSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, String extensionCopyrightMessage, BurpExtension burpExtenderObj, MontoyaApi montoyaApi, BurpExtensionFeatures burpExtensionFeatures) {
         this.version = version;
         this.extensionName = extensionName;
         this.extensionURL = extensionURL;
         this.extensionIssueTracker = extensionIssueTracker;
+        this.extensionCopyrightMessage = extensionCopyrightMessage;
         this.extensionClass = burpExtenderObj.getClass();
         this.burpExtender = burpExtenderObj;
         this.montoyaApi = montoyaApi;
@@ -128,6 +130,8 @@ public class BurpExtensionSharedParameters {
         // obtain our output stream
         this.stdout = new PrintWriter(montoyaApi.logging().output(), true);
         this.stderr = new PrintWriter(montoyaApi.logging().error(), true);
+
+        this.printlnOutput(extensionName + " is being loaded...");
 
         // getting Burp Suite version
         try {
@@ -152,6 +156,9 @@ public class BurpExtensionSharedParameters {
             printlnError(e.getMessage());
         }
         debugLevel = preferences.getSetting("debugLevel");
+
+        // print the copyright message
+        this.printlnOutput(extensionCopyrightMessage);
 
         isCompatibleWithCurrentBurpVersion = isBurpVersionCompatible();
         if(!isCompatibleWithCurrentBurpVersion){
@@ -248,13 +255,13 @@ public class BurpExtensionSharedParameters {
     }
 
     public void printDebugMessage(String message, String note, boolean alreadyPrinted, int requiredDebugLevel) {
-        if (debugLevel >= requiredDebugLevel) {
+        if (debugLevel != null && debugLevel >= requiredDebugLevel && !message.isEmpty()) {
             printDebugMessage(message, note, alreadyPrinted);
         }
     }
 
     public void printDebugMessage(String message, String note, boolean alreadyPrinted) {
-        if (debugLevel > 0) {
+        if (debugLevel != null && debugLevel > 0 && !message.isEmpty()) {
             String strDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
             String fullMessage = "\r\nDEBUG->\r\n\t";
             if (!note.isBlank())
@@ -269,12 +276,12 @@ public class BurpExtensionSharedParameters {
     }
 
     public void printDebugMessage(String message, int requiredDebugLevel) {
-        if (debugLevel >= requiredDebugLevel) {
+        if (debugLevel != null && debugLevel >= requiredDebugLevel && !message.isEmpty()) {
             printDebugMessage(message);
         }
     }
     public void printDebugMessage(String message) {
-        if (debugLevel > 0) {
+        if (debugLevel != null && debugLevel > 0 && !message.isEmpty()) {
             StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
             StringBuilder methods = new StringBuilder();
             if (debugLevel >= DebugLevels.VeryVerbose.value) {
@@ -290,32 +297,42 @@ public class BurpExtensionSharedParameters {
     }
 
     public void printException(Exception error) {
-        this.stderr.println(error.getMessage());
+        if(error != null) {
+            this.stderr.println(error.getMessage());
 
-        for (StackTraceElement elem : error.getStackTrace()) {
-            this.stderr.println(elem);
+            for (StackTraceElement elem : error.getStackTrace()) {
+                this.stderr.println(elem);
+            }
+
+            error.printStackTrace();
         }
-
-        error.printStackTrace();
     }
     public void printlnError(String message) {
-        this.stderr.println(message);
-        printDebugMessage(message, "printlnError", true);
+        if(!message.isEmpty()){
+            this.stderr.println(message);
+            printDebugMessage(message, "printlnError", true);
+        }
     }
 
     public void printError(String message) {
-        this.stderr.print(message);
-        printDebugMessage(message, "printError", true);
+        if(!message.isEmpty()){
+            this.stderr.print(message);
+            printDebugMessage(message, "printError", true);
+        }
     }
 
     public void printlnOutput(String message) {
-        this.stdout.println(message);
-        printDebugMessage(message, "printlnOutput", true);
+        if(!message.isEmpty()){
+            this.stdout.println(message);
+            printDebugMessage(message, "printlnOutput", true);
+        }
     }
 
     public void printOutput(String message) {
-        this.stdout.print(message);
-        printDebugMessage(message, "printOutput", true);
+        if(!message.isEmpty()){
+            this.stdout.print(message);
+            printDebugMessage(message, "printOutput", true);
+        }
     }
 
     public void resetAllSettings() {
@@ -351,7 +368,9 @@ public class BurpExtensionSharedParameters {
                 JRootPane rootPane = ((JFrame) montoyaApi.userInterface().swingUtils().suiteFrame()).getRootPane();
                 set_rootTabbedPane((JTabbedPane) rootPane.getContentPane().getComponent(0));
             } catch (Exception e) {
-                // This is to find the root of the Burp Suite frame when our poor JPanel is lost (since Burp v2022.9.5)
+                // This is to find the root of the Burp Suite frame when the above fails
+                // We should not really be here
+                printlnError("A failure in get_rootTabbedPaneUsingMontoya() has occurred. Hopefully this will be recovered now.");
                 // Defining how our Burp Suite frame is
                 UiSpecObject uiSpecObject = new UiSpecObject();
                 uiSpecObject.set_objectType(JFrame.class);

@@ -62,7 +62,7 @@ public class MainTabsListeners implements ContainerListener {
 
     }
 
-    public synchronized void setResetInProgress(boolean resetInProgress) {
+    public void setResetInProgress(boolean resetInProgress) {
         isResetInProgress = resetInProgress;
     }
 

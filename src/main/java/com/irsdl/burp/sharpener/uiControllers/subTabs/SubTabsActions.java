@@ -91,7 +91,7 @@ public class SubTabsActions {
             }
 
             if (subTabsContainerHandler.getHasChanges()) {
-                sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(subTabsContainerHandler);
+                sharedParameters.allSettings.subTabsSettings.saveSettings(subTabsContainerHandler);
             }
         }
     }
@@ -124,11 +124,11 @@ public class SubTabsActions {
                 }
 
                 if (subTabsContainerHandler.getHasChanges()) {
-                    sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(subTabsContainerHandler);
+                    sharedParameters.allSettings.subTabsSettings.saveSettings(subTabsContainerHandler);
                 }
             } else if (e.isAltDown()) {    // experiment here
                 subTabsContainerHandler.setIcon("alert", 16, true);
-                sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(subTabsContainerHandler);
+                sharedParameters.allSettings.subTabsSettings.saveSettings(subTabsContainerHandler);
 
             } else {
                 e.isAltDown();
@@ -367,7 +367,8 @@ public class SubTabsActions {
             }
 
         } else {
-            if (!sharedParameters.isSubTabScrollSupportedByDefault) { // hidden from version 2022.6
+            if (sharedParameters.burpMajorVersion < 2022
+                    || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion < 6)) { // hidden from version 2022.6
                 message = "Filter: OFF | " + message;
             }
         }
@@ -396,7 +397,7 @@ public class SubTabsActions {
             pasteStyleMenu.addActionListener(e -> {
                 if (sharedParameters.copiedTabFeaturesObjectStyle != null) {
                     currentSubTabsContainerHandler.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle, true);
-                    sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                    sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
                     sharedParameters.printDebugMessage("Style pasted...");
                 }
             });
@@ -454,7 +455,7 @@ public class SubTabsActions {
                                 subTabsContainerHandlerItem.updateByTabFeaturesObjectStyle(sharedParameters.copiedTabFeaturesObjectStyle, true);
                             }
                         }
-                        sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                        sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
                         sharedParameters.printDebugMessage("Style pasted...");
                     }
                 }
@@ -464,7 +465,7 @@ public class SubTabsActions {
             JMenuItem defaultProfile = new JMenuItem("Reset to Default");
             defaultProfile.addActionListener(e -> {
                 currentSubTabsContainerHandler.setToDefault(true);
-                sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
             });
             if (currentSubTabsContainerHandler.isDefault())
                 defaultProfile.setEnabled(false);
@@ -494,11 +495,12 @@ public class SubTabsActions {
             popupMenu.add(profileMenu);
 
             JMenu customStyleMenu = new JMenu("Custom Style");
-            if (!sharedParameters.isTabGroupSupportedByDefault) { // This does not work in version 2022.6 for unknown reasons
+            if (sharedParameters.burpMajorVersion < 2022
+                    || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion < 6)) { // This does not work in version 2022.6 for unknown reasons
                 JCheckBoxMenuItem closeButtonMenuItem = new JCheckBoxMenuItem("Remove Close Button");
                 closeButtonMenuItem.addActionListener(e -> {
                     currentSubTabsContainerHandler.setVisibleCloseButton(!closeButtonMenuItem.isSelected(), true);
-                    sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                    sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
                 });
                 closeButtonMenuItem.setSelected(!currentSubTabsContainerHandler.getVisibleCloseButton());
                 customStyleMenu.add(closeButtonMenuItem);
@@ -512,7 +514,7 @@ public class SubTabsActions {
                 fontNameItem.setSelected(font.equalsIgnoreCase(currentSubTabsContainerHandler.getFontName()));
                 fontNameItem.addActionListener(e -> {
                     currentSubTabsContainerHandler.setFontName(font, true);
-                    sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                    sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
 
                 });
                 fontNameMenu.add(fontNameItem);
@@ -527,7 +529,7 @@ public class SubTabsActions {
                 float finalFontSize = fontSize;
                 sizeItem.addActionListener(e -> {
                     currentSubTabsContainerHandler.setFontSize(finalFontSize, true);
-                    sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                    sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
                 });
                 fontSizeMenu.add(sizeItem);
             }
@@ -537,7 +539,7 @@ public class SubTabsActions {
             boldMenu.setSelected(currentSubTabsContainerHandler.isBold());
             boldMenu.addActionListener(e -> {
                 currentSubTabsContainerHandler.toggleBold(true);
-                sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
             });
             customStyleMenu.add(boldMenu);
 
@@ -545,7 +547,7 @@ public class SubTabsActions {
             italicMenu.setSelected(currentSubTabsContainerHandler.isItalic());
             italicMenu.addActionListener(e -> {
                 currentSubTabsContainerHandler.toggleItalic(true);
-                sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
             });
             customStyleMenu.add(italicMenu);
 
@@ -572,7 +574,7 @@ public class SubTabsActions {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     currentSubTabsContainerHandler.removeIcon(false);
-                    sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                    sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
                 }
             });
             subTabIconGroup.add(noneIconImage);
@@ -592,7 +594,7 @@ public class SubTabsActions {
                 }
                 subTabIconImage.addActionListener((e) -> {
                     currentSubTabsContainerHandler.setIcon(fileNameWithOutExt, (int) currentSubTabsContainerHandler.getFontSize(), false);
-                    sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                    sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
                 });
                 subTabIconGroup.add(subTabIconImage);
                 changeTabIcon.add(subTabIconImage);
@@ -627,7 +629,7 @@ public class SubTabsActions {
                 dialog.setVisible(true);
                 if (colorChooser.getColor() != null) {
                     currentSubTabsContainerHandler.setColor(colorChooser.getColor(), true);
-                    sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                    sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
                 }
             });
             customStyleMenu.add(colorMenu);
@@ -695,7 +697,8 @@ public class SubTabsActions {
 
         popupMenu.add(searchAndJumpMenu);
 
-        if (!sharedParameters.isSubTabScrollSupportedByDefault) { // hidden from version 2022.6
+        if (sharedParameters.burpMajorVersion < 2022
+                || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion < 6)) { // hidden from version 2022.6
             JMenu filterTitleMenu = new JMenu("Filter Titles (Click > Use RegEx)");
 
             JMenuItem removeFilterTitle = new JMenuItem("Show All");
@@ -747,7 +750,7 @@ public class SubTabsActions {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     showAllTabTitles(sharedParameters, currentSubTabsContainerHandler);
-                    sharedParameters.titleFilterRegEx = "^\\s*\\d+\\s*(\\(#\\d+\\)\\s*)?$";
+                    sharedParameters.titleFilterRegEx = "^(#\\d+\\s+)?\\s*\\d+\\s*$";
                     sharedParameters.filterOperationMode.put(currentSubTabsContainerHandler.currentToolTab, 0);
                     setTabTitleFilter(sharedParameters, currentSubTabsContainerHandler);
                 }
@@ -771,7 +774,7 @@ public class SubTabsActions {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     showAllTabTitles(sharedParameters, currentSubTabsContainerHandler);
-                    sharedParameters.titleFilterRegEx = "^\\s*\\d+\\s*(\\(#\\d+\\)\\s*)?$";
+                    sharedParameters.titleFilterRegEx = "^(#\\d+\\s+)?\\s*\\d+\\s*$";
                     sharedParameters.filterOperationMode.put(currentSubTabsContainerHandler.currentToolTab, 2);
                     setTabTitleFilter(sharedParameters, currentSubTabsContainerHandler);
                 }
@@ -840,7 +843,7 @@ public class SubTabsActions {
         try {
             String clipboardText = (String) Toolkit.getDefaultToolkit()
                     .getSystemClipboard().getData(DataFlavor.stringFlavor);
-            sharedParameters.lastClipboardText = clipboardText.trim().replaceAll("(?<=[^\\s])\\s+\\(#\\d+\\)\\s*$", "");
+            sharedParameters.lastClipboardText = clipboardText.trim().replaceAll("^#\\d+\\s+", "");
         } catch (Exception e) {
             sharedParameters.lastClipboardText = "";
         }
@@ -909,7 +912,7 @@ public class SubTabsActions {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             currentSubTabsContainerHandler.setTabTitle(tempPrevTitle, true);
-                            sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                            sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
                             sharedParameters.printDebugMessage("Previous title has been set.");
                         }
                     });
@@ -935,7 +938,7 @@ public class SubTabsActions {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     currentSubTabsContainerHandler.setTitleHistory(null);
-                    sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+                    sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
                     sharedParameters.printDebugMessage("Previous titles have been cleared.");
                 }
             });
@@ -1097,7 +1100,8 @@ public class SubTabsActions {
         BurpUITools.MainTabs tool = currentSubTabsContainerHandler.currentToolTab;
 
         if (sharedParameters.subTabSupportedTabs.contains(tool)) {
-            if (!sharedParameters.isSubTabScrollSupportedByDefault) { // hidden from version 2022.6
+            if (sharedParameters.burpMajorVersion < 2022
+                    || (sharedParameters.burpMajorVersion == 2022 && sharedParameters.burpMinorVersion < 6)) { // hidden from version 2022.6
                 JCheckBoxMenuItem toolSubTabPaneScrollableLayout = new JCheckBoxMenuItem("Scrollable " + tool + " Tabs");
                 if (sharedParameters.preferences.safeGetBooleanSetting("isScrollable_" + tool)) {
                     toolSubTabPaneScrollableLayout.setSelected(true);
@@ -1205,7 +1209,7 @@ public class SubTabsActions {
         profile.addActionListener(e -> {
             TabFeaturesObjectStyle tabFeaturesObjectStyle = new TabFeaturesObjectStyle(text, fontName, fontSize, isBold, isItalic, isCloseButtonVisible, Color.decode(colorCode), iconString, fontSize);
             currentSubTabsContainerHandler.updateByTabFeaturesObjectStyle(tabFeaturesObjectStyle, true);
-            sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+            sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
         });
         return profile;
     }
@@ -1786,14 +1790,14 @@ public class SubTabsActions {
 
             String clipboardText = (String) Toolkit.getDefaultToolkit()
                     .getSystemClipboard().getData(DataFlavor.stringFlavor);
-            sharedParameters.lastClipboardText = clipboardText.trim().replaceAll("(?<=[^\\s])\\s+\\(#\\d+\\)\\s*$", "");
+            sharedParameters.lastClipboardText = clipboardText.trim().replaceAll("^#\\d+\\s+", "");
         } catch (Exception e) {
             sharedParameters.lastClipboardText = "";
         }
 
         if (!sharedParameters.lastClipboardText.isBlank()) {
             currentSubTabsContainerHandler.setTabTitle(sharedParameters.lastClipboardText, true);
-            sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+            sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
             sharedParameters.printDebugMessage("Title has been pasted");
         }
     }
@@ -1809,7 +1813,7 @@ public class SubTabsActions {
         String newTitle = UIHelper.showPlainInputMessage("Edit the Title", "Rename Title", currentSubTabsContainerHandler.getTabTitle(), sharedParameters.get_mainFrameUsingMontoya());
         if (!newTitle.isEmpty() && !newTitle.equals(currentSubTabsContainerHandler.getTabTitle())) {
             currentSubTabsContainerHandler.setTabTitle(newTitle, true);
-            sharedParameters.allSettings.subTabsSettings.prepareAndSaveSettings(currentSubTabsContainerHandler);
+            sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
             sharedParameters.printDebugMessage("Title renamed...");
         }
     }

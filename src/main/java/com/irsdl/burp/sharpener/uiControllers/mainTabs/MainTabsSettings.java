@@ -59,7 +59,7 @@ public class MainTabsSettings extends StandardSettings {
     }
 
     @Override
-    public synchronized void loadSettings() {
+    public void loadSettings() {
         sharedParameters.printDebugMessage("loadSettings");
         MainTabsStyleHandler.resetMainTabsStylesFromSettings(sharedParameters);
         // Adding listeners to Main Tool Tabs

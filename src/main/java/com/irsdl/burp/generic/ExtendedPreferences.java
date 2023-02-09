@@ -17,7 +17,7 @@ public class ExtendedPreferences extends Preferences {
         super(montoyaApi, extensionIdentifier, gsonProvider);
     }
 
-    public synchronized void safeSetSetting(String settingName, Object value) {
+    public void safeSetSetting(String settingName, Object value) {
         boolean isSaved = false;
         int tryTimes = 0;
         while (!isSaved && tryTimes < 10) {
@@ -48,7 +48,7 @@ public class ExtendedPreferences extends Preferences {
         }
     }
 
-    public synchronized <T> T safeGetSetting(String settingName, T defaultValue) {
+    public <T> T safeGetSetting(String settingName, T defaultValue) {
         var result = defaultValue;
 
         try {
@@ -67,19 +67,19 @@ public class ExtendedPreferences extends Preferences {
         return result;
     }
 
-    public synchronized Object safeGetSetting(String settingName) {
+    public Object safeGetSetting(String settingName) {
         return safeGetSetting(settingName, null);
     }
 
-    public synchronized String safeGetStringSetting(String settingName) {
+    public String safeGetStringSetting(String settingName) {
         return safeGetSetting(settingName, "");
     }
 
-    public synchronized boolean safeGetBooleanSetting(String settingName) {
+    public boolean safeGetBooleanSetting(String settingName) {
         return safeGetSetting(settingName, false);
     }
 
-    public synchronized int safeGetIntSetting(String settingName) {
+    public int safeGetIntSetting(String settingName) {
         return safeGetSetting(settingName, -1);
     }
 }

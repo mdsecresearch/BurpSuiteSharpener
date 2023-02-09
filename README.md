@@ -29,8 +29,6 @@ The legacy branch will not receive any future updates.
 * Scrollable main tool tabs
 * Scrollable Repeater and Intruder tabs
 * Taking screenshot of repeater or intruder tabs
-* Filtering using title names or custom styles (disabled since version 2022.6 for compatibility reasons)
-* Searching only in filtered items (disabled since version 2022.6 for compatibility reasons)
 * Trimming long titles into 100 characters
 * Show previously chosen titles for a tab
 * Several keyboard shortcuts to make the tab navigation easier
