@@ -186,9 +186,15 @@ public class SubTabsSettings extends StandardSettings {
                         if (tabFeaturesObjectsHashMap != null && sharedParameters.supportedTools_SubTabs.get(tool) != null) {
                             sharedParameters.supportedTools_SubTabs.get(tool).putAll(tabFeaturesObjectsHashMap);
                             updateSubTabsUI(tool);
+                            // we do this to fix tabs which have been added after Sharpener was unloaded
+                            // This is a performance hit on start but a good measure to keep the tab titles unique & stylish
+                            saveSettings(tool);
+
+                            /*
                             if (isUsingOldSettings) {
                                 saveSettings(tool);
                             }
+                            */
                         }
 
                     }
@@ -222,7 +228,11 @@ public class SubTabsSettings extends StandardSettings {
                     if (sharedParameters.supportedTools_SubTabs.get(currentMainTab).size() > 0) {
                         ArrayList<SubTabsContainerHandler> subTabsContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentMainTab);
                         for (SubTabsContainerHandler subTabsContainerHandler : subTabsContainerHandlers) {
-                            TabFeaturesObject currentTabFeaturesObject = sharedParameters.supportedTools_SubTabs.get(currentMainTab).get(subTabsContainerHandler.getTabTitle());
+                            TabFeaturesObject currentTabFeaturesObject = sharedParameters.supportedTools_SubTabs.get(currentMainTab).get(subTabsContainerHandler.getLowercaseTrimmedTabTitle());
+                            if(currentTabFeaturesObject == null){
+                                // backward compatibility when titles were case-sensitive and not trimmed
+                                currentTabFeaturesObject = sharedParameters.supportedTools_SubTabs.get(currentMainTab).get(subTabsContainerHandler.getTabTitle());
+                            }
                             if (currentTabFeaturesObject != null) {
                                 subTabsContainerHandler.updateByTabFeaturesObject(currentTabFeaturesObject, true, true);
                             }
@@ -389,7 +399,7 @@ public class SubTabsSettings extends StandardSettings {
                                 subTabsContainerHandler.makeUniqueTitle();
                                 if (!subTabsContainerHandler.isDefault() || subTabsContainerHandler.getTitleHistory().length > 1) {
                                     subTabsContainerHandler.setHasChanges(false);
-                                    tabFeaturesObjectHashMap.put(subTabsContainerHandler.getTabTitle(), subTabsContainerHandler.getTabFeaturesObject());
+                                    tabFeaturesObjectHashMap.put(subTabsContainerHandler.getLowercaseTrimmedTabTitle(), subTabsContainerHandler.getTabFeaturesObject());
                                 }
                             }
                         }

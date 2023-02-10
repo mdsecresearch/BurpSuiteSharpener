@@ -1554,7 +1554,7 @@ public class SubTabsActions {
                             jumpToTabIndex(sharedParameters, subTabsContainerHandlerItem, subTabsContainerHandlerItem.getTabIndex());
                             // This is because when we use mouse action, the menu won't be closed
                             if (notificationMenuItem != null)
-                                setNotificationMenuMessage(sharedParameters, currentSubTabsContainerHandler, notificationMenuItem, "Tab Title: " + currentSubTabsContainerHandler.parentTabbedPane.getTitleAt(currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex()));
+                                setNotificationMenuMessage(sharedParameters, currentSubTabsContainerHandler, notificationMenuItem, "Tab Title: " + currentSubTabsContainerHandler.parentTabbedPane.getTitleAt(currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex()).trim());
                             result = true;
                             break;
                         }
@@ -1625,7 +1625,7 @@ public class SubTabsActions {
             jumpToTabIndex(sharedParameters, currentSubTabsContainerHandler, chosenOne);
             // This is because when we use mouse action, the menu won't be closed
             if (notificationMenuItem != null)
-                setNotificationMenuMessage(sharedParameters, currentSubTabsContainerHandler, notificationMenuItem, "Tab Title: " + currentSubTabsContainerHandler.parentTabbedPane.getTitleAt(currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex()));
+                setNotificationMenuMessage(sharedParameters, currentSubTabsContainerHandler, notificationMenuItem, "Tab Title: " + currentSubTabsContainerHandler.parentTabbedPane.getTitleAt(currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex()).trim());
 
             sharedParameters.printDebugMessage("Jump to previous tab");
         }
@@ -1664,7 +1664,7 @@ public class SubTabsActions {
             jumpToTabIndex(sharedParameters, currentSubTabsContainerHandler, chosenOne);
             // This is because when we use mouse action, the menu won't be closed
             if (notificationMenuItem != null)
-                setNotificationMenuMessage(sharedParameters, currentSubTabsContainerHandler, notificationMenuItem, "Tab Title: " + currentSubTabsContainerHandler.parentTabbedPane.getTitleAt(currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex()));
+                setNotificationMenuMessage(sharedParameters, currentSubTabsContainerHandler, notificationMenuItem, "Tab Title: " + currentSubTabsContainerHandler.parentTabbedPane.getTitleAt(currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex()).trim());
 
             sharedParameters.printDebugMessage("Jump to next tab");
         }
@@ -1694,7 +1694,7 @@ public class SubTabsActions {
         }
 
         if (notificationMenuItem != null)
-            setNotificationMenuMessage(sharedParameters, currentSubTabsContainerHandler, notificationMenuItem, "Tab Title: " + currentSubTabsContainerHandler.parentTabbedPane.getTitleAt(currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex()));
+            setNotificationMenuMessage(sharedParameters, currentSubTabsContainerHandler, notificationMenuItem, "Tab Title: " + currentSubTabsContainerHandler.parentTabbedPane.getTitleAt(currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex()).trim());
 
 
     }
@@ -1715,7 +1715,7 @@ public class SubTabsActions {
         }
 
         if (notificationMenuItem != null)
-            setNotificationMenuMessage(sharedParameters, currentSubTabsContainerHandler, notificationMenuItem, "Tab Title: " + currentSubTabsContainerHandler.parentTabbedPane.getTitleAt(currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex()));
+            setNotificationMenuMessage(sharedParameters, currentSubTabsContainerHandler, notificationMenuItem, "Tab Title: " + currentSubTabsContainerHandler.parentTabbedPane.getTitleAt(currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex()).trim());
 
         sharedParameters.printDebugMessage("Jump to previously selected tab");
     }

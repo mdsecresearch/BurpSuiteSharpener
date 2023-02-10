@@ -149,7 +149,7 @@ public class SubTabsListeners implements ContainerListener {
         // this is enough for repeater but Intruder changes the colour, so it should be higher
         PropertyChangeListener tabPropertyChangeListener = evt -> {
             if (!get_isUpdateInProgress() && evt.getPropertyName().equalsIgnoreCase("indexForTabComponent")) {
-                // this is a dirty hack to keep the colours as they go black after drag and drop!
+                // this is a dirty hack to keep the colours as they change after drag and drop!
                 // this also makes sure we always have the latest version of the tabs saved in the variables after add/remove
                 // this is in charge of adding the right click menu to the new tabs by doing this
                 set_isUpdateInProgress(true);
@@ -164,6 +164,7 @@ public class SubTabsListeners implements ContainerListener {
                             @Override
                             public void run() {
                                 SwingUtilities.invokeLater(() -> {
+                                    set_isUpdateInProgress(true);
                                     sharedParameters.allSettings.subTabsSettings.loadSettings(toolName);
                                     sharedParameters.allSettings.subTabsSettings.saveSettings(toolName);
                                     set_isUpdateInProgress(false);

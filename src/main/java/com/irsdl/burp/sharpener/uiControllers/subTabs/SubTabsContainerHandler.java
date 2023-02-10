@@ -224,9 +224,9 @@ public class SubTabsContainerHandler {
     }
 
     public void updateByTabFeaturesObject(TabFeaturesObject tabFeaturesObject, boolean keepHistory, boolean ignoreHasChanges) {
-        this.setTabTitle(tabFeaturesObject.title, ignoreHasChanges);
+        this.setTabTitle(tabFeaturesObject.getTitle(), ignoreHasChanges);
         if (keepHistory) {
-            this.setTitleHistory(tabFeaturesObject.titleHistory);
+            this.setTitleHistory(tabFeaturesObject.getTitleHistory());
         }
 
 
@@ -370,9 +370,9 @@ public class SubTabsContainerHandler {
             for (int index = 0; index < maxIndex; index++) {
                 if(parentTabbedPane.getTitleAt(index) != null){
                     if (isCaseSensitive) {
-                        cachedTabTitles.add(parentTabbedPane.getTitleAt(index));
+                        cachedTabTitles.add(parentTabbedPane.getTitleAt(index).trim());
                     } else {
-                        cachedTabTitles.add(parentTabbedPane.getTitleAt(index).toLowerCase());
+                        cachedTabTitles.add(parentTabbedPane.getTitleAt(index).trim().toLowerCase());
                     }
                 }
             }
@@ -424,6 +424,7 @@ public class SubTabsContainerHandler {
     }
 
     public void addTitleHistory(String title, boolean shouldUpdateSharedParameters) {
+        title = title.trim();
 
         titleHistory.remove(title);
 
@@ -438,10 +439,10 @@ public class SubTabsContainerHandler {
     }
 
     public void makeUniqueTitle(){
-        String title = getTabTitle();
+        String title = getTabTitle().trim();
         if (!isCurrentTitleUnique(false)) {
             // We need to rename its title to become unique
-            int i = 1;
+            int i = 0;
             String newTitle = "";
             while (newTitle.isEmpty() || !isNewTitleUnique(newTitle, false)) {
                 // we need to add a number to the title to make it a unique title
@@ -449,16 +450,20 @@ public class SubTabsContainerHandler {
                 newTitle = "#" + i + " " + title ;
             }
 
-            TabFeaturesObject originalFO = sharedParameters.supportedTools_SubTabs.get(currentToolTab).get(title);
+            TabFeaturesObject originalFO = sharedParameters.supportedTools_SubTabs.get(currentToolTab).get(title.toLowerCase().trim());
             if (originalFO != null) {
                 // the original item has special style, so we need to copy it
-                originalFO.title = newTitle; // we will fix the supportedTools_SubTabs parameter in saveSettings()
+                originalFO.setTitle(newTitle); // we will fix the supportedTools_SubTabs parameter in saveSettings()
                 updateByTabFeaturesObject(originalFO, false, true);
             } else {
                 // the original item has no style
                 setTabTitle(newTitle, false,true);
             }
         }
+    }
+
+    public String getLowercaseTrimmedTabTitle(){
+        return getTabTitle().toLowerCase().trim();
     }
 
     public String getTabTitle(){
@@ -472,10 +477,10 @@ public class SubTabsContainerHandler {
     }
 
     public void setTabTitle(String title, boolean keepHistory, boolean ignoreHasChanges) {
-        if (isValid() && !title.isEmpty() && !getTabTitle().equals(title)) {
+        if (isValid() && !title.isBlank() && !getTabTitle().equals(title.trim())) {
             if (!ignoreHasChanges)
                 setHasChanges(true);
-            title = StringUtils.abbreviate(title, 100);
+            title = StringUtils.abbreviate(title.trim(), 100);
             if(keepHistory){
                 addTitleHistory(title, true);
             }
@@ -495,9 +500,9 @@ public class SubTabsContainerHandler {
         for (int index = 0; index < maxIndex; index++) {
             if(parentTabbedPane.getTitleAt(index) != null){
                 if (isCaseSensitive) {
-                    cachedTabTitles.add(parentTabbedPane.getTitleAt(index));
+                    cachedTabTitles.add(parentTabbedPane.getTitleAt(index).trim());
                 } else {
-                    cachedTabTitles.add(parentTabbedPane.getTitleAt(index).toLowerCase());
+                    cachedTabTitles.add(parentTabbedPane.getTitleAt(index).toLowerCase().trim());
                 }
             }
         }
