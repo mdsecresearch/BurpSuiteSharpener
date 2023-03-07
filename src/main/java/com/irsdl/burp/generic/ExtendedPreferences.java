@@ -13,8 +13,8 @@ import com.coreyd97.BurpExtenderUtilities.Preferences;
 public class ExtendedPreferences extends Preferences {
     BurpExtensionSharedParameters sharedParameters;
 
-    public ExtendedPreferences(String extensionIdentifier, IGsonProvider gsonProvider, MontoyaApi montoyaApi) {
-        super(montoyaApi, extensionIdentifier, gsonProvider);
+    public ExtendedPreferences(MontoyaApi montoyaApi, IGsonProvider gsonProvider) {
+        super(montoyaApi, gsonProvider);
     }
 
     public void safeSetSetting(String settingName, Object value) {

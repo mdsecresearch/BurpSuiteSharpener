@@ -5,27 +5,9 @@
 // Released under AGPL see LICENSE for more information
 
 package burp;
+import com.mdsec.burp.sharpener.CustomExtensionMainClass;
 
-/*
- * Burp Suite Sharpener
- *
- *
- * Mainly Developed by:
- *     Soroush Dalili (@irsdl)
- *
- * Some used modules have also been developed by:
- *     Corey Arthur (@CoreyD97)
- *
- * Project link: https://github.com/irsdl/BurpSuiteSharpener
- *
- * Released under A GPL v3.0 see LICENSE for more information
- *
- * */
-
-import com.irsdl.burp.sharpener.SharpenerBurpExtension;
-
-public class BurpExtension extends SharpenerBurpExtension {
-
+public class BurpExtension extends CustomExtensionMainClass {
     public static void main(String[] args) {
         //System.out.println("You have built the extension. You shall play with the jar file now!");
     }

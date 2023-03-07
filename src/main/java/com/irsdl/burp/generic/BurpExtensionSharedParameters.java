@@ -47,8 +47,6 @@ public class BurpExtensionSharedParameters {
 
     public boolean isDarkMode = false; // Sometimes extensions need to see whether Burp uses dark or light mode
 
-    public boolean isScopeChangeDecisionOngoing = false; // this is useful to not ask the scope question more than once at the time
-
     public JComponent extensionSuiteTab = null; // panel that extension adds to burp
     public Registration extensionSuiteTabRegistration = new Registration() {
         @Override
@@ -146,7 +144,7 @@ public class BurpExtensionSharedParameters {
         }
 
         // initialize custom preferences - see https://github.com/CoreyD97/BurpExtenderUtilities/blob/master/src/test/java/extension/PreferencesTest.java
-        this.preferences = new ExtendedPreferences(extensionName, new DefaultGsonProvider(), montoyaApi);
+        this.preferences = new ExtendedPreferences(montoyaApi, new DefaultGsonProvider());
         this.preferences.sharedParameters = this;
         // registering and getting the isDebug setting
         try {

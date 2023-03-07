@@ -39,6 +39,6 @@ jobs:
       - name: Release
         uses: ncipollo/release-action@v1
         with:
-          tag: "latest_release_built_by_github"
+          tag: "latest_builds_by_github"
           allowUpdates: true
           artifacts: "releases/*.jar"
