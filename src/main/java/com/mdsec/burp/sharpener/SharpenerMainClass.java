@@ -212,11 +212,11 @@ public class SharpenerMainClass implements BurpExtension, ExtensionUnloadingHand
 
                 var buildGradleFileResponse = sharedParameters.montoyaApi.http().sendRequest(HttpRequest.httpRequestFromUrl(sharedParameters.extensionPropertiesUrl));
 
-                var buildGradleFile = buildGradleFileResponse.response().body().getBytes();
+                var propertiesFile = buildGradleFileResponse.response().body().getBytes();
 
-                if (buildGradleFile != null) {
-                    String buildGradleFileStr = new String(buildGradleFile);
-                    Pattern version_Pattern = Pattern.compile("version='([\\d.]+)");
+                if (propertiesFile != null) {
+                    String buildGradleFileStr = new String(propertiesFile);
+                    Pattern version_Pattern = Pattern.compile("version=([\\d.]+)");
                     Matcher m = version_Pattern.matcher(buildGradleFileStr);
                     if (m.find()) {
                         String githubVersionStr = m.group(1);
