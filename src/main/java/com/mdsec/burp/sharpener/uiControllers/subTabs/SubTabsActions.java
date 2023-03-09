@@ -472,7 +472,23 @@ public class SubTabsActions {
             popupMenu.add(defaultProfile);
 
             JMenu profileMenu = new JMenu("Predefined Styles");
+            profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "High - Confirmed", currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), true, false, false, "#f71414", "high"));
+            profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "High - Unconfirmed", currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), true, false, false, "#f71414", "high-tbc"));
 
+            profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "Medium - Confirmed", currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), true, false, false, "#ff7e0d", "medium"));
+            profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "Medium - Unconfirmed", currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), true, false, false, "#ff7e0d", "medium-tbc"));
+
+            profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "Low - Confirmed", currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), true, false, false, "#FAD400", "low"));
+            profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "Low - Unconfirmed", currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), true, false, false, "#FAD400", "low-tbc"));
+
+            profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "Info - Confirmed", currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), true, true, false, "#0d9e1e", "info"));
+            profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "Info - Unconfirmed", currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), true, true, false, "#0d9e1e", "info-tbc"));
+
+            profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "Interesting 1", currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), true, true, false, "#395EEA", "interesting"));
+            profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "Interesting 2", currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), true, true, false, "#D641CF", "interesting2"));
+
+            /*
+            // originals:
             profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "High - Confirmed", "Arial", 18, true, false, false, "#f71414", "high"));
             profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "High - Unconfirmed", "Arial", 18, true, false, false, "#f71414", "high-tbc"));
 
@@ -487,7 +503,7 @@ public class SubTabsActions {
 
             profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "Interesting 1", "Arial", 16, true, true, false, "#395EEA", "interesting"));
             profileMenu.add(predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, "Interesting 2", "Arial", 16, true, true, false, "#D641CF", "interesting2"));
-
+            */
             profileMenu.add(predefinedStyleMenuByIcon(sharedParameters, currentSubTabsContainerHandler, "False Positive", "false-positive"));
             profileMenu.add(predefinedStyleMenuByIcon(sharedParameters, currentSubTabsContainerHandler, "Duplicate", "duplicate"));
             profileMenu.add(predefinedStyleMenuByIcon(sharedParameters, currentSubTabsContainerHandler, "Tick", "tick"));
@@ -1212,6 +1228,10 @@ public class SubTabsActions {
             sharedParameters.allSettings.subTabsSettings.saveSettings(currentSubTabsContainerHandler);
         });
         return profile;
+    }
+
+    private static JMenuItem predefinedStyleMenuWithNoFontChange(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, String text, boolean isCloseButtonVisible, String colorCode, String iconString) {
+        return predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, text, currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), currentSubTabsContainerHandler.isBold(), currentSubTabsContainerHandler.isItalic(), isCloseButtonVisible, colorCode, iconString);
     }
 
     public static boolean changeToolTabbedPaneUI_safe(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean shouldOriginalBeSet, int counter) {
