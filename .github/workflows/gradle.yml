@@ -46,6 +46,6 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: "latest_builds_by_github"
-          body: "Built by GitHub automatically"
+          body: "Built by GitHub automatically\nCheck the current version number from [extension.properties](../../blob/main/src/main/resources/extension.properties)"
           allowUpdates: true
           artifacts: "releases/*.jar"
