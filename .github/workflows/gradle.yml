@@ -36,9 +36,14 @@ jobs:
         with:
           path: ./releases/*.jar
           name: Downloadable Extension File
+      - name: Delete older releases
+        uses: dev-drprasad/delete-older-releases@v0.2.0
+        with:
+          keep_latest: 0
       - name: Release
         uses: ncipollo/release-action@v1
         with:
           tag: "latest_builds_by_github"
+          body: "Built by GitHub automatically"
           allowUpdates: true
           artifacts: "releases/*.jar"
