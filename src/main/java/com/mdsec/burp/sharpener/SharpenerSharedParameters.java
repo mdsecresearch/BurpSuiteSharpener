@@ -45,8 +45,8 @@ public class SharpenerSharedParameters extends BurpExtensionSharedParameters {
     public HashMap<BurpUITools.MainTabs, TabbedPaneUI> originalSubTabbedPaneUI = new HashMap<>();
     private final HashMap<BurpUITools.MainTabs, JTabbedPane> cachedJTabbedPaneTools = new HashMap<>(); // This will keep pointer to the current repeater or intruder even when they are detached
 
-    public SharpenerSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, String extensionCopyrightMessage, BurpExtension burpExtenderObj, MontoyaApi montoyaApi, BurpExtensionFeatures burpExtensionFeatures) {
-        super(version, extensionName, extensionURL, extensionIssueTracker, extensionCopyrightMessage, burpExtenderObj, montoyaApi, burpExtensionFeatures);
+    public SharpenerSharedParameters(String extensionName, String version, String extensionURL, String extensionIssueTracker, String extensionCopyrightMessage,String propertiesUrl, BurpExtension burpExtenderObj, MontoyaApi montoyaApi, BurpExtensionFeatures burpExtensionFeatures) {
+        super(version, extensionName, extensionURL, extensionIssueTracker, extensionCopyrightMessage, propertiesUrl, burpExtenderObj, montoyaApi, burpExtensionFeatures);
 
         if ((burpMajorVersion >= 2022 && burpMinorVersion >= 6) || burpMajorVersion >= 2023) {
             this.isTabGroupSupportedByDefault = true;

@@ -13,6 +13,7 @@ import burp.api.montoya.http.HttpService;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import com.irsdl.burp.generic.BurpExtensionFeatures;
 import com.irsdl.burp.generic.BurpUITools;
+import com.irsdl.generic.PropertiesHelper;
 import com.mdsec.burp.sharpener.capabilities.pwnFox.PwnFoxProxyListener;
 import com.mdsec.burp.sharpener.uiSelf.contextMenu.MainContextMenu;
 import com.mdsec.burp.sharpener.uiSelf.suiteTab.MainSuiteTab;
@@ -37,17 +38,19 @@ public class SharpenerMainClass implements BurpExtension, ExtensionUnloadingHand
         var features = new BurpExtensionFeatures();
         features.hasContextMenu = false;
         features.hasSuiteTab = false;
+        features.hasHttpHandler = true;
+        features.hasProxyHandler = false;
         features.isCommunityVersionCompatible = true;
         features.minSupportedMajorVersionInclusive = 2023;
         features.minSupportedMinorVersionInclusive = 1;
-
+        var properties = PropertiesHelper.readProperties(this.getClass(), "/extension.properties");
         this.sharedParameters = new SharpenerSharedParameters(
-                "3.5",
-                "Sharpener",
-                "https://github.com/mdsecresearch/BurpSuiteSharpener",
-                "https://github.com/mdsecresearch/BurpSuiteSharpener/issues",
-                "Released as open source under AGPL license by MDSec - https://www.mdsec.co.uk/\n" +
-                                "Developed by Soroush Dalili (Twitter: @irsdl)",
+                properties.getProperty("name"),
+                properties.getProperty("version"),
+                properties.getProperty("url"),
+                properties.getProperty("issueTracker"),
+                properties.getProperty("copyright"),
+                properties.getProperty("propertiesFileUrl"),
                 this, api, features);
 
         // set our extension name
@@ -63,13 +66,14 @@ public class SharpenerMainClass implements BurpExtension, ExtensionUnloadingHand
             api.extension().unload();
         }
 
-        PwnFoxProxyListener pwnFoxProxyListener = new PwnFoxProxyListener(sharedParameters);
-        api.proxy().registerRequestHandler(pwnFoxProxyListener);
+        if(sharedParameters.features.hasHttpHandler){
+            PwnFoxProxyListener pwnFoxProxyListener = new PwnFoxProxyListener(sharedParameters);
+            api.proxy().registerRequestHandler(pwnFoxProxyListener);
+        }
 
         // create our UI
         SwingUtilities.invokeLater(() -> {
             // we no longer need to create an extension GUI tab to get access to the jFrame - Montoya can give us access
-
             if(sharedParameters.features.hasSuiteTab){
                 sharedParameters.extensionSuiteTab = new MainSuiteTab();
                 sharedParameters.extensionSuiteTabRegistration = api.userInterface().registerSuiteTab(sharedParameters.extensionName, sharedParameters.extensionSuiteTab);
@@ -201,22 +205,18 @@ public class SharpenerMainClass implements BurpExtension, ExtensionUnloadingHand
     }
 
     public void checkForUpdate() {
-        // we need to see whether the extension is up-to-date by reading https://raw.githubusercontent.com/mdsecresearch/BurpSuiteSharpener/main/build.gradle
+        // we need to see whether the extension is up-to-date by reading the propertiesFileUrl link
         new Thread(() -> {
             try{
                 boolean isError = true;
-                String rawRequest = "GET /mdsecresearch/BurpSuiteSharpener/main/build.gradle HTTP/1.1\r\nHOST: raw.githubusercontent.com\r\n\r\n";
 
-                var buildGradleFileResponse = sharedParameters.montoyaApi.http().sendRequest(HttpRequest.httpRequest(
-                        HttpService.httpService("raw.githubusercontent.com", 443, true)
-                        , rawRequest
-                ));
+                var buildGradleFileResponse = sharedParameters.montoyaApi.http().sendRequest(HttpRequest.httpRequestFromUrl(sharedParameters.extensionPropertiesUrl));
 
                 var buildGradleFile = buildGradleFileResponse.response().body().getBytes();
 
                 if (buildGradleFile != null) {
                     String buildGradleFileStr = new String(buildGradleFile);
-                    Pattern version_Pattern = Pattern.compile("version '([\\d.]+)");
+                    Pattern version_Pattern = Pattern.compile("version='([\\d.]+)");
                     Matcher m = version_Pattern.matcher(buildGradleFileStr);
                     if (m.find()) {
                         String githubVersionStr = m.group(1);
@@ -230,7 +230,7 @@ public class SharpenerMainClass implements BurpExtension, ExtensionUnloadingHand
                                     int answer = UIHelper.askConfirmMessage("A new version of " + sharedParameters.extensionName + " is available", "Do you want to open the " + sharedParameters.extensionName + " project page to download the latest version?", new String[]{"Yes", "No"}, sharedParameters.get_mainFrameUsingMontoya());
                                     if (answer == 0) {
                                         try {
-                                            Desktop.getDesktop().browse(new URI(sharedParameters.extensionURL + "/tree/main/release"));
+                                            Desktop.getDesktop().browse(new URI(sharedParameters.extensionURL + "/releases/"));
                                         } catch (Exception e) {
                                             sharedParameters.printlnError(e.getMessage());
                                         }
@@ -249,7 +249,7 @@ public class SharpenerMainClass implements BurpExtension, ExtensionUnloadingHand
                     }
                 }
                 if (isError) {
-                    sharedParameters.printDebugMessage("Could not check for update from https://raw.githubusercontent.com/mdsecresearch/BurpSuiteSharpener/main/build.gradle");
+                    sharedParameters.printlnError("Could not check for update from " + sharedParameters.extensionPropertiesUrl);
                 }
             }catch(Exception e){
                 sharedParameters.printlnError("Fatal error in checkForUpdate()");

@@ -14,6 +14,8 @@ public class BurpExtensionFeatures {
     public double maxSupportedMajorVersionInclusive = 0.0;
     public double minSupportedMinorVersionInclusive = 0.0;
     public double maxSupportedMinorVersionInclusive = 0.0;
+    public boolean hasHttpHandler = false;
+    public boolean hasProxyHandler = false;
     public BurpExtensionFeatures(){
 
     }

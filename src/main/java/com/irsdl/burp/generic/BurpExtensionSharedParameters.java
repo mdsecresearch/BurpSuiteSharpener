@@ -28,6 +28,7 @@ public class BurpExtensionSharedParameters {
     public String extensionURL = "https://github.com/user/proj";
     public String extensionIssueTracker = "https://github.com/user/proj/issues";
     public String extensionCopyrightMessage = "This has been developed by XXX from YYY";
+    public String extensionPropertiesUrl = "https://raw.githubusercontent.com/user/proj/main/src/main/resources/extension.properties"; // can be used in check for update!
     public Integer debugLevel = null;
     public BurpExtension burpExtender;
     public Class extensionClass = null; // this is useful when trying to load a resource such as an image
@@ -114,12 +115,13 @@ public class BurpExtensionSharedParameters {
 
     }
 
-    public BurpExtensionSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, String extensionCopyrightMessage, BurpExtension burpExtenderObj, MontoyaApi montoyaApi, BurpExtensionFeatures burpExtensionFeatures) {
+    public BurpExtensionSharedParameters(String version, String extensionName, String extensionURL, String extensionIssueTracker, String extensionCopyrightMessage, String extensionPropertiesUrl, BurpExtension burpExtenderObj, MontoyaApi montoyaApi, BurpExtensionFeatures burpExtensionFeatures) {
         this.version = version;
         this.extensionName = extensionName;
         this.extensionURL = extensionURL;
         this.extensionIssueTracker = extensionIssueTracker;
         this.extensionCopyrightMessage = extensionCopyrightMessage;
+        this.extensionPropertiesUrl = extensionPropertiesUrl;
         this.extensionClass = burpExtenderObj.getClass();
         this.burpExtender = burpExtenderObj;
         this.montoyaApi = montoyaApi;
