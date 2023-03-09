@@ -45,7 +45,7 @@ jobs:
       - name: Release
         uses: ncipollo/release-action@v1
         with:
-          tag: "latest_builds_by_github"
-          body: "Built by GitHub automatically\nCheck the current version number from [extension.properties](../../blob/main/src/main/resources/extension.properties)"
+          tag: "latest_build_by_github"
+          body: "This jar file has been built by GitHub automatically.\nYou can view the latest version number in the [extension.properties](../../blob/main/src/main/resources/extension.properties) file."
           allowUpdates: true
           artifacts: "releases/*.jar"
