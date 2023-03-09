@@ -12,14 +12,14 @@
 
 package com.mdsec.burp.sharpener.uiSelf.suiteTab;
 
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
-import com.mdsec.burp.sharpener.objects.PreferenceObject;
-import com.mdsec.burp.sharpener.objects.StandardSettings;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
+import com.irsdl.objects.PreferenceObject;
+import com.irsdl.objects.StandardSettings;
 
 import java.util.Collection;
 
 public class SuiteTabSettings extends StandardSettings {
-    protected SuiteTabSettings(CustomExtensionSharedParameters sharedParameters) {
+    protected SuiteTabSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
     }
 

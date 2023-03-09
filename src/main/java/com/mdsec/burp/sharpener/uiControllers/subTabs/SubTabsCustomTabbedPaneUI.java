@@ -14,19 +14,19 @@ package com.mdsec.burp.sharpener.uiControllers.subTabs;
 
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import com.irsdl.burp.generic.BurpUITools;
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
 
 import java.awt.*;
 
 public class SubTabsCustomTabbedPaneUI {
-    public static FlatTabbedPaneUI getUI(CustomExtensionSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab) {
+    public static FlatTabbedPaneUI getUI(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab) {
         boolean isMinimizeTabSize = sharedParameters.preferences.safeGetBooleanSetting("minimizeSize_" + currentToolTab);
         boolean isFixedTabPosition = sharedParameters.preferences.safeGetBooleanSetting("isTabFixedPosition_" + currentToolTab);
         boolean isFiltered = sharedParameters.isFiltered(currentToolTab);
         return getUI(sharedParameters, currentToolTab, isFiltered, isMinimizeTabSize, isFixedTabPosition);
     }
 
-    public static FlatTabbedPaneUI getUI(CustomExtensionSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab,
+    public static FlatTabbedPaneUI getUI(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab,
                                          boolean isFiltered, boolean isMinimizeTabSize, boolean isFixedTabPosition) {
         return new FlatTabbedPaneUI() {
             @Override

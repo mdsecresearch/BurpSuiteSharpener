@@ -14,9 +14,9 @@ package com.mdsec.burp.sharpener.uiControllers.burpFrame;
 
 import com.coreyd97.BurpExtenderUtilities.Preferences;
 import com.irsdl.burp.generic.BurpTitleAndIcon;
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
-import com.mdsec.burp.sharpener.objects.PreferenceObject;
-import com.mdsec.burp.sharpener.objects.StandardSettings;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
+import com.irsdl.objects.PreferenceObject;
+import com.irsdl.objects.StandardSettings;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class BurpFrameSettings extends StandardSettings {
 
     private BurpFrameListeners burpFrameListeners;
 
-    public BurpFrameSettings(CustomExtensionSharedParameters sharedParameters) {
+    public BurpFrameSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
         sharedParameters.printDebugMessage("BurpFrameSettings");
     }

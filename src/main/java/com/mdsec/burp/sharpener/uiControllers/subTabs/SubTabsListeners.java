@@ -13,7 +13,7 @@
 package com.mdsec.burp.sharpener.uiControllers.subTabs;
 
 import com.irsdl.burp.generic.BurpUITools;
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.generic.MouseAdapterExtensionHandler;
 import com.irsdl.generic.UIHelper;
 
@@ -29,7 +29,7 @@ import java.util.function.Consumer;
 
 public class SubTabsListeners implements ContainerListener {
     private final Consumer<MouseEvent> mouseEventConsumer;
-    private final CustomExtensionSharedParameters sharedParameters;
+    private final SharpenerSharedParameters sharedParameters;
     private boolean _isUpdateInProgress = false;
     private ArrayList<BurpUITools.MainTabs> accessibleTabs;
     private final boolean _isShortcutEnabled = true;
@@ -62,7 +62,7 @@ public class SubTabsListeners implements ContainerListener {
         put("control F2", "RenameTitle");
     }};
 
-    public SubTabsListeners(CustomExtensionSharedParameters sharedParameters, Consumer<MouseEvent> mouseEventConsumer) {
+    public SubTabsListeners(SharpenerSharedParameters sharedParameters, Consumer<MouseEvent> mouseEventConsumer) {
         this.sharedParameters = sharedParameters;
         this.mouseEventConsumer = mouseEventConsumer;
         removeTabListener(sharedParameters.get_rootTabbedPaneUsingMontoya());

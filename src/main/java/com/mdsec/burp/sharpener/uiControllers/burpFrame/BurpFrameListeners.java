@@ -12,7 +12,7 @@
 
 package com.mdsec.burp.sharpener.uiControllers.burpFrame;
 
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.generic.UIHelper;
 
 import javax.swing.*;
@@ -26,7 +26,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BurpFrameListeners implements ComponentListener {
-    private final CustomExtensionSharedParameters sharedParameters;
+    private final SharpenerSharedParameters sharedParameters;
 
     private final HashMap<String, String> burpFrameShortcutMappings = new HashMap<>() {{
         put("control alt C", "MoveToCenter");
@@ -38,7 +38,7 @@ public class BurpFrameListeners implements ComponentListener {
     private boolean isRecenterInProgress = false;
     private boolean isResizedFrameCheckInProgress = false;
     private boolean isMovedFrameCheckInProgress = false;
-    public BurpFrameListeners(CustomExtensionSharedParameters sharedParameters){
+    public BurpFrameListeners(SharpenerSharedParameters sharedParameters){
         this.sharedParameters = sharedParameters;
         addBurpFrameListener(sharedParameters.get_mainFrameUsingMontoya());
         boolean detectOffScreenPosition = sharedParameters.preferences.safeGetBooleanSetting("detectOffScreenPosition");
@@ -189,13 +189,13 @@ public class BurpFrameListeners implements ComponentListener {
                                     public void run() {
                                         if (jframe != null && UIHelper.isFrameOutOffScreen(jframe, offScreenMargin)) {
                                             if(isChoice){
-                                                int response = UIHelper.askConfirmMessage(sharedParameters.extensionName + ": Off Screen Window", "Burp Suite is %"+(int) (offScreenMargin*100) +" outside the screen, do you want to bring it to the center?", new String[]{"Yes", "No"}, null);
+                                                int response = UIHelper.askConfirmMessage(sharedParameters.extensionName + ": Off Screen Window", "Burp Suite is "+(int) (offScreenMargin*100) +"% outside the screen, do you want to bring it to the center?", new String[]{"Yes", "No"}, null);
                                                 if (response == 0) {
                                                     UIHelper.moveFrameToCenter(jframe);
                                                 }
                                             }else{
+                                                UIHelper.showWarningMessage(sharedParameters.extensionName + ": Burp Suite was at least "+(int) (offScreenMargin*100) +"% outside the screen, therefore, it's been moved to the center!", null);
                                                 UIHelper.moveFrameToCenter(jframe);
-                                                UIHelper.showWarningMessage(sharedParameters.extensionName + ": Burp Suite was at least %"+(int) (offScreenMargin*100) +" outside the screen, therefore, it's been moved to the center!", null);
                                             }
                                         }
                                         isRecenterInProgress = false;

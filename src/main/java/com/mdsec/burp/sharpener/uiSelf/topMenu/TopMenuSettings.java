@@ -12,16 +12,16 @@
 
 package com.mdsec.burp.sharpener.uiSelf.topMenu;
 
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
-import com.mdsec.burp.sharpener.objects.PreferenceObject;
-import com.mdsec.burp.sharpener.objects.StandardSettings;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
+import com.irsdl.objects.PreferenceObject;
+import com.irsdl.objects.StandardSettings;
 
 import java.util.Collection;
 import java.util.Collections;
 
 public class TopMenuSettings extends StandardSettings {
 
-    public TopMenuSettings(CustomExtensionSharedParameters sharedParameters) {
+    public TopMenuSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
         sharedParameters.printDebugMessage("TopMenuSettings");
     }

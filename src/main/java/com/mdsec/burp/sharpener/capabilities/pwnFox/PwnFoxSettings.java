@@ -13,15 +13,15 @@
 package com.mdsec.burp.sharpener.capabilities.pwnFox;
 
 import com.coreyd97.BurpExtenderUtilities.Preferences;
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
-import com.mdsec.burp.sharpener.objects.PreferenceObject;
-import com.mdsec.burp.sharpener.objects.StandardSettings;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
+import com.irsdl.objects.PreferenceObject;
+import com.irsdl.objects.StandardSettings;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class PwnFoxSettings extends StandardSettings {
-    public PwnFoxSettings(CustomExtensionSharedParameters sharedParameters) {
+    public PwnFoxSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
     }
 

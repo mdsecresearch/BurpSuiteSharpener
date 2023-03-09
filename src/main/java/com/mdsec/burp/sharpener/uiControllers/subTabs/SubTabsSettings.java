@@ -16,9 +16,9 @@ import com.coreyd97.BurpExtenderUtilities.Preferences;
 import com.google.gson.reflect.TypeToken;
 import com.irsdl.burp.generic.BurpExtensionSharedParameters;
 import com.irsdl.burp.generic.BurpUITools;
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
-import com.mdsec.burp.sharpener.objects.PreferenceObject;
-import com.mdsec.burp.sharpener.objects.StandardSettings;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
+import com.irsdl.objects.PreferenceObject;
+import com.irsdl.objects.StandardSettings;
 import com.mdsec.burp.sharpener.objects.TabFeaturesObject;
 
 import javax.swing.*;
@@ -37,7 +37,7 @@ public class SubTabsSettings extends StandardSettings {
     private Lock updateInProgressLock = new ReentrantLock();
 
     private SubTabsListeners subTabsListeners;
-    public SubTabsSettings(CustomExtensionSharedParameters sharedParameters) {
+    public SubTabsSettings(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters);
         sharedParameters.printDebugMessage("SubTabsSettings");
     }

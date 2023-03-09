@@ -13,7 +13,7 @@
 package com.mdsec.burp.sharpener.uiControllers.subTabs;
 
 import com.irsdl.burp.generic.BurpUITools;
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
 import com.mdsec.burp.sharpener.objects.TabFeaturesObject;
 import com.mdsec.burp.sharpener.objects.TabFeaturesObjectStyle;
 import com.irsdl.generic.ImageHelper;
@@ -41,7 +41,7 @@ public class SubTabsContainerHandler {
     public BurpUITools.MainTabs currentToolTab;
 
     private final SubTabsContainerHandler instance;
-    private final CustomExtensionSharedParameters sharedParameters;
+    private final SharpenerSharedParameters sharedParameters;
     private ArrayList<String> cachedTabTitles;
     private boolean titleEditInProgress = false;
     private String beforeManualEditTabTitle = "";
@@ -52,7 +52,7 @@ public class SubTabsContainerHandler {
     private boolean _isVisible = true;
     private boolean _hasChanges = false;
 
-    public SubTabsContainerHandler(CustomExtensionSharedParameters sharedParameters, JTabbedPane tabbedPane, int tabIndex, boolean forComparison) {
+    public SubTabsContainerHandler(SharpenerSharedParameters sharedParameters, JTabbedPane tabbedPane, int tabIndex, boolean forComparison) {
         this.instance = this;
         this.sharedParameters = sharedParameters;
         this.parentTabbedPane = tabbedPane;

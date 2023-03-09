@@ -12,17 +12,17 @@
 
 package com.mdsec.burp.sharpener.uiControllers.mainTabs;
 
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
 
 import javax.swing.*;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 
 public class MainTabsListeners implements ContainerListener {
-    private final CustomExtensionSharedParameters sharedParameters;
+    private final SharpenerSharedParameters sharedParameters;
     private boolean isResetInProgress = false;
 
-    public MainTabsListeners(CustomExtensionSharedParameters sharedParameters) {
+    public MainTabsListeners(SharpenerSharedParameters sharedParameters) {
         this.sharedParameters = sharedParameters;
         addTabListener(sharedParameters.get_rootTabbedPaneUsingMontoya());
     }

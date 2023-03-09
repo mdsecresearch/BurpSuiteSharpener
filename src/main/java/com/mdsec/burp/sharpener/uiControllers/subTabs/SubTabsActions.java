@@ -14,7 +14,7 @@ package com.mdsec.burp.sharpener.uiControllers.subTabs;
 
 import com.google.common.io.Files;
 import com.irsdl.burp.generic.BurpUITools;
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
 import com.mdsec.burp.sharpener.objects.TabFeaturesObjectStyle;
 import com.irsdl.generic.*;
 import com.irsdl.generic.uiObjFinder.UiSpecObject;
@@ -42,7 +42,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class SubTabsActions {
-    public static void tabClicked(final MouseEvent event, CustomExtensionSharedParameters sharedParameters) {
+    public static void tabClicked(final MouseEvent event, SharpenerSharedParameters sharedParameters) {
         SubTabsContainerHandler subTabsContainerHandler = getSubTabContainerHandlerFromEvent(sharedParameters, event);
 
         if (subTabsContainerHandler == null) {
@@ -96,7 +96,7 @@ public class SubTabsActions {
         }
     }
 
-    public static void addMouseWheelToJTabbedPane(CustomExtensionSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean isLastOneSelectable) {
+    public static void addMouseWheelToJTabbedPane(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean isLastOneSelectable) {
         // from https://stackoverflow.com/questions/38463047/use-mouse-to-scroll-through-tabs-in-jtabbedpane
 
         MouseWheelListener mwl = e -> {
@@ -339,7 +339,7 @@ public class SubTabsActions {
             currentToolTabbedPane.addMouseWheelListener(mwl);
     }
 
-    public static void removeMouseWheelFromJTabbedPane(CustomExtensionSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean onlyRemoveLast) {
+    public static void removeMouseWheelFromJTabbedPane(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean onlyRemoveLast) {
         var currentToolTabbedPane = sharedParameters.get_toolTabbedPane(currentToolTab);
         if(currentToolTabbedPane != null) {
             MouseWheelListener[] mwlArr = currentToolTabbedPane.getMouseWheelListeners();
@@ -352,7 +352,7 @@ public class SubTabsActions {
         }
     }
 
-    private static void setNotificationMenuMessage(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem, String message) {
+    private static void setNotificationMenuMessage(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem, String message) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -375,7 +375,7 @@ public class SubTabsActions {
         notificationMenuItem.setText(message);
     }
 
-    private static JPopupMenu createPopupMenu(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    private static JPopupMenu createPopupMenu(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         if (currentSubTabsContainerHandler == null)
             return new JPopupMenu();
 
@@ -1186,11 +1186,11 @@ public class SubTabsActions {
         return popupMenu;
     }
 
-    private static JMenuItem predefinedStyleMenuByIcon(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, String text, String iconString) {
+    private static JMenuItem predefinedStyleMenuByIcon(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, String text, String iconString) {
         return predefinedStyleMenu(sharedParameters, currentSubTabsContainerHandler, text, currentSubTabsContainerHandler.getFontName(), (int) currentSubTabsContainerHandler.getFontSize(), currentSubTabsContainerHandler.isBold(), currentSubTabsContainerHandler.isItalic(), currentSubTabsContainerHandler.getVisibleCloseButton(), currentSubTabsContainerHandler.getColorCode(), iconString);
     }
 
-    private static JMenuItem predefinedStyleMenu(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, String text, String fontName, int fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, String colorCode, String iconString) {
+    private static JMenuItem predefinedStyleMenu(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, String text, String fontName, int fontSize, boolean isBold, boolean isItalic, boolean isCloseButtonVisible, String colorCode, String iconString) {
         if (currentSubTabsContainerHandler == null)
             return null;
 
@@ -1214,7 +1214,7 @@ public class SubTabsActions {
         return profile;
     }
 
-    public static boolean changeToolTabbedPaneUI_safe(CustomExtensionSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean shouldOriginalBeSet, int counter) {
+    public static boolean changeToolTabbedPaneUI_safe(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean shouldOriginalBeSet, int counter) {
         boolean result = true;
         try {
             // should have already been loaded but just in case something has changed
@@ -1264,7 +1264,7 @@ public class SubTabsActions {
     }
 
 
-    public static void changeToolTabbedPaneUI_safe(CustomExtensionSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean shouldOriginalBeSet) {
+    public static void changeToolTabbedPaneUI_safe(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab, boolean shouldOriginalBeSet) {
         SwingUtilities.invokeLater(() -> {
             // sometimes we have errors when using SetUI - we use this error catching and delay mechanism to hopefully overcome this!
             int counter = 0;
@@ -1284,7 +1284,7 @@ public class SubTabsActions {
         });
     }
 
-    public static void changeToolTabbedPaneUI_safe(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, boolean shouldOriginalBeSet) {
+    public static void changeToolTabbedPaneUI_safe(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, boolean shouldOriginalBeSet) {
         SwingUtilities.invokeLater(() -> {
             // sometimes we have errors when using SetUI - we use this error catching and delay mechanism to hopefully overcome this!
             int counter = 0;
@@ -1305,7 +1305,7 @@ public class SubTabsActions {
         });
     }
 
-    public static void setTabTitleFilter(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    public static void setTabTitleFilter(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1374,7 +1374,7 @@ public class SubTabsActions {
         }
     }
 
-    private static void changingTabbedPaneUiToHideTabs(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    private static void changingTabbedPaneUiToHideTabs(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1395,7 +1395,7 @@ public class SubTabsActions {
         }
     }
 
-    public static void showAllTabTitles(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    public static void showAllTabTitles(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1407,7 +1407,7 @@ public class SubTabsActions {
         }
     }
 
-    public static void toggleCurrentTabVisibility(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    public static void toggleCurrentTabVisibility(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1433,7 +1433,7 @@ public class SubTabsActions {
         changingTabbedPaneUiToHideTabs(sharedParameters, currentSubTabsContainerHandler);
     }
 
-    public static SubTabsContainerHandler getSubTabContainerHandlerFromEvent(CustomExtensionSharedParameters sharedParameters, AWTEvent event) {
+    public static SubTabsContainerHandler getSubTabContainerHandlerFromEvent(SharpenerSharedParameters sharedParameters, AWTEvent event) {
         SubTabsContainerHandler subTabsContainerHandler = null;
         if (event.getSource() instanceof Component) {
             JTabbedPane tabbedPane = (JTabbedPane) UIWalker.FindUIObjectInParentComponents((Component) event.getSource(), 4, new UiSpecObject(JTabbedPane.class));
@@ -1445,7 +1445,7 @@ public class SubTabsActions {
         return subTabsContainerHandler;
     }
 
-    public static SubTabsContainerHandler getSubTabContainerHandlerFromSharedParameters(CustomExtensionSharedParameters sharedParameters, JTabbedPane tabbedPane, int currentIndex) {
+    public static SubTabsContainerHandler getSubTabContainerHandlerFromSharedParameters(SharpenerSharedParameters sharedParameters, JTabbedPane tabbedPane, int currentIndex) {
         SubTabsContainerHandler subTabsContainerHandler = null;
 
         SubTabsContainerHandler tempSubTabsContainerHandler = new SubTabsContainerHandler(sharedParameters, tabbedPane, currentIndex, true);
@@ -1463,11 +1463,11 @@ public class SubTabsActions {
         return subTabsContainerHandler;
     }
 
-    public static void showPopupMenu(CustomExtensionSharedParameters sharedParameters, AWTEvent event) {
+    public static void showPopupMenu(SharpenerSharedParameters sharedParameters, AWTEvent event) {
         showPopupMenu(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event), null);
     }
 
-    public static void showPopupMenu(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, AWTEvent event) {
+    public static void showPopupMenu(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, AWTEvent event) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1490,16 +1490,16 @@ public class SubTabsActions {
         popupMenu.show(currentToolTabbedPane, x, y);
     }
 
-    public static void defineRegExPopupForSearchAndJump(CustomExtensionSharedParameters sharedParameters, AWTEvent event) {
+    public static void defineRegExPopupForSearchAndJump(SharpenerSharedParameters sharedParameters, AWTEvent event) {
         defineRegExPopupForSearchAndJump(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event));
     }
 
-    public static void defineRegExPopupForSearchAndJump(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    public static void defineRegExPopupForSearchAndJump(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         if(currentSubTabsContainerHandler != null)
             defineRegExPopupForSearchAndJump(sharedParameters, currentSubTabsContainerHandler.currentToolTab);
     }
 
-    public static void defineRegExPopupForSearchAndJump(CustomExtensionSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab) {
+    public static void defineRegExPopupForSearchAndJump(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs currentToolTab) {
         String titleKeyword = UIHelper.showPlainInputMessage("Enter a Regular Expression:", "Search in titles and jump to tab", sharedParameters.searchedTabTitleForJumpToTab, sharedParameters.get_mainFrameUsingMontoya());
         if (!titleKeyword.isEmpty()) {
             boolean result = false;
@@ -1529,11 +1529,11 @@ public class SubTabsActions {
         }
     }
 
-    public static void searchInTabTitlesAndJump(CustomExtensionSharedParameters sharedParameters, AWTEvent event, boolean isNext) {
+    public static void searchInTabTitlesAndJump(SharpenerSharedParameters sharedParameters, AWTEvent event, boolean isNext) {
         searchInTabTitlesAndJump(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event), null, isNext);
     }
 
-    public static void searchInTabTitlesAndJump(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem, boolean isNext) {
+    public static void searchInTabTitlesAndJump(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem, boolean isNext) {
         if (!sharedParameters.searchedTabTitleForJumpToTab.isEmpty() && currentSubTabsContainerHandler != null) {
             boolean result = false;
             ArrayList<SubTabsContainerHandler> subTabsContainerHandlers = sharedParameters.allSubTabContainerHandlers.get(currentSubTabsContainerHandler.currentToolTab);
@@ -1570,20 +1570,20 @@ public class SubTabsActions {
         }
     }
 
-    public static void jumpToFirstTab(CustomExtensionSharedParameters sharedParameters, ActionEvent event) {
+    public static void jumpToFirstTab(SharpenerSharedParameters sharedParameters, ActionEvent event) {
         jumpToFirstTab(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event));
     }
 
-    public static void jumpToFirstTab(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    public static void jumpToFirstTab(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         jumpToTabIndex(sharedParameters, currentSubTabsContainerHandler, 0);
         sharedParameters.printDebugMessage("Jump to first tab");
     }
 
-    public static void jumpToLastTab(CustomExtensionSharedParameters sharedParameters, ActionEvent event) {
+    public static void jumpToLastTab(SharpenerSharedParameters sharedParameters, ActionEvent event) {
         jumpToLastTab(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event));
     }
 
-    public static void jumpToLastTab(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    public static void jumpToLastTab(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1596,11 +1596,11 @@ public class SubTabsActions {
         sharedParameters.printDebugMessage("Jump to last tab");
     }
 
-    public static void jumpToPreviousTab(CustomExtensionSharedParameters sharedParameters, ActionEvent event) {
+    public static void jumpToPreviousTab(SharpenerSharedParameters sharedParameters, ActionEvent event) {
         jumpToPreviousTab(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event), null);
     }
 
-    public static void jumpToPreviousTab(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem) {
+    public static void jumpToPreviousTab(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem) {
         if (currentSubTabsContainerHandler == null)
             return;
         if (currentSubTabsContainerHandler.parentTabbedPane.getSelectedIndex() > 0) {
@@ -1631,11 +1631,11 @@ public class SubTabsActions {
         }
     }
 
-    public static void jumpToNextTab(CustomExtensionSharedParameters sharedParameters, ActionEvent event) {
+    public static void jumpToNextTab(SharpenerSharedParameters sharedParameters, ActionEvent event) {
         jumpToNextTab(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event), null);
     }
 
-    public static void jumpToNextTab(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem) {
+    public static void jumpToNextTab(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem) {
         if (currentSubTabsContainerHandler == null)
             return;
         int maxIndex = currentSubTabsContainerHandler.parentTabbedPane.getTabCount() - 2;
@@ -1670,11 +1670,11 @@ public class SubTabsActions {
         }
     }
 
-    public static void jumpToPreviouslySelectedTab(CustomExtensionSharedParameters sharedParameters, ActionEvent event) {
+    public static void jumpToPreviouslySelectedTab(SharpenerSharedParameters sharedParameters, ActionEvent event) {
         jumpToPreviouslySelectedTab(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event), null);
     }
 
-    public static void jumpToPreviouslySelectedTab(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem) {
+    public static void jumpToPreviouslySelectedTab(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1699,11 +1699,11 @@ public class SubTabsActions {
 
     }
 
-    public static void jumpToNextlySelectedTab(CustomExtensionSharedParameters sharedParameters, ActionEvent event) {
+    public static void jumpToNextlySelectedTab(SharpenerSharedParameters sharedParameters, ActionEvent event) {
         jumpToNextlySelectedTab(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event), null);
     }
 
-    public static void jumpToNextlySelectedTab(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem) {
+    public static void jumpToNextlySelectedTab(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, JMenuItem notificationMenuItem) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1720,11 +1720,11 @@ public class SubTabsActions {
         sharedParameters.printDebugMessage("Jump to previously selected tab");
     }
 
-    public static void jumpToTabIndex(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, int indexNumber) {
+    public static void jumpToTabIndex(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, int indexNumber) {
         fixHistoryAndJumpToTabIndex(sharedParameters, currentSubTabsContainerHandler, indexNumber, true, true, true);
     }
 
-    public static void fixHistoryAndJumpToTabIndex(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, int indexNumber, boolean cleanNextlySelectedTabs, boolean ignoreNextlySelectedTabs, boolean shouldJump) {
+    public static void fixHistoryAndJumpToTabIndex(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler, int indexNumber, boolean cleanNextlySelectedTabs, boolean ignoreNextlySelectedTabs, boolean shouldJump) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1761,11 +1761,11 @@ public class SubTabsActions {
         }
     }
 
-    public static void copyTitle(CustomExtensionSharedParameters sharedParameters, ActionEvent event) {
+    public static void copyTitle(SharpenerSharedParameters sharedParameters, ActionEvent event) {
         copyTitle(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event));
     }
 
-    public static void copyTitle(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    public static void copyTitle(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         if (currentSubTabsContainerHandler == null)
             return;
 
@@ -1779,11 +1779,11 @@ public class SubTabsActions {
                 );
         sharedParameters.printDebugMessage("Title has been copied to clipboard");
     }
-    public static void pasteTitle(CustomExtensionSharedParameters sharedParameters, ActionEvent event) {
+    public static void pasteTitle(SharpenerSharedParameters sharedParameters, ActionEvent event) {
         pasteTitle(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event));
     }
 
-    public static void pasteTitle(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    public static void pasteTitle(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         try {
             if (currentSubTabsContainerHandler == null)
                 return;
@@ -1802,11 +1802,11 @@ public class SubTabsActions {
         }
     }
 
-    public static void renameTitle(CustomExtensionSharedParameters sharedParameters, ActionEvent event) {
+    public static void renameTitle(SharpenerSharedParameters sharedParameters, ActionEvent event) {
         renameTitle(sharedParameters, getSubTabContainerHandlerFromEvent(sharedParameters, event));
     }
 
-    public static void renameTitle(CustomExtensionSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
+    public static void renameTitle(SharpenerSharedParameters sharedParameters, SubTabsContainerHandler currentSubTabsContainerHandler) {
         if (currentSubTabsContainerHandler == null)
             return;
 

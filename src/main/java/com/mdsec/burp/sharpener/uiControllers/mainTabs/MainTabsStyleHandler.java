@@ -13,7 +13,7 @@
 package com.mdsec.burp.sharpener.uiControllers.mainTabs;
 
 import com.irsdl.burp.generic.BurpUITools;
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
 import com.irsdl.generic.ImageHelper;
 
 import javax.swing.*;
@@ -21,7 +21,7 @@ import java.awt.*;
 
 
 public class MainTabsStyleHandler {
-    public static void setMainTabsStyle(CustomExtensionSharedParameters sharedParameters, BurpUITools.MainTabs toolName) {
+    public static void setMainTabsStyle(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs toolName) {
         SwingUtilities.invokeLater(() -> {
 
             sharedParameters.printDebugMessage("setToolTabStyle for " + toolName);
@@ -90,7 +90,7 @@ public class MainTabsStyleHandler {
 
     }
 
-    public static void resetMainTabsStylesFromSettings(CustomExtensionSharedParameters sharedParameters) {
+    public static void resetMainTabsStylesFromSettings(SharpenerSharedParameters sharedParameters) {
         sharedParameters.printDebugMessage("resetToolTabStylesFromSettings");
         //unsetAllToolTabStyles(sharedParameters);
         //setToolTabStylesFromSettings(sharedParameters);
@@ -113,7 +113,7 @@ public class MainTabsStyleHandler {
         });
     }
 
-    public static void unsetAllMainTabsStyles(CustomExtensionSharedParameters sharedParameters) {
+    public static void unsetAllMainTabsStyles(SharpenerSharedParameters sharedParameters) {
         SwingUtilities.invokeLater(() -> {
 
             sharedParameters.printDebugMessage("unsetAllToolTabStyles");
@@ -130,7 +130,7 @@ public class MainTabsStyleHandler {
         });
     }
 
-    public static void unsetMainTabsStyle(CustomExtensionSharedParameters sharedParameters, BurpUITools.MainTabs toolName) {
+    public static void unsetMainTabsStyle(SharpenerSharedParameters sharedParameters, BurpUITools.MainTabs toolName) {
         SwingUtilities.invokeLater(() -> {
 
             JTabbedPane tabbedPane = sharedParameters.get_rootTabbedPaneUsingMontoya();

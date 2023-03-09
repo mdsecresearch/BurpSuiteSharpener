@@ -33,8 +33,8 @@ package com.mdsec.burp.sharpener.uiSelf.topMenu;
 import com.irsdl.burp.generic.BurpExtensionSharedParameters;
 import com.irsdl.burp.generic.BurpTitleAndIcon;
 import com.irsdl.burp.generic.BurpUITools;
-import com.mdsec.burp.sharpener.CustomExtensionMainClass;
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
+import com.mdsec.burp.sharpener.SharpenerMainClass;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
 import com.mdsec.burp.sharpener.uiControllers.mainTabs.MainTabsStyleHandler;
 import com.irsdl.generic.ImageHelper;
 import com.irsdl.generic.UIHelper;
@@ -55,11 +55,11 @@ import java.util.TimerTask;
 
 public class TopMenu extends javax.swing.JMenu {
     private JMenu topMenuForExtension;
-    private final transient CustomExtensionSharedParameters sharedParameters;
+    private final transient SharpenerSharedParameters sharedParameters;
     private final String[] themeNames = {"none", "halloween", "game", "hacker", "gradient", "mobster", "office", "@irsdl"};
     private final String[] iconSizes = {"48", "32", "24", "20", "16", "14", "12", "10", "8", "6"};
 
-    public TopMenu(CustomExtensionSharedParameters sharedParameters) {
+    public TopMenu(SharpenerSharedParameters sharedParameters) {
         super(sharedParameters.extensionName);
         this.sharedParameters = sharedParameters;
         topMenuForExtension = this;
@@ -437,7 +437,7 @@ public class TopMenu extends javax.swing.JMenu {
                 public void actionPerformed(ActionEvent actionEvent) {
                     new Thread(() -> {
                         MainTabsStyleHandler.resetMainTabsStylesFromSettings(sharedParameters);
-                        CustomExtensionMainClass sharpenerBurpExtension = (CustomExtensionMainClass) sharedParameters.burpExtender;
+                        SharpenerMainClass sharpenerBurpExtension = (SharpenerMainClass) sharedParameters.burpExtender;
                         sharpenerBurpExtension.load(true);
 
                     }).start();
@@ -473,7 +473,7 @@ public class TopMenu extends javax.swing.JMenu {
                     sharedParameters.preferences.safeSetSetting("checkForUpdate", false);
                 } else {
                     sharedParameters.preferences.safeSetSetting("checkForUpdate", true);
-                    CustomExtensionMainClass sharpenerBurpExtension = (CustomExtensionMainClass) sharedParameters.burpExtender;
+                    SharpenerMainClass sharpenerBurpExtension = (SharpenerMainClass) sharedParameters.burpExtender;
                     sharpenerBurpExtension.checkForUpdate();
                 }
             });
@@ -592,7 +592,7 @@ public class TopMenu extends javax.swing.JMenu {
 
     }
 
-    public static void removeTopMenuBarLastResort(CustomExtensionSharedParameters sharedParameters, boolean repaintUI) {
+    public static void removeTopMenuBarLastResort(SharpenerSharedParameters sharedParameters, boolean repaintUI) {
         if (BurpUITools.isMenuBarLoaded(sharedParameters.extensionName, sharedParameters.get_mainMenuBarUsingMontoya())) {
             // so the menu is there!
             try {

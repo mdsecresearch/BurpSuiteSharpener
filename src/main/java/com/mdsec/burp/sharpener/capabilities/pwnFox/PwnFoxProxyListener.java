@@ -17,12 +17,12 @@ import burp.api.montoya.proxy.http.InterceptedRequest;
 import burp.api.montoya.proxy.http.ProxyRequestHandler;
 import burp.api.montoya.proxy.http.ProxyRequestReceivedAction;
 import burp.api.montoya.proxy.http.ProxyRequestToBeSentAction;
-import com.mdsec.burp.sharpener.CustomExtensionSharedParameters;
+import com.mdsec.burp.sharpener.SharpenerSharedParameters;
 
 public class PwnFoxProxyListener implements ProxyRequestHandler {
-    CustomExtensionSharedParameters sharedParameters;
+    SharpenerSharedParameters sharedParameters;
 
-    public PwnFoxProxyListener(CustomExtensionSharedParameters sharedParameters){
+    public PwnFoxProxyListener(SharpenerSharedParameters sharedParameters){
         this.sharedParameters = sharedParameters;
     }
 
