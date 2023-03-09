@@ -7,7 +7,7 @@ This extension should add a number of UI and functional features to Burp Suite t
 \__ \| . |<_> || '_>| . \/ ._>| ' |/ ._>| '_>
 <___/|_|_|<___||_|  |  _/\___.|_|_|\___.|_|
                     |_|
-v3.4
+v3.5
 </pre>
 
 # Installation

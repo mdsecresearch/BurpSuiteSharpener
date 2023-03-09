@@ -42,7 +42,7 @@ public class SharpenerMainClass implements BurpExtension, ExtensionUnloadingHand
         features.minSupportedMinorVersionInclusive = 1;
 
         this.sharedParameters = new SharpenerSharedParameters(
-                "3.4",
+                "3.5",
                 "Sharpener",
                 "https://github.com/mdsecresearch/BurpSuiteSharpener",
                 "https://github.com/mdsecresearch/BurpSuiteSharpener/issues",
