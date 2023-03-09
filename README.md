@@ -51,7 +51,7 @@ It would be great to also list any known available extensions which might have i
 Perhaps the best features can be imported from different open-source extensions so the overhead of adding different extensions can be reduced.
 
 # Installation
-* Download the latest jar file built by GitHub from [/releases/latest](https://github.com/mdsecresearch/BurpSuiteSharpener/releases/latest), or by going through the [Workflows' Artifacts](https://github.com/mdsecresearch/BurpSuiteSharpener/actions), or from the [releases](https://github.com/mdsecresearch/BurpSuiteSharpener/tree/main/releases) directory which has been compiled offline by the developers/maintainers.
+* Download the latest jar file built by GitHub from [/releases/latest](https://github.com/mdsecresearch/BurpSuiteSharpener/releases/latest), or by going through the [Workflows' Artifacts](https://github.com/mdsecresearch/BurpSuiteSharpener/actions).
 * Add it to Burp Suite using the Extender tab
   
 # Usage Tips
@@ -87,7 +87,7 @@ Perhaps the best features can be imported from different open-source extensions 
 * Alt + Any Mouse Click works on empty parts of the tabs which do not contain any text
 * Use the `Debug` option in `Global Settings` if you are reporting a bug or if you want to see what is happening
 * Check the [extension's GitHub repository](https://github.com/mdsecresearch/BurpSuiteSharpener) rather than BApp Store for the latest updates
-* A sample of icons and the latest releases should also be accessible in the `/release` directory
+* A sample of icons should also be accessible in the `/` directory
 
 ![images/img.png](images/img.png)
 
