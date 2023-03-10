@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation "net.portswigger.burp.extensions:montoya-api:2023.2"
+    implementation "net.portswigger.burp.extensions:montoya-api:2023.1"
     implementation "com.github.CoreyD97:Burp-Montoya-Utilities:86c912a" //https://jitpack.io/com/github/CoreyD97/Burp-Montoya-Utilities/86c912a/
     implementation "com.google.code.gson:gson:2.10.1"
     implementation "com.google.guava:guava:31.1-jre"
