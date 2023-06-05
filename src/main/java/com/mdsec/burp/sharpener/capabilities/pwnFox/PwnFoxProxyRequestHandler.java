@@ -1,14 +1,8 @@
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
-// Developed by Soroush Dalili (@irsdl)
-// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
+// Burp Suite Extension Name: Sharpener
 // Released under AGPL see LICENSE for more information
-
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
 // Developed by Soroush Dalili (@irsdl)
+// Released initially as open source by MDSec - https://www.mdsec.co.uk
 // Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
-// Released under AGPL see LICENSE for more information
 
 package com.mdsec.burp.sharpener.capabilities.pwnFox;
 
@@ -19,10 +13,10 @@ import burp.api.montoya.proxy.http.ProxyRequestReceivedAction;
 import burp.api.montoya.proxy.http.ProxyRequestToBeSentAction;
 import com.mdsec.burp.sharpener.SharpenerSharedParameters;
 
-public class PwnFoxProxyListener implements ProxyRequestHandler {
+public class PwnFoxProxyRequestHandler implements ProxyRequestHandler {
     SharpenerSharedParameters sharedParameters;
 
-    public PwnFoxProxyListener(SharpenerSharedParameters sharedParameters){
+    public PwnFoxProxyRequestHandler(SharpenerSharedParameters sharedParameters){
         this.sharedParameters = sharedParameters;
     }
 
@@ -31,9 +25,7 @@ public class PwnFoxProxyListener implements ProxyRequestHandler {
         var headerList = interceptedRequest.headers();
         if (headerList != null) {
             boolean pwnFoxSupportCapability = sharedParameters.preferences.safeGetSetting("pwnFoxSupportCapability", false);
-
             if (pwnFoxSupportCapability) {
-
                 for(var item : headerList){
                     if(item.name().equalsIgnoreCase("x-pwnfox-color")) {
                         var pwnFoxColor = item.value();

@@ -1,3 +1,6 @@
+// Released under AGPL see LICENSE for more information
+// Developed by Soroush Dalili (@irsdl)
+
 // from https://stackoverflow.com/questions/9288350/adding-vertical-scroll-to-a-jpopupmenu
 
 package com.irsdl.generic;

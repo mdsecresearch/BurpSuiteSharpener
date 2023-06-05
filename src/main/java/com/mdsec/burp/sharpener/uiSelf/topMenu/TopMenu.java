@@ -1,32 +1,8 @@
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
-// Developed by Soroush Dalili (@irsdl)
-// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
+// Burp Suite Extension Name: Sharpener
 // Released under AGPL see LICENSE for more information
-
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
 // Developed by Soroush Dalili (@irsdl)
+// Released initially as open source by MDSec - https://www.mdsec.co.uk
 // Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
-// Released under AGPL see LICENSE for more information
-
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
-// Developed by Soroush Dalili (@irsdl)
-// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
-// Released under AGPL see LICENSE for more information
-
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
-// Developed by Soroush Dalili (@irsdl)
-// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
-// Released under AGPL see LICENSE for more information
-
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
-// Developed by Soroush Dalili (@irsdl)
-// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
-// Released under AGPL see LICENSE for more information
 
 package com.mdsec.burp.sharpener.uiSelf.topMenu;
 
@@ -578,7 +554,8 @@ public class TopMenu extends javax.swing.JMenu {
                                     @Override
                                     public void run() {
                                         //topMenuForExtension.setFont(topMenuForExtension.getFont().deriveFont(topMenuForExtension.getFont().getStyle() ^ Font.BOLD)); // this would set the font so if we change them later in the UI, this menu will not be updated!
-                                        topMenuForExtension.setFont(UIManager.getLookAndFeelDefaults().getFont(topMenuForExtension.getComponent()));
+                                        if(topMenuForExtension != null)
+                                            topMenuForExtension.setFont(UIManager.getLookAndFeelDefaults().getFont(topMenuForExtension.getComponent()));
                                     }
                                 });
                             }

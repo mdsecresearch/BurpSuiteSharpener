@@ -1,7 +1,5 @@
-// Copyright (c) 2021.
-// An extension for Burp Suite
-// Developed by Soroush Dalili (@irsdl)
 // Released under AGPL see LICENSE for more information
+// Developed by Soroush Dalili (@irsdl)
 
 package com.irsdl.generic;
 

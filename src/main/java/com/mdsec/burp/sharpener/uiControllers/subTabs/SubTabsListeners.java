@@ -1,14 +1,8 @@
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
-// Developed by Soroush Dalili (@irsdl)
-// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
+// Burp Suite Extension Name: Sharpener
 // Released under AGPL see LICENSE for more information
-
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
 // Developed by Soroush Dalili (@irsdl)
+// Released initially as open source by MDSec - https://www.mdsec.co.uk
 // Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
-// Released under AGPL see LICENSE for more information
 
 package com.mdsec.burp.sharpener.uiControllers.subTabs;
 

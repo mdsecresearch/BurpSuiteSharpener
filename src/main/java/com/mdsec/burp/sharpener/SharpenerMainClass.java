@@ -1,20 +1,19 @@
-// Burp Suite Sharpener
-// Released as open source by MDSec - https://www.mdsec.co.uk
-// Developed by Soroush Dalili (@irsdl)
-// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
+// Burp Suite Extension Name: Sharpener
 // Released under AGPL see LICENSE for more information
+// Developed by Soroush Dalili (@irsdl)
+// Released initially as open source by MDSec - https://www.mdsec.co.uk
+// Project link: https://github.com/mdsecresearch/BurpSuiteSharpener
 
 package com.mdsec.burp.sharpener;
 
 import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.extension.ExtensionUnloadingHandler;
-import burp.api.montoya.http.HttpService;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import com.irsdl.burp.generic.BurpExtensionFeatures;
 import com.irsdl.burp.generic.BurpUITools;
 import com.irsdl.generic.PropertiesHelper;
-import com.mdsec.burp.sharpener.capabilities.pwnFox.PwnFoxProxyListener;
+import com.mdsec.burp.sharpener.capabilities.pwnFox.PwnFoxProxyRequestHandler;
 import com.mdsec.burp.sharpener.uiSelf.contextMenu.MainContextMenu;
 import com.mdsec.burp.sharpener.uiSelf.suiteTab.MainSuiteTab;
 import com.irsdl.generic.UIHelper;
@@ -67,8 +66,8 @@ public class SharpenerMainClass implements BurpExtension, ExtensionUnloadingHand
         }
 
         if(sharedParameters.features.hasHttpHandler){
-            PwnFoxProxyListener pwnFoxProxyListener = new PwnFoxProxyListener(sharedParameters);
-            api.proxy().registerRequestHandler(pwnFoxProxyListener);
+            PwnFoxProxyRequestHandler pwnFoxProxyRequestHandler = new PwnFoxProxyRequestHandler(sharedParameters);
+            api.proxy().registerRequestHandler(pwnFoxProxyRequestHandler);
         }
 
         // create our UI
